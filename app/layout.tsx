@@ -1,0 +1,42 @@
+import type { Metadata } from 'next'
+import { Inter, Outfit } from 'next/font/google'
+import Script from 'next/script'
+import './globals.css'
+import { Toaster } from 'sonner'
+import { cn } from '@/lib/utils'
+
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
+const outfit = Outfit({ subsets: ['latin'], variable: '--font-outfit' })
+
+export const metadata: Metadata = {
+  title: 'Zenbourg - Hotel Management System',
+  description: 'All-in-one hotel operations platform for admins and staff',
+}
+
+import { Providers } from './providers'
+import GuestPWAInstall from '@/components/common/GuestPWAInstall'
+
+// ... imports
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <html lang="en" className="dark">
+      <body className={cn(inter.variable, outfit.variable, inter.className)}>
+        {/* Razorpay Checkout SDK — must be loaded globally before any payment */}
+        <Script
+          src="https://checkout.razorpay.com/v1/checkout.js"
+          strategy="beforeInteractive"
+        />
+        <Providers>
+          {children}
+          <GuestPWAInstall />
+          <Toaster position="top-right" richColors />
+        </Providers>
+      </body>
+    </html>
+  )
+}

@@ -1,0 +1,16 @@
+{
+    "name": "Zenbourg Staff Panel",
+    "short_name": "ZB Staff",
+    "description": "Zenbourg Hotel Management System - Staff Portal",
+    "start_url": "/staff",
+    "display": "standalone",
+    "background_color": "#0d1117",
+    "theme_color": "#2563eb",
+    "icons": [
+        {
+            "src": "https://img.icons8.com/isometric/512/hotel.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}
