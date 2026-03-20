@@ -31,7 +31,7 @@ export default function AdminRegisterPage() {
         {
             id: 'GOLD',
             name: 'Gold',
-            price: '$99',
+            price: '₹7,999',
             icon: Sparkles,
             color: 'text-amber-500',
             bg: 'bg-amber-500/10',
@@ -41,7 +41,7 @@ export default function AdminRegisterPage() {
         {
             id: 'PLATINUM',
             name: 'Platinum',
-            price: '$199',
+            price: '₹15,999',
             icon: Crown,
             color: 'text-blue-400',
             bg: 'bg-blue-400/10',
@@ -51,7 +51,7 @@ export default function AdminRegisterPage() {
         {
             id: 'DIAMOND',
             name: 'Diamond',
-            price: '$399',
+            price: '₹31,999',
             icon: Gem,
             color: 'text-blue-400',
             bg: 'bg-blue-400/10',

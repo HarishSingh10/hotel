@@ -1,6 +1,6 @@
 // Core Type Definitions for Zenbourg Hotel Management System
 
-export type UserRole = 'SUPER_ADMIN' | 'HOTEL_ADMIN' | 'STAFF' | 'GUEST'
+export type UserRole = 'SUPER_ADMIN' | 'HOTEL_ADMIN' | 'MANAGER' | 'RECEPTIONIST' | 'STAFF' | 'GUEST'
 export type UserStatus = 'ACTIVE' | 'INACTIVE' | 'ON_LEAVE'
 
 export type RoomStatus = 'AVAILABLE' | 'OCCUPIED' | 'MAINTENANCE' | 'BLOCKED' | 'CLEANING'

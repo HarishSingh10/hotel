@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(req: NextRequest) {
     try {
-        const authResult = await requireAuth(req, ['SUPER_ADMIN', 'HOTEL_ADMIN'])
+        const authResult = await requireAuth(req, ['SUPER_ADMIN', 'HOTEL_ADMIN', 'MANAGER', 'RECEPTIONIST'])
         if (authResult instanceof NextResponse) return authResult
 
         const session = await getServerSession(authOptions)

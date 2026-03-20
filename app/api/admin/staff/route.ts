@@ -79,7 +79,7 @@ export async function GET(request: Request) {
                 userRole: s.user.role,
                 status: s.user.status,
                 dutyStatus: dutyStatus,
-                salary: session.user.role === 'SUPER_ADMIN' ? s.baseSalary : '***',
+                salary: ['SUPER_ADMIN', 'HOTEL_ADMIN', 'MANAGER'].includes(session.user.role) ? s.baseSalary : '***',
                 location: 'Main Property'
             }
         })

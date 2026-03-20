@@ -51,7 +51,8 @@ export async function GET(
             include: {
                 staff: {
                     include: {
-                        user: { select: { name: true, email: true } }
+                        user: { select: { name: true, email: true } },
+                        property: { select: { name: true, address: true } }
                     }
                 }
             }

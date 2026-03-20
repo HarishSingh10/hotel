@@ -34,7 +34,8 @@ export async function GET(req: Request) {
                         source: true,
                         numberOfGuests: true,
                         checkIn: true,
-                        checkOut: true
+                        checkOut: true,
+                        totalAmount: true
                     }
                 }
             },
@@ -55,7 +56,8 @@ export async function GET(req: Request) {
                 guestCount: activeBooking.numberOfGuests || 1,
                 idVerified: g.checkInStatus === 'VERIFIED',
                 source: activeBooking.source || 'DIRECT',
-                status: activeBooking.status || 'RESERVED'
+                status: activeBooking.status || 'RESERVED',
+                bookings: g.bookings
             }
         })
 

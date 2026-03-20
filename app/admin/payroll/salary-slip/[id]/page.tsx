@@ -60,10 +60,13 @@ export default function SalarySlipPage() {
             doc.setFillColor(...indigo)
             doc.rect(0, 0, 210, 36, 'F')
 
+            const hotelName = (payroll.staff?.property?.name || 'ZENBOURG').toUpperCase()
+            const hotelAddress = payroll.staff?.property?.address || 'Hotel Address'
+
             doc.setTextColor(...white)
             doc.setFontSize(22)
             doc.setFont('helvetica', 'bold')
-            doc.text('ZENBOURG GRAND', 14, 16)
+            doc.text(hotelName, 14, 16)
             doc.setFontSize(9)
             doc.setFont('helvetica', 'normal')
             doc.text('Employee Pay Slip', 14, 24)
@@ -276,8 +279,8 @@ export default function SalarySlipPage() {
                             <Building2 className="w-10 h-10" />
                         </div>
                         <div>
-                            <h1 className="text-3xl font-black tracking-tight text-slate-900 uppercase">Zenbourg Grand</h1>
-                            <p className="text-slate-500 font-medium">Employee Pay Slip • {payroll.month} {payroll.year}</p>
+                            <h1 className="text-3xl font-black tracking-tight text-slate-900 uppercase">{payroll.staff?.property?.name || 'Zenbourg'}</h1>
+                            <p className="text-slate-500 font-medium">{payroll.staff?.property?.address || 'Employee Pay Slip'} • {payroll.month} {payroll.year}</p>
                         </div>
                     </div>
                     <div className="text-right">

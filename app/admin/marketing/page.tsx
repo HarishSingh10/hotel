@@ -10,8 +10,12 @@ import {
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { buildContextUrl as bcu } from '@/lib/admin-context'
+import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 
 export default function MarketingPage() {
+    const { data: session } = useSession()
+    const router = useRouter()
     const [channel, setChannel] = useState('EMAIL')
     const [campaigns, setCampaigns] = useState<any[]>([])
     const [stats, setStats] = useState<any>(null)
@@ -21,6 +25,7 @@ export default function MarketingPage() {
         segment: 'Diamond Members Only',
         promoCode: ''
     })
+    const [tierPerformance, setTierPerformance] = useState<any[]>([])
 
     const fetchMarketingData = async () => {
         try {
@@ -29,6 +34,7 @@ export default function MarketingPage() {
                 const data = await res.json()
                 setCampaigns(data.campaigns)
                 setStats(data.stats)
+                setTierPerformance(data.tierPerformance || [])
             }
         } catch (error) {
             console.error('Error fetching marketing data:', error)
@@ -39,8 +45,12 @@ export default function MarketingPage() {
     }
 
     useEffect(() => {
+        if (session && !['SUPER_ADMIN', 'HOTEL_ADMIN', 'MANAGER'].includes(session.user.role)) {
+            router.push('/admin/dashboard')
+            return
+        }
         fetchMarketingData()
-    }, [])
+    }, [session, router])
 
     const handleSendPromotion = async () => {
         setSending(true)
@@ -106,7 +116,7 @@ export default function MarketingPage() {
                         { label: 'Active Campaigns', value: stats?.activeCampaigns || '0', trend: '+2.4%', icon: Megaphone, color: 'text-blue-500', bg: 'bg-blue-500/10' },
                         { label: 'VIP Segment Size', value: stats?.vipSegmentSize || '0', trend: '+5.1%', icon: Users, color: 'text-blue-500', bg: 'bg-blue-500/10' },
                         { label: 'Conversion Rate (VIP)', value: stats?.conversionRate || '0%', trend: '+1.2%', icon: Target, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-                        { label: 'Marketing Revenue', value: stats?.marketingRevenue || '$0', trend: '+15.8%', icon: DollarSign, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+                        { label: 'Marketing Revenue', value: stats?.marketingRevenue || '₹0', trend: '+15.8%', icon: DollarSign, color: 'text-blue-500', bg: 'bg-blue-500/10' },
                     ].map((stat, i) => (
                         <div key={i} className="bg-[#161b22] border border-white/5 rounded-xl p-6 hover:border-white/10 transition-all shadow-sm">
                             <div className="flex items-center justify-between mb-4">
@@ -135,7 +145,7 @@ export default function MarketingPage() {
                         </div>
 
                         <div className="h-64 flex items-end justify-around gap-8 px-4">
-                            {(stats?.tierPerformance || [
+                            {(tierPerformance.length > 0 ? tierPerformance : [
                                 { label: 'Diamond', height: '0%', color: 'bg-blue-600' },
                                 { label: 'Platinum', height: '0%', color: 'bg-blue-600/80' },
                                 { label: 'Gold', height: '0%', color: 'bg-blue-600/60' },

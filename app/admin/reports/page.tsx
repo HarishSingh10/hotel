@@ -37,7 +37,7 @@ export default function ReportsPage() {
                 setLoading(false)
             }
         }
-        if (['SUPER_ADMIN', 'HOTEL_ADMIN'].includes(session?.user?.role || '')) {
+        if (['SUPER_ADMIN', 'HOTEL_ADMIN', 'MANAGER', 'RECEPTIONIST'].includes(session?.user?.role || '')) {
             fetchReports()
         }
     }, [session])
@@ -45,7 +45,7 @@ export default function ReportsPage() {
     const handleExport = () => {
         if (!data) return
         const reportData = [
-            { Metric: 'Total Revenue', Value: `$${data.totalRevenue}` },
+            { Metric: 'Total Revenue', Value: `₹${data.totalRevenue}` },
             { Metric: 'Avg Occupancy', Value: `${data.avgOccupancy}%` },
             { Metric: 'Net Promoter Score', Value: data.nps },
             { Metric: 'SLA Breaches', Value: data.slaBreaches },
@@ -54,7 +54,7 @@ export default function ReportsPage() {
         toast.success('Report exported to CSV')
     }
 
-    if (!['SUPER_ADMIN', 'HOTEL_ADMIN'].includes(session?.user?.role || '')) {
+    if (!['SUPER_ADMIN', 'HOTEL_ADMIN', 'MANAGER', 'RECEPTIONIST'].includes(session?.user?.role || '')) {
         return (
             <div className="flex flex-col items-center justify-center h-[60vh] text-center p-6 animate-fade-in">
                 <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mb-6 text-red-500 animate-pulse">
@@ -223,12 +223,12 @@ export default function ReportsPage() {
                                     </defs>
                                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
                                     <XAxis dataKey="name" stroke="#64748b" fontSize={10} fontWeight="bold" tickLine={false} axisLine={false} />
-                                    <YAxis yAxisId="left" stroke="#64748b" fontSize={10} fontWeight="bold" tickLine={false} axisLine={false} tickFormatter={(val) => `$${(val / 1000).toFixed(0)}k`} />
+                                    <YAxis yAxisId="left" stroke="#64748b" fontSize={10} fontWeight="bold" tickLine={false} axisLine={false} tickFormatter={(val) => `₹${(val / 1000).toFixed(0)}k`} />
                                     <YAxis yAxisId="right" orientation="right" stroke="#64748b" fontSize={10} fontWeight="bold" tickLine={false} axisLine={false} tickFormatter={(val) => `${val}%`} />
                                     <Tooltip
                                         contentStyle={{ backgroundColor: '#1e293b', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '12px', fontSize: 12, fontWeight: 'bold' }}
                                         itemStyle={{ fontWeight: 'bold' }}
-                                        formatter={(val: number, name: string) => name === 'Revenue' ? [`$${val.toLocaleString()}`, name] : [`${val}%`, name]}
+                                        formatter={(val: number, name: string) => name === 'Revenue' ? [`₹${val.toLocaleString()}`, name] : [`${val}%`, name]}
                                     />
                                     <Legend iconType="circle" wrapperStyle={{ fontSize: 11, fontWeight: 'bold' }} />
                                     <Area yAxisId="left" type="monotone" dataKey="revenue" name="Revenue" stroke="#4A9EFF" fillOpacity={1} fill="url(#colorRev)" strokeWidth={2.5} dot={false} />

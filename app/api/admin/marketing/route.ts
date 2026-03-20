@@ -12,7 +12,7 @@ export const dynamic = 'force-dynamic'
  */
 export async function GET(req: NextRequest) {
     try {
-        const authResult = await requireAuth(req, ['SUPER_ADMIN', 'HOTEL_ADMIN'])
+        const authResult = await requireAuth(req, ['SUPER_ADMIN', 'HOTEL_ADMIN', 'MANAGER'])
         if (authResult instanceof NextResponse) return authResult
 
         const { searchParams } = new URL(req.url)
@@ -91,7 +91,7 @@ export async function GET(req: NextRequest) {
                 activeCampaigns: activeCampaignsCount,
                 vipSegmentSize,
                 conversionRate: `${conversionRate}%`,
-                marketingRevenue: `$${marketingRevenue.toLocaleString()}`
+                marketingRevenue: `₹${marketingRevenue.toLocaleString()}`
             },
             tierPerformance
         })
@@ -108,7 +108,7 @@ export async function GET(req: NextRequest) {
  */
 export async function POST(req: NextRequest) {
     try {
-        const authResult = await requireAuth(req, ['SUPER_ADMIN', 'HOTEL_ADMIN'])
+        const authResult = await requireAuth(req, ['SUPER_ADMIN', 'HOTEL_ADMIN', 'MANAGER'])
         if (authResult instanceof NextResponse) return authResult
 
         const body = await req.json()

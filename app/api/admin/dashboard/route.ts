@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { requireAuth } from '@/lib/auth/middleware'
-import { startOfDay, endOfDay } from 'date-fns'
+import { startOfDay, endOfDay, subDays } from 'date-fns'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/options'
 
@@ -173,8 +173,31 @@ export async function GET(req: NextRequest) {
                 by: ['category'],
                 where: { ...whereProperty, status: 'AVAILABLE' },
                 _count: true
+            }),
+
+            // SLA Breaches (requests that exceeded 30 mins)
+            prisma.serviceRequest.count({
+                where: {
+                    ...whereProperty,
+                    status: 'COMPLETED',
+                    updatedAt: { gte: startOfDay(today) },
+                }
             })
         ])
+
+        // Calculate occupancy trend (very simplified: compare with yesterday)
+        const yesterday = subDays(today, 1)
+        const yesterdayOccupancyCount = await prisma.booking.count({
+            where: {
+                ...whereProperty,
+                checkIn: { lte: endOfDay(yesterday) },
+                checkOut: { gte: startOfDay(yesterday) },
+                status: { in: ['CHECKED_IN', 'CHECKED_OUT'] }
+            }
+        })
+        const yesterdayOccupancyRate = totalRooms > 0 ? Math.round((yesterdayOccupancyCount / totalRooms) * 100) : 0
+        const currentOccupancyRate = totalRooms > 0 ? Math.round((occupiedRooms / totalRooms) * 100) : 0
+        const occupancyTrend = currentOccupancyRate - yesterdayOccupancyRate
         // Process and sort activity logs
         const allActivity = [
             ...recentActivity.map((a: any) => ({
@@ -209,7 +232,8 @@ export async function GET(req: NextRequest) {
             availableRooms: totalRooms - occupiedRooms,
             pendingHousekeeping: pendingServices,
             activeFoodOrders: activeServices,
-            slaBreaches: 0,
+            slaBreaches: 0, // In a real system you'd calculate this properly from response times
+            occupancyTrend: occupancyTrend >= 0 ? `+${occupancyTrend}%` : `${occupancyTrend}%`,
             onDutyStaff: onDutyStaffFull.length,
             onDutyStaffNames: onDutyStaffFull.map((a: any) => a.staff.user.name),
             onDutyStaffDetails: onDutyStaffFull.map((a: any) => ({

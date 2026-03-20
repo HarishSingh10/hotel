@@ -1,6 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import useSWR from 'swr'
+import { formatCurrency } from '@/lib/utils'
+import { Loader2 } from 'lucide-react'
 import {
     Users, TrendingUp, DollarSign, Award, Download,
     Calendar, Filter, Search, ChevronDown, User,
@@ -9,15 +12,43 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-const TOP_GUESTS = [
-    { name: 'Alexandra Smith', email: 'alex@example.com', stays: 12, spent: 8420, lastVisit: 'Jan 12, 2024', tier: 'PLATINUM', color: 'text-blue-400', bg: 'bg-blue-400/10', border: 'border-blue-400/20' },
-    { name: 'Marcus Chang', email: 'm.chang@tech.co', stays: 9, spent: 6150, lastVisit: 'Feb 02, 2024', tier: 'GOLD', color: 'text-amber-500', bg: 'bg-amber-500/10', border: 'border-amber-500/20' },
-    { name: 'Sarah Jenkins', email: 'sarah.j@travel.com', stays: 7, spent: 4900, lastVisit: 'Feb 15, 2024', tier: 'SILVER', color: 'text-gray-400', bg: 'bg-gray-400/10', border: 'border-gray-400/20' },
-    { name: 'Robert Downey', email: 'robert.d@corp.com', stays: 15, spent: 12100, lastVisit: 'Dec 28, 2023', tier: 'PLATINUM', color: 'text-blue-400', bg: 'bg-blue-400/10', border: 'border-blue-400/20' },
-]
+import { buildContextUrl } from '@/lib/admin-context'
+import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 
 export default function LoyaltyAnalysisPage() {
+    const { data: session } = useSession()
+    const router = useRouter()
     const [timeRange, setTimeRange] = useState('Last 12 Months')
+
+    const { data: loyaltyData, error, isLoading } = useSWR(
+        ['/api/admin/analytics/loyalty', session?.user?.role],
+        ([url]) => fetch(buildContextUrl(url)).then(res => res.json())
+    )
+
+    useEffect(() => {
+        if (session && !['SUPER_ADMIN', 'HOTEL_ADMIN', 'MANAGER', 'RECEPTIONIST'].includes(session.user.role)) {
+            router.push('/admin/dashboard')
+        }
+    }, [session, router])
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-[#0d1117] flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+            </div>
+        )
+    }
+
+    if (!loyaltyData || loyaltyData.error) {
+        return (
+            <div className="min-h-screen bg-[#0d1117] flex items-center justify-center text-gray-400">
+                Failed to load loyalty analytics data.
+            </div>
+        )
+    }
+
+    const { stats, topGuests, chartData } = loyaltyData
 
     return (
         <div className="min-h-screen bg-[#0d1117] text-gray-300 font-sans p-8">
@@ -42,10 +73,10 @@ export default function LoyaltyAnalysisPage() {
                 {/* ── TOP STATS ── */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     {[
-                        { label: 'Repeat Guest %', value: '24.5%', trend: '+2.1% vs last year', icon: Users, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-                        { label: 'Loyalty Revenue', value: '$142,000', trend: '12.4% of total', icon: DollarSign, color: 'text-green-500', bg: 'bg-green-500/10' },
-                        { label: 'Avg. Lifetime Value', value: '$3,450', trend: '+5.2% per guest', icon: CreditCard, color: 'text-purple-500', bg: 'bg-purple-500/10' },
-                        { label: 'Top Guest Rank', value: 'Top 1%', trend: '+0.5% retention', icon: Award, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+                        { label: 'Repeat Guest %', value: `${stats.repeatRate}%`, trend: `${stats.repeatGuestCount} total`, icon: Users, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+                        { label: 'Loyalty Revenue', value: formatCurrency(stats.loyaltyRevenue), trend: `${stats.loyaltyRevenuePercent}% of total`, icon: DollarSign, color: 'text-green-500', bg: 'bg-green-500/10' },
+                        { label: 'Avg. Lifetime Value', value: formatCurrency(stats.avgLTV), trend: '+5.2% per guest', icon: CreditCard, color: 'text-purple-500', bg: 'bg-purple-500/10' },
+                        { label: 'Total Guests', value: stats.totalGuests.toLocaleString(), trend: 'Active profiles', icon: Award, color: 'text-amber-500', bg: 'bg-amber-500/10' },
                     ].map((stat, i) => (
                         <div key={i} className="bg-[#161b22] border border-gray-800 rounded-xl p-8 shadow-sm group hover:border-gray-700 transition-all">
                             <div className="flex items-center justify-between mb-4">
@@ -164,7 +195,7 @@ export default function LoyaltyAnalysisPage() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-800/50">
-                                {TOP_GUESTS.map((guest, i) => (
+                                {topGuests.map((guest: any, i: number) => (
                                     <tr key={i} className="hover:bg-white/[0.02] transition-colors group">
                                         <td className="px-8 py-6">
                                             <div className="flex items-center gap-4">
@@ -181,10 +212,10 @@ export default function LoyaltyAnalysisPage() {
                                             <span className="text-sm font-bold text-gray-300">{guest.stays} stays</span>
                                         </td>
                                         <td className="px-8 py-6 whitespace-nowrap">
-                                            <span className="text-sm font-bold text-white tracking-tight">${guest.spent.toLocaleString()}</span>
+                                            <span className="text-sm font-bold text-white tracking-tight">{formatCurrency(guest.spent)}</span>
                                         </td>
                                         <td className="px-8 py-6 text-center whitespace-nowrap">
-                                            <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">{guest.lastVisit}</span>
+                                            <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">{new Date(guest.lastVisit).toLocaleDateString()}</span>
                                         </td>
                                         <td className="px-8 py-6 whitespace-nowrap">
                                             <div className={cn(

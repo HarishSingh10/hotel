@@ -37,7 +37,7 @@ const ITEMS = {
             model: '14 Pro',
             color: 'Space Black',
             serial: 'IMEI-9981-LFP',
-            estimatedValue: '$999'
+            estimatedValue: '₹999'
         }
     }
 }
