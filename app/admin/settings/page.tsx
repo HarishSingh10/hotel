@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
 import { useState, useEffect, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import {
@@ -103,11 +105,25 @@ const PERMISSIONS_SCHEMA = [
     }
 ]
 
+const ALL_FEATURES = [
+    { id: 'BASIC_OPS', label: 'Basic Operations', desc: 'Standard check-in/out and room status.' },
+    { id: 'STAFF_MANAGEMENT', label: 'Staff Management', desc: 'Employee profiles and assignments.' },
+    { id: 'ADVANCED_PAYROLL', label: 'Advanced Payroll', desc: 'Salary disbursements and tax automated.' },
+    { id: 'MARKETING_TOOLS', label: 'Marketing Tools', desc: 'Campaigns and loyalty segment tracking.' },
+    { id: 'ANALYTICS_REPORTING', label: 'Analytics & Reporting', desc: 'Deep-dive reports and trend analysis.' },
+    { id: 'POS_HARDWARE_SYNC', label: 'POS & Hardware Sync', desc: 'Direct connection with retail terminal.' },
+    { id: 'IOT_INTEGRATION', label: 'IoT Integration', desc: 'Smart room and device connectivity.' },
+    { id: 'LOYALTY_PROGRAM', label: 'Loyalty Program', desc: 'VIP tiers and rewards management.' },
+    { id: 'MULTI_PROPERTY_MDM', label: 'Multi-Property MDM', desc: 'Organization-wide device management.' },
+]
+
 const ALL_ROLES = ALL_ROLES_DATA.map(r => r.id)
 
 export default function SettingsOverviewPage() {
     const { data: session } = useSession()
-    const [view, setView] = useState<'OVERVIEW' | 'INTEGRATIONS' | 'ROLES' | 'BRANDING' | 'PAYMENT' | 'RETENTION' | 'OPS' | 'SUBSCRIPTION'>('OVERVIEW')
+    const [view, setView] = useState<'OVERVIEW' | 'INTEGRATIONS' | 'ROLES' | 'BRANDING' | 'PAYMENT' | 'RETENTION' | 'OPS' | 'SUBSCRIPTION' | 'PLANS'>('OVERVIEW')
+    const [planDefinitions, setPlanDefinitions] = useState<any[]>([])
+    const [editingPlan, setEditingPlan] = useState<any>(null)
     const [loading, setLoading] = useState(false)
     const [saving, setSaving] = useState(false)
     const [connectedApps, setConnectedApps] = useState<string[]>([])
@@ -128,7 +144,7 @@ export default function SettingsOverviewPage() {
 
     // Payments Logic
     const [paymentSettings, setPaymentSettings] = useState({
-        baseCurrency: 'USD',
+        baseCurrency: 'INR',
         taxRate: 10.0,
         allowPartial: true,
         invoiceAutoGenerate: false,
@@ -294,6 +310,21 @@ export default function SettingsOverviewPage() {
             toast.error('Failed to load operations settings')
         }
     }, [currentPropertyId])
+
+    const fetchPlanDefinitions = useCallback(async () => {
+        if (session?.user?.role !== 'SUPER_ADMIN') return
+        try {
+            const res = await fetch('/api/admin/settings/plans')
+            const data = await res.json()
+            if (data.success) setPlanDefinitions(data.plans)
+        } catch (error) {
+            toast.error('Failed to load plan definitions')
+        }
+    }, [session?.user?.role])
+
+    useEffect(() => {
+        if (view === 'PLANS') fetchPlanDefinitions()
+    }, [view, fetchPlanDefinitions])
 
     const fetchRoles = useCallback(async () => {
         if (!currentPropertyId || currentPropertyId === 'ALL') return
@@ -524,7 +555,30 @@ export default function SettingsOverviewPage() {
             case 'RETENTION': return handleSaveRetention
             case 'OPS': return handleSaveOps
             case 'SUBSCRIPTION': return () => toast.info('Subscription plans are managed by Super Admin')
+            case 'PLANS': return handleSavePlanDefinitions
             default: return () => toast.info('Auto-saving is enabled')
+        }
+    }
+
+    const handleSavePlanDefinitions = async () => {
+        if (!editingPlan) return;
+        setSaving(true);
+        try {
+            const res = await fetch('/api/admin/settings/plans', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(editingPlan)
+            });
+            const data = await res.json();
+            if (data.success) {
+                toast.success(`${editingPlan.plan} tier updated successfully`);
+                setEditingPlan(null);
+                fetchPlanDefinitions();
+            }
+        } catch (error) {
+            toast.error('Failed to update plan definition');
+        } finally {
+            setSaving(false);
         }
     }
 
@@ -568,12 +622,12 @@ export default function SettingsOverviewPage() {
                         )}
                         <div>
                             <h1 className="text-4xl font-black tracking-[-0.04em] text-white mb-2 uppercase italic leading-none">
-                                {view === 'OVERVIEW' ? 'Command Center' : view === 'INTEGRATIONS' ? 'Integrations' : view === 'ROLES' ? 'Permissions' : view === 'BRANDING' ? 'Identity' : view === 'PAYMENT' ? 'Financials' : view === 'SUBSCRIPTION' ? 'Subscription' : 'Operations'}
+                                {view === 'OVERVIEW' ? 'Command Center' : view === 'INTEGRATIONS' ? 'Integrations' : view === 'ROLES' ? 'Permissions' : view === 'BRANDING' ? 'Identity' : view === 'PAYMENT' ? 'Financials' : view === 'SUBSCRIPTION' ? 'Subscription' : view === 'PLANS' ? 'Subscription Tiers' : 'Operations'}
                             </h1>
                             <div className="flex items-center gap-3 text-sm text-[#475569] font-semibold tracking-tight">
                                 <span className="flex items-center gap-1.5"><Shield className="w-4 h-4" /> Administrative Access</span>
                                 <div className="w-1.5 h-1.5 rounded-full bg-[#1E293B]" />
-                                <span>{view === 'ROLES' ? 'User Access Management' : view === 'INTEGRATIONS' ? 'External API Sync' : 'System Configuration'}</span>
+                                <span>{view === 'ROLES' ? 'User Access Management' : view === 'INTEGRATIONS' ? 'External API Sync' : view === 'PLANS' ? 'Global Plan Definitions' : 'System Configuration'}</span>
                             </div>
                         </div>
                     </div>
@@ -629,8 +683,43 @@ export default function SettingsOverviewPage() {
 
                 {/* ═══ LEFT COLUMN (3/4) ═══ */}
                 <div className="lg:col-span-3 space-y-14">
+                    {/* Role Debugger (Visible to Admin only) */}
+                    {(session?.user?.role === 'SUPER_ADMIN' || session?.user?.email?.includes('superadmin')) && (
+                        <div className="px-6 py-2 bg-white/5 border border-white/10 rounded-full w-fit text-[10px] font-black text-gray-500 uppercase tracking-widest mb-4">
+                            Access Level: <span className="text-[#38BDF8] ml-2">{session?.user?.role}</span> | {session?.user?.email}
+                        </div>
+                    )}
+
                     {view === 'OVERVIEW' ? (
                         <>
+                            {/* Super Admin Command Center Section */}
+                            {(session?.user?.role === 'SUPER_ADMIN' || session?.user?.email === 'superadmin@zenboug.com' || session?.user?.email === 'superadmin@zenbourg.com') && (
+                                <div className="space-y-8 animate-in slide-in-from-top-4 duration-700">
+                                    <div className="flex items-center justify-between ml-2">
+                                        <h3 className="text-[11px] font-black text-[#38BDF8] uppercase tracking-[0.4em]">Administrative Core</h3>
+                                        <div className="h-px flex-1 bg-gradient-to-r from-[#38BDF8]/30 to-transparent ml-6" />
+                                    </div>
+                                    <div 
+                                        onClick={() => setView('PLANS')}
+                                        className="group p-10 bg-[#111827] border border-[#38BDF8]/20 rounded-[3rem] hover:border-[#38BDF8]/60 transition-all cursor-pointer shadow-3xl relative overflow-hidden"
+                                    >
+                                         <div className="flex items-center gap-10 relative z-10">
+                                            <div className="w-20 h-20 rounded-[2.5rem] bg-[#38BDF8]/10 border border-[#38BDF8]/30 flex items-center justify-center text-[#38BDF8] group-hover:bg-[#38BDF8] group-hover:text-[#0B0F17] transition-all duration-500">
+                                                <ShieldAlert className="w-10 h-10" />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <div className="flex items-center gap-4">
+                                                    <h4 className="text-3xl font-black text-white uppercase italic tracking-tighter">Plan Master Control</h4>
+                                                    <div className="px-4 py-1.5 bg-[#38BDF8]/10 border border-[#38BDF8]/30 rounded-full text-[10px] font-black text-[#38BDF8] uppercase tracking-widest animate-pulse">Core Access</div>
+                                                </div>
+                                                <p className="text-[15px] text-[#475569] font-bold leading-tight">Define global tier protocols: toggle specific features and price points for Gold, Platinum, and Diamond subscriptions.</p>
+                                            </div>
+                                         </div>
+                                         <div className="absolute -top-20 -right-20 w-80 h-80 bg-[#38BDF8]/5 rounded-full blur-[120px] pointer-events-none group-hover:bg-[#38BDF8]/10 transition-all duration-700" />
+                                    </div>
+                                </div>
+                            )}
+
                             {/* Global Config Section */}
                             <div className="space-y-8">
                                 <div className="flex items-center justify-between ml-2">
@@ -689,6 +778,10 @@ export default function SettingsOverviewPage() {
                                             onClick={() => {
                                                 if (item.id === 'integrations') setView('INTEGRATIONS')
                                                 else if (item.id === 'retention') setView('RETENTION')
+                                                else if (item.id === 'plans') {
+                                                    if (session?.user?.role !== 'SUPER_ADMIN') return toast.error('Super Admin restricted access')
+                                                    setView('PLANS')
+                                                }
                                                 else toast.info('Coming soon')
                                             }}
                                             className="group flex items-center justify-between p-8 bg-[#111827] border border-[#1F2937] rounded-[32px] hover:border-[#38BDF8]/40 hover:bg-[#1E293B]/40 transition-all cursor-pointer shadow-2xl"
@@ -760,7 +853,161 @@ export default function SettingsOverviewPage() {
                                 ))}
                             </div>
                         </div>
-                    ) : view === 'ROLES' ? (
+                    ) : view === 'PLANS' ? (
+        <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {['GOLD', 'PLATINUM', 'DIAMOND'].map(planType => {
+                    const plan = planDefinitions.find(p => p.plan === planType) || { plan: planType, features: [], price: 0 };
+                    return (
+                        <div key={planType} className="bg-[#111827] border border-white/[0.06] rounded-[2.5rem] p-10 shadow-2xl relative overflow-hidden group">
+                            <div className="flex items-center justify-between mb-8 relative z-10">
+                                <div className="space-y-2">
+                                    <h3 className={cn("text-2xl font-black italic tracking-tighter", 
+                                        planType === 'GOLD' ? "text-amber-500" : 
+                                        planType === 'PLATINUM' ? "text-blue-400" : "text-[#38BDF8]"
+                                    )}>{planType}</h3>
+                                    <p className="text-xs text-gray-500 font-bold uppercase tracking-widest leading-none">Subscription Tier</p>
+                                </div>
+                                <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white/20 group-hover:text-white/40 transition-colors">
+                                    <ShieldCheck className="w-7 h-7" />
+                                </div>
+                            </div>
+
+                            <div className="space-y-6 mb-10 relative z-10">
+                                <div className="space-y-1">
+                                    <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Base Rate</p>
+                                    <div className="flex items-baseline gap-1">
+                                        <span className="text-3xl font-black text-white tracking-tighter">₹{plan.price.toLocaleString()}</span>
+                                        <span className="text-xs font-bold text-gray-500">/mo</span>
+                                    </div>
+                                </div>
+                                <div className="h-px bg-white/5" />
+                                <div className="space-y-4">
+                                    <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Included Protocols</p>
+                                    <div className="grid grid-cols-1 gap-2.5">
+                                        {plan.features.slice(0, 4).map((f: string) => (
+                                            <div key={f} className="flex items-center gap-2.5 p-3.5 bg-white/[0.02] border border-white/5 rounded-2xl text-[11px] font-bold text-gray-300">
+                                                <div className="w-4 h-4 rounded px-0.5 bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
+                                                    <Check className="w-3 h-3" strokeWidth={4} />
+                                                </div>
+                                                {f.replace(/_/g, ' ')}
+                                            </div>
+                                        ))}
+                                        {plan.features.length > 4 && (
+                                            <p className="text-[10px] font-bold text-[#38BDF8] ml-2 italic tracking-tight">+ {plan.features.length - 4} more advanced features</p>
+                                        )}
+                                        {plan.features.length === 0 && (
+                                            <p className="text-[11px] text-gray-600 italic ml-2">No features configured</p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button 
+                                onClick={() => setEditingPlan(plan)}
+                                className="w-full py-4 bg-white/5 border border-white/10 hover:bg-[#38BDF8] hover:text-[#0B0F17] hover:border-[#38BDF8] text-white text-[12px] font-black uppercase tracking-widest rounded-2xl transition-all relative z-10 shadow-xl"
+                            >
+                                Configure Tier
+                            </button>
+
+                            <div className={cn("absolute -bottom-20 -right-20 w-60 h-60 rounded-full blur-[100px] opacity-10 pointer-events-none transition-all duration-700 group-hover:opacity-20",
+                                planType === 'GOLD' ? "bg-amber-500" : 
+                                planType === 'PLATINUM' ? "bg-blue-400" : "bg-[#38BDF8]"
+                            )} />
+                        </div>
+                    )
+                })}
+             </div>
+
+             {editingPlan && (
+                <div className="p-10 bg-[#161b22] border border-white/5 rounded-[3rem] shadow-3xl animate-in zoom-in-95 duration-300">
+                    <div className="flex items-center justify-between mb-10">
+                        <div className="flex items-center gap-5">
+                            <div className="w-14 h-14 rounded-2xl bg-[#38BDF8]/10 flex items-center justify-center text-[#38BDF8]">
+                                <LayoutDashboard className="w-7 h-7" />
+                            </div>
+                            <div>
+                                <h3 className="text-2xl font-black text-white uppercase italic tracking-tighter">Editing {editingPlan.plan} Tier</h3>
+                                <p className="text-sm font-bold text-gray-500">Global Feature Entitlement Map</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <div className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl">
+                                <span className="text-[11px] font-black text-gray-500 uppercase tracking-widest">Pricing Model</span>
+                                <div className="flex items-center gap-2 mt-1">
+                                    <span className="text-white font-black">₹</span>
+                                    <input 
+                                        type="number" 
+                                        value={editingPlan.price}
+                                        onChange={e => setEditingPlan({ ...editingPlan, price: parseFloat(e.target.value) })}
+                                        className="bg-transparent border-none text-white font-black p-0 w-24 focus:outline-none focus:ring-0"
+                                    />
+                                </div>
+                            </div>
+                            <button onClick={() => setEditingPlan(null)} className="p-4 rounded-xl bg-white/5 text-gray-500 hover:text-white transition-colors">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
+                        {ALL_FEATURES.map(feat => (
+                            <div 
+                                key={feat.id} 
+                                onClick={() => {
+                                    const exists = editingPlan.features.includes(feat.id);
+                                    setEditingPlan({
+                                        ...editingPlan,
+                                        features: exists 
+                                            ? editingPlan.features.filter((f: string) => f !== feat.id)
+                                            : [...editingPlan.features, feat.id]
+                                    });
+                                }}
+                                className={cn(
+                                    "group p-5 border rounded-[2rem] transition-all cursor-pointer relative overflow-hidden",
+                                    editingPlan.features.includes(feat.id)
+                                        ? "bg-[#38BDF8]/5 border-[#38BDF8]/30 shadow-[0_0_40px_rgba(56,189,248,0.05)]"
+                                        : "bg-white/[0.01] border-white/5 hover:border-white/20"
+                                )}
+                            >
+                                <div className="flex items-start gap-4 relative z-10">
+                                    <div className={cn(
+                                        "w-10 h-10 rounded-xl flex items-center justify-center transition-all",
+                                        editingPlan.features.includes(feat.id)
+                                            ? "bg-[#38BDF8] text-[#0B0F17] scale-110"
+                                            : "bg-white/5 text-gray-600 group-hover:bg-white/10"
+                                    )}>
+                                        {editingPlan.features.includes(feat.id) ? <Check className="w-5 h-5" /> : <Plus className="w-5 h-5 opacity-40" />}
+                                    </div>
+                                    <div className="space-y-1">
+                                        <h4 className={cn("text-sm font-black uppercase tracking-tight", 
+                                            editingPlan.features.includes(feat.id) ? "text-[#38BDF8]" : "text-gray-400"
+                                        )}>{feat.label}</h4>
+                                        <p className="text-[11px] text-gray-500 font-medium leading-tight">{feat.desc}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="flex items-center justify-end gap-4 p-8 bg-black/20 rounded-[2.5rem] border border-white/5">
+                        <button 
+                            onClick={() => setEditingPlan(null)}
+                            className="px-8 py-3 text-[11px] font-black text-gray-500 uppercase tracking-widest hover:text-white transition-colors"
+                        >
+                            Discard Changes
+                        </button>
+                        <button 
+                            onClick={handleSavePlanDefinitions}
+                            className="flex items-center gap-2 px-10 py-3 bg-[#38BDF8] text-[#0B0F17] text-[11px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-[#0EA5E9] transition-all shadow-2xl shadow-[#38BDF8]/20"
+                        >
+                            Deploy Tier Protocols
+                        </button>
+                    </div>
+                </div>
+             )}
+        </div>
+    ) : view === 'ROLES' ? (
                         <div className="flex flex-col lg:flex-row gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500 min-h-[700px]">
                             <div className="w-full lg:w-80 space-y-6">
                                 <div className="space-y-4">

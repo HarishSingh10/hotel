@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
             const staff = await prisma.staff.findUnique({ where: { userId: authResult.user.id } })
             if (!staff) return NextResponse.json({ error: 'Staff not found' }, { status: 404 })
             where.staffId = staff.id
-        } else if (authResult.user.role === 'SUPER_ADMIN' || authResult.user.role === 'HOTEL_ADMIN') {
+        } else if (['SUPER_ADMIN', 'HOTEL_ADMIN', 'MANAGER'].includes(authResult.user.role)) {
             if (staffId) {
                 where.staffId = staffId
             } else {
@@ -107,7 +107,7 @@ export async function GET(req: NextRequest) {
  */
 export async function POST(req: NextRequest) {
     try {
-        const authResult = await requireAuth(req, ['SUPER_ADMIN', 'HOTEL_ADMIN'])
+        const authResult = await requireAuth(req, ['SUPER_ADMIN', 'HOTEL_ADMIN', 'MANAGER'])
         if (authResult instanceof NextResponse) return authResult
 
         const body = await req.json()
@@ -187,7 +187,7 @@ export async function POST(req: NextRequest) {
  */
 export async function PATCH(req: NextRequest) {
     try {
-        const authResult = await requireAuth(req, ['SUPER_ADMIN', 'HOTEL_ADMIN'])
+        const authResult = await requireAuth(req, ['SUPER_ADMIN', 'HOTEL_ADMIN', 'MANAGER'])
         if (authResult instanceof NextResponse) return authResult
 
         const body = await req.json()

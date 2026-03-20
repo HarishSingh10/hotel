@@ -60,12 +60,18 @@ export async function POST(request: Request) {
 
     try {
         const body = await request.json()
+        const { searchParams } = new URL(request.url)
+        const queryPropertyId = searchParams.get('propertyId')
+        
+        // RBAC: Use user's propertyId, or allow SUPER_ADMIN to specify one
+        let propertyId = session.user.propertyId
+        if (session.user.role === 'SUPER_ADMIN') {
+            propertyId = body.propertyId || queryPropertyId
+        }
 
-        // Create guest first or link existing? 
-        // Simplified: Input includes guestId
-
-        const propertyId = session.user.propertyId
-        if (!propertyId) return new NextResponse('Missing property ID', { status: 400 })
+        if (!propertyId || propertyId === 'ALL') {
+            return new NextResponse('Missing property ID context', { status: 400 })
+        }
 
         const booking = await prisma.booking.create({
             data: {

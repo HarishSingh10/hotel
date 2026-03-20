@@ -340,7 +340,7 @@ export default function StaffPage() {
                                     {['SUPER_ADMIN', 'HOTEL_ADMIN'].includes(userRole) && (
                                         <div className="text-right border-l border-white/[0.08] pl-8 w-32 hidden sm:block">
                                             <p className="text-[10px] text-text-tertiary uppercase tracking-wider mb-1">Salary</p>
-                                            <p className="font-bold text-text-primary font-mono text-lg">${staff.salary}</p>
+                                            <p className="font-bold text-text-primary font-mono text-lg">₹{staff.salary}</p>
                                         </div>
                                     )}
 

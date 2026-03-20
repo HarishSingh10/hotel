@@ -720,7 +720,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "C:\\Users\\haris\\OneDrive\\Desktop\\hotel app\\Hotel-admin\\prisma\\generated\\client",
+      "value": "C:\\Users\\harsh\\OneDrive\\Desktop\\New folder (5)\\hotel\\prisma\\generated\\client",
       "fromEnvVar": null
     },
     "config": {
@@ -734,7 +734,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "C:\\Users\\haris\\OneDrive\\Desktop\\hotel app\\Hotel-admin\\prisma\\schema.prisma",
+    "sourceFilePath": "C:\\Users\\harsh\\OneDrive\\Desktop\\New folder (5)\\hotel\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {

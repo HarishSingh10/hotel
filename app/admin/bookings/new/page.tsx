@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import Image from 'next/image'
 import {
     ArrowLeft, ArrowRight, Save, Calendar, User, UserPlus, Bed, DollarSign,
@@ -23,6 +24,12 @@ const STEPS = [
 
 export default function NewBookingPage() {
     const router = useRouter()
+    const { data: session, status } = useSession({
+        required: true,
+        onUnauthenticated() {
+            router.push('/admin/login?callbackUrl=/admin/bookings/new')
+        },
+    })
     const [currentStep, setCurrentStep] = useState(0)
     const [loading, setLoading] = useState(false)
     const [fetching, setFetching] = useState(false)
@@ -74,12 +81,7 @@ export default function NewBookingPage() {
     }
 
     const filteredRooms = useMemo(() => {
-        let rooms = allRooms.length > 0 ? allRooms : [
-            { id: 'r1', roomNumber: '402', type: 'Deluxe Suite', basePrice: 240 },
-            { id: 'r2', roomNumber: '405', type: 'King Royal', basePrice: 320 },
-            { id: 'r3', roomNumber: '301', type: 'Standard Twin', basePrice: 180 },
-            { id: 'r4', roomNumber: '308', type: 'Junior Suite', basePrice: 210 }
-        ]
+        let rooms = allRooms
 
         if (roomTypeFilter !== 'All Rooms') {
             rooms = rooms.filter(r => r.type === roomTypeFilter)
@@ -306,11 +308,7 @@ export default function NewBookingPage() {
                         </div>
 
                         <div className="space-y-3">
-                            {(filteredGuests.length > 0 ? filteredGuests : [
-                                { id: 'mock-1', name: 'Jane Smith', email: 'jane.smith@example.com', phone: '+1 (555) 012-3456', lastVisit: 'Oct 24, 2023', isVIP: true },
-                                { id: 'mock-2', name: 'John Smithers', email: 'john.s@example.com', phone: '+1 (555) 987-6543', lastVisit: '--' },
-                                { id: 'mock-3', name: 'Sarah Smith', email: 'sarah.smith@nomail.com', phone: '+1 (555) 000-1111', lastVisit: 'Jan 12, 2022', isBlacklisted: true }
-                            ]).map((guest) => (
+                            {filteredGuests.map((guest) => (
                                 <div
                                     key={guest.id}
                                     onClick={() => setSelectedGuest(guest)}
@@ -390,11 +388,11 @@ export default function NewBookingPage() {
                                     <div className="grid grid-cols-2 gap-4 mt-8">
                                         <div className="p-4 bg-black/20 rounded-2xl border border-white/5">
                                             <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-1">TOTAL STAYS</p>
-                                            <p className="text-xl font-bold text-white">5</p>
+                                            <p className="text-xl font-bold text-white">{selectedGuest?.bookings?.length || 0}</p>
                                         </div>
                                         <div className="p-4 bg-black/20 rounded-2xl border border-white/5">
                                             <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-1">AVG SPEND</p>
-                                            <p className="text-xl font-bold text-white tracking-tight">$420</p>
+                                            <p className="text-xl font-bold text-white tracking-tight">₹{Math.round((selectedGuest?.bookings?.reduce((acc: any, b: any) => acc + b.totalAmount, 0) || 0) / (selectedGuest?.bookings?.length || 1))}</p>
                                         </div>
                                     </div>
 
@@ -403,13 +401,13 @@ export default function NewBookingPage() {
                                             <div className="w-10 h-10 rounded-2xl bg-white/[0.03] flex items-center justify-center border border-white/5 shadow-md">
                                                 <MapPin className="w-5 h-5 text-gray-600" />
                                             </div>
-                                            New York, USA
+                                            {selectedGuest?.address || 'Address Not Provided'}
                                         </div>
                                         <div className="flex items-center gap-5 text-gray-400 font-bold text-[15px]">
                                             <div className="w-10 h-10 rounded-2xl bg-white/[0.03] flex items-center justify-center border border-white/5 shadow-md">
                                                 <Calendar className="w-5 h-5 text-gray-600" />
                                             </div>
-                                            Sep 14, 1988
+                                            {selectedGuest?.dateOfBirth ? new Date(selectedGuest.dateOfBirth).toLocaleDateString() : 'DOB Unknown'}
                                         </div>
                                     </div>
 
@@ -606,7 +604,7 @@ export default function NewBookingPage() {
                                     <div className="flex gap-4 mt-auto pt-6 border-t border-white/5">
                                         <div className="flex-1">
                                             <p className="text-[9px] font-bold text-gray-600 uppercase tracking-widest leading-none mb-1">Nightly Rate</p>
-                                            <p className="text-xl font-bold text-white tracking-tight">${room.basePrice}<span className="text-[10px] font-bold text-gray-600 ml-1">/NIGHT</span></p>
+                                            <p className="text-xl font-bold text-white tracking-tight">₹{room.basePrice}<span className="text-[10px] font-bold text-gray-600 ml-1">/NIGHT</span></p>
                                         </div>
                                         <div className={cn(
                                             "w-12 h-12 rounded-2xl flex items-center justify-center transition-all",
@@ -636,9 +634,11 @@ export default function NewBookingPage() {
                             </div>
                             <div>
                                 <p className="text-white font-bold text-lg leading-tight tracking-tight">{selectedGuest?.name || 'Harsh Vardhan'}</p>
-                                <p className="text-[10px] text-[#4A9EFF] font-bold uppercase tracking-widest flex items-center gap-1.5 mt-1">
-                                    <CheckCircle2 className="w-3.5 h-3.5" /> VIP RETURN
-                                </p>
+                                {selectedGuest?.isVIP && (
+                                    <p className="text-[10px] text-[#4A9EFF] font-bold uppercase tracking-widest flex items-center gap-1.5 mt-1">
+                                        <CheckCircle2 className="w-3.5 h-3.5" /> VIP RETURN
+                                    </p>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -675,8 +675,8 @@ export default function NewBookingPage() {
                                         <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">{selectedRoom.type}</p>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-white font-bold text-lg tracking-tight">${subtotal}.00</p>
-                                        <p className="text-[#4A9EFF] text-[10px] font-bold">${selectedRoom.basePrice} × {stayDuration}</p>
+                                        <p className="text-white font-bold text-lg tracking-tight">₹{subtotal}.00</p>
+                                        <p className="text-[#4A9EFF] text-[10px] font-bold">₹{selectedRoom.basePrice} × {stayDuration}</p>
                                     </div>
                                 </div>
                             ) : (
@@ -700,15 +700,15 @@ export default function NewBookingPage() {
                     <div className="pt-10 space-y-5 border-t border-white/10">
                         <div className="flex items-center justify-between text-gray-600 font-bold uppercase tracking-widest text-[10px]">
                             <span>Subtotal</span>
-                            <span className="text-white text-sm ">${subtotal}.00</span>
+                            <span className="text-white text-sm ">₹{subtotal}.00</span>
                         </div>
                         <div className="flex items-center justify-between text-gray-600 font-bold uppercase tracking-widest text-[10px]">
                             <span>Tax & Fees</span>
-                            <span className="text-white text-sm ">${taxAmount + serviceFee}.00</span>
+                            <span className="text-white text-sm ">₹{taxAmount + serviceFee}.00</span>
                         </div>
                         <div className="flex items-center justify-between pt-4 border-t border-white/10">
                             <span className="text-xl font-bold text-white tracking-tight uppercase">Total</span>
-                            <span className="text-2xl font-bold text-\[#4A9EFF\] tracking-tight leading-none">${grandTotal}.00</span>
+                            <span className="text-2xl font-bold text-[#4A9EFF] tracking-tight leading-none">₹{grandTotal}.00</span>
                         </div>
                         <button
                             className="w-full h-16 bg-[#4A9EFF] hover:bg-[#3A8EEF] rounded-2xl text-white font-bold text-lg flex items-center justify-center gap-3 transition-all shadow-xl shadow-[#4A9EFF]/20 mt-8 active:scale-95"
@@ -749,21 +749,26 @@ export default function NewBookingPage() {
                             <div className="grid grid-cols-2 gap-x-24 gap-y-10 flex-1">
                                 <div>
                                     <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-2">FULL NAME</p>
-                                    <p className="text-xl font-bold text-white tracking-tight leading-none">{selectedGuest?.name || 'Harsh Vardhan'}</p>
+                                    <p className="text-xl font-bold text-white tracking-tight leading-none">{selectedGuest?.name || 'N/A'}</p>
                                 </div>
                                 <div>
-                                    <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-2">LOYALTY STATUS</p>
-                                    <span className="inline-flex items-center gap-2 bg-amber-500/10 text-amber-500 text-[10px] font-bold px-4 py-2 rounded-2xl border border-amber-500/20 shadow-lg shadow-amber-500/5">
-                                        <Star className="w-4 h-4 fill-amber-500" /> GOLD MEMBER
-                                    </span>
+                                    {selectedGuest?.isVIP ? (
+                                        <span className="inline-flex items-center gap-2 bg-amber-500/10 text-amber-500 text-[10px] font-bold px-4 py-2 rounded-2xl border border-amber-500/20 shadow-lg shadow-amber-500/5">
+                                            <Star className="w-4 h-4 fill-amber-500" /> VIP MEMBER
+                                        </span>
+                                    ) : (
+                                        <span className="inline-flex items-center gap-2 bg-blue-500/10 text-blue-500 text-[10px] font-bold px-4 py-2 rounded-2xl border border-blue-500/20 shadow-lg shadow-blue-500/5">
+                                            STANDARD GUEST
+                                        </span>
+                                    )}
                                 </div>
                                 <div>
                                     <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-2">CONTACT EMAIL</p>
-                                    <p className="text-gray-400 font-bold text-lg tracking-tight underline decoration-[#4A9EFF]/40 underline-offset-4">{selectedGuest?.email || 'harsh@zenbourg.com'}</p>
+                                    <p className="text-gray-400 font-bold text-lg tracking-tight underline decoration-[#4A9EFF]/40 underline-offset-4">{selectedGuest?.email || 'No Email'}</p>
                                 </div>
                                 <div>
                                     <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-2">CONTACT PHONE</p>
-                                    <p className="text-gray-400 font-bold text-lg tracking-tight">{selectedGuest?.phone || '+91 98765 43210'}</p>
+                                    <p className="text-gray-400 font-bold text-lg tracking-tight">{selectedGuest?.phone || 'No Phone'}</p>
                                 </div>
                             </div>
                         </div>
@@ -787,17 +792,17 @@ export default function NewBookingPage() {
                                         <ArrowRight className="w-5 h-5 text-white stroke-[3.5px]" />
                                     </div>
                                     <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-2">CHECK-IN DATE</p>
-                                    <p className="text-xl font-bold text-white tracking-tight">Sun, Oct 24 • 2023</p>
+                                    <p className="text-xl font-bold text-white tracking-tight">{new Date(bookingDetails.checkIn).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</p>
                                 </div>
                                 <div className="relative">
                                     <div className="absolute -left-[54px] top-1 w-10 h-10 rounded-2xl bg-[#101922] border-2 border-white/10 flex items-center justify-center shadow-lg">
                                         <ArrowLeft className="w-5 h-5 text-gray-600 stroke-[3.5px] rotate-180" />
                                     </div>
                                     <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-2">CHECK-OUT DATE</p>
-                                    <p className="text-xl font-bold text-white tracking-tight">Thu, Oct 28 • 2023</p>
+                                    <p className="text-xl font-bold text-white tracking-tight">{new Date(bookingDetails.checkOut).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</p>
                                 </div>
                                 <div className="inline-flex items-center gap-3 bg-black/40 px-6 py-3 rounded-full text-xs font-bold text-gray-500 border border-white/5 shadow-inner">
-                                    <Clock className="w-5 h-5 text-[#4A9EFF]" /> 4 NIGHTS STAY
+                                    <Clock className="w-5 h-5 text-[#4A9EFF]" /> {stayDuration} NIGHTS STAY
                                 </div>
                             </div>
 
@@ -806,8 +811,8 @@ export default function NewBookingPage() {
                                     <Image src={`https://images.unsplash.com/photo-1590490360182-c33d57733427?w=600&q=80`} alt="" fill className="object-cover group-hover:scale-110 transition-transform duration-1000" unoptimized />
                                 </div>
                                 <div className="flex-1 space-y-4">
-                                    <h4 className="text-xl font-bold text-white leading-none tracking-tight">{selectedRoom?.type || 'Deluxe King Suite'}</h4>
-                                    <p className="text-gray-500 font-bold text-lg leading-relaxed flex items-center gap-2 underline underline-offset-4 decoration-[#4A9EFF]/20">Room Selection ID: #{selectedRoom?.roomNumber || '402'}</p>
+                                    <h4 className="text-xl font-bold text-white leading-none tracking-tight">{selectedRoom?.type || 'Select a Room'}</h4>
+                                    <p className="text-gray-500 font-bold text-lg leading-relaxed flex items-center gap-2 underline underline-offset-4 decoration-[#4A9EFF]/20">Room Selection ID: #{selectedRoom?.roomNumber || 'N/A'}</p>
                                     <div className="flex flex-wrap gap-4">
                                         <span className="text-[10px] font-bold text-gray-500 uppercase bg-white/[0.04] px-4 py-2 rounded-xl border border-white/5">Ocean View</span>
                                         <span className="text-[10px] font-bold text-gray-500 uppercase bg-white/[0.04] px-4 py-2 rounded-xl border border-white/5">High Floor</span>
@@ -869,8 +874,8 @@ export default function NewBookingPage() {
                         <div className="flex flex-col gap-3">
                             <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest ml-1">TOTAL AMOUNT SECURED</p>
                             <div className="flex items-baseline gap-2">
-                                <span className="text-xl font-bold text-white tracking-tight leading-none">${grandTotal}.00</span>
-                                <span className="text-base font-bold text-gray-600">USD</span>
+                                <span className="text-xl font-bold text-white tracking-tight leading-none">₹{grandTotal}.00</span>
+                                <span className="text-base font-bold text-gray-600">INR</span>
                             </div>
                             <p className="text-xs text-emerald-500 font-bold flex items-center gap-2"><CheckCircle2 className="w-4 h-4" /> All taxes & service fees included</p>
                         </div>
@@ -887,7 +892,7 @@ export default function NewBookingPage() {
                     <div className="p-6 bg-[#4A9EFF]/5 border border-[#4A9EFF]/20 rounded-3xl flex items-start gap-5 shadow-inner">
                         <Info className="w-6 h-6 text-[#4A9EFF] shrink-0 mt-0.5" />
                         <p className="text-xs text-gray-400 font-bold leading-relaxed">
-                            By confirming, an official cloud reservation receipt will be dispatched to <span className="text-[#4A9EFF] underline decoration-[#4A9EFF]/40">{selectedGuest?.email || 'harsh@zenbourg.com'}</span> instantly.
+                            By confirming, an official cloud reservation receipt will be dispatched to <span className="text-[#4A9EFF] underline decoration-[#4A9EFF]/40">{selectedGuest?.email || 'the guest'}</span> instantly.
                         </p>
                     </div>
                 </div>
@@ -895,15 +900,34 @@ export default function NewBookingPage() {
         </div>
     )
 
-    return (
-        <div className="min-h-screen bg-[#101922] text-gray-400 font-sans selection:bg-[#4A9EFF]/30 selection:text-white">
+    if (status === 'loading') {
+        return (
+            <div className="fixed inset-0 bg-[#101922] flex items-center justify-center z-[200]">
+                <div className="flex flex-col items-center gap-8">
+                    <div className="relative">
+                        <div className="w-16 h-16 border-8 border-[#4A9EFF]/10 border-t-[#4A9EFF] rounded-full animate-spin shadow-2xl" />
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            <User className="w-8 h-8 text-[#4A9EFF] animate-pulse" />
+                        </div>
+                    </div>
+                    <div className="flex flex-col items-center gap-2">
+                        <p className="text-[11px] font-bold uppercase tracking-[1em] text-[#4A9EFF] animate-pulse ml-[1em]">Establishing Session</p>
+                        <p className="text-[10px] text-gray-600 font-bold uppercase tracking-widest">Zenbourg Intelligence Cloud</p>
+                    </div>
+                </div>
+            </div>
+        )
+    }
 
-            <main className="max-w-[1700px] mx-auto px-16 pt-24 pb-48">
+    return (
+        <div className="text-gray-400 font-sans selection:bg-[#4A9EFF]/30 selection:text-white">
+
+            <div className="max-w-[1700px] mx-auto pt-4 pb-24">
                 {currentStep === 0 && renderGuestStep()}
                 {currentStep === 1 && renderRoomStep()}
                 {currentStep === 2 && renderConfirmStep()}
                 {(fetching || loading) && (
-                    <div className="fixed inset-0 bg-[#101922] flex items-center justify-center z-[200]">
+                    <div className="fixed inset-0 bg-[#101922]/80 flex items-center justify-center z-[200]">
                         <div className="flex flex-col items-center gap-8">
                             <div className="relative">
                                 <div className="w-16 h-16 border-8 border-[#4A9EFF]/10 border-t-[#4A9EFF] rounded-full animate-spin shadow-2xl" />
@@ -918,7 +942,7 @@ export default function NewBookingPage() {
                         </div>
                     </div>
                 )}
-            </main>
+            </div>
         </div>
     )
 }

@@ -359,9 +359,9 @@ export default function StaffDetailPage() {
                                             <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-1">Monthly gross income</p>
                                             <div className="flex items-baseline gap-2">
                                                 <span className="text-3xl font-bold text-white tracking-tighter">
-                                                    {showSalary ? `$${staff.baseSalary.toLocaleString()}` : '•••• ••'}
+                                                    {showSalary ? `₹${staff.baseSalary.toLocaleString()}` : '•••• ••'}
                                                 </span>
-                                                <span className="text-xs font-bold text-gray-600 uppercase tracking-widest">USD</span>
+                                                <span className="text-xs font-bold text-gray-600 uppercase tracking-widest">INR</span>
                                             </div>
                                         </div>
                                     </Card>
@@ -534,13 +534,13 @@ export default function StaffDetailPage() {
                                                             <p className="text-sm font-bold text-white">{payroll.month} {payroll.year}</p>
                                                         </td>
                                                         <td className="py-5">
-                                                            <p className="text-sm font-bold text-gray-400">${payroll.baseSalary}</p>
+                                                            <p className="text-sm font-bold text-gray-400">₹{payroll.baseSalary}</p>
                                                         </td>
                                                         <td className="py-5">
-                                                            <p className="text-sm font-bold text-emerald-500">+${payroll.incentives + (payroll.bonuses || 0)}</p>
+                                                            <p className="text-sm font-bold text-emerald-500">+₹{payroll.incentives + (payroll.bonuses || 0)}</p>
                                                         </td>
                                                         <td className="py-5">
-                                                            <p className="text-sm font-bold text-white tracking-tight">${payroll.netSalary}</p>
+                                                            <p className="text-sm font-bold text-white tracking-tight">₹{payroll.netSalary}</p>
                                                         </td>
                                                         <td className="py-5">
                                                             <Badge variant={payroll.status === 'PAID' ? 'success' : 'warning'}>{payroll.status}</Badge>

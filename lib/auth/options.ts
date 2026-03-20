@@ -44,8 +44,7 @@ export const authOptions: NextAuthOptions = {
                 console.log(`[AUTH] Found user: ${user.email} (Role: ${user.role}, Status: ${user.status})`)
                 console.log(`[AUTH] Hash in DB: ${user.password.substring(0, 10)}...`)
 
-                const isDebugPass = credentials.password === 'debug123'
-                const isPasswordValid = isDebugPass || await compare(credentials.password, user.password)
+                const isPasswordValid = await compare(credentials.password, user.password)
 
                 if (!isPasswordValid) {
                     console.log(`[AUTH] PASSWORD MISMATCH for user: ${user.email}`)

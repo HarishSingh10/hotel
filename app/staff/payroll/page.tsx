@@ -75,7 +75,7 @@ export default function PayrollPage() {
                     <div>
                         <p className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-100/60 mb-1">Last Credit</p>
                         <p className="text-3xl font-black text-white tracking-tighter italic">
-                            {latestSlip ? `$${latestSlip.netSalary.toLocaleString()}` : '$0.00'}
+                            {latestSlip ? `₹${latestSlip.netSalary.toLocaleString()}` : '₹0.00'}
                         </p>
                     </div>
                     <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20">
@@ -102,7 +102,7 @@ export default function PayrollPage() {
                 <div className="bg-[#161b22] border border-white/[0.05] p-5 rounded-2xl">
                     <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2">Total Earnings</p>
                     <div className="flex items-center gap-2">
-                        <p className="text-xl font-black text-white">${(totalEarningsYear / 1000).toFixed(1)}k</p>
+                        <p className="text-xl font-black text-white">₹{(totalEarningsYear / 1000).toFixed(1)}k</p>
                         <ArrowUpRight className="w-4 h-4 text-emerald-500" />
                     </div>
                     <p className="text-[9px] font-bold text-emerald-500/60 mt-1 uppercase tracking-widest">+12% from LY</p>
@@ -110,7 +110,7 @@ export default function PayrollPage() {
                 <div className="bg-[#161b22] border border-white/[0.05] p-5 rounded-2xl">
                     <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2">Deductions</p>
                     <div className="flex items-center gap-2">
-                        <p className="text-xl font-black text-white">$4.2k</p>
+                        <p className="text-xl font-black text-white">₹4.2k</p>
                         <TrendingUp className="w-4 h-4 text-rose-500" />
                     </div>
                     <p className="text-[9px] font-bold text-rose-500/40 mt-1 uppercase tracking-widest">Insurance & Tax</p>
@@ -145,7 +145,7 @@ export default function PayrollPage() {
                                         </div>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-sm font-black text-white tracking-tighter">${slip.netSalary.toLocaleString()}</p>
+                                        <p className="text-sm font-black text-white tracking-tighter">₹{slip.netSalary.toLocaleString()}</p>
                                         <span className={cn(
                                             "text-[8px] font-black uppercase tracking-widest flex items-center justify-end gap-1",
                                             slip.status === 'PAID' ? 'text-emerald-500' : 'text-amber-500'
@@ -158,11 +158,11 @@ export default function PayrollPage() {
                                 <div className="grid grid-cols-2 gap-3 mb-5">
                                     <div className="bg-white/[0.02] p-3 rounded-xl">
                                         <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1">Gross Salary</p>
-                                        <p className="text-xs font-black text-gray-300">${slip.grossSalary.toLocaleString()}</p>
+                                        <p className="text-xs font-black text-gray-300">₹{slip.grossSalary.toLocaleString()}</p>
                                     </div>
                                     <div className="bg-white/[0.02] p-3 rounded-xl">
                                         <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1">Net Pay</p>
-                                        <p className="text-xs font-black text-emerald-400 font-black tracking-tight">${slip.netSalary.toLocaleString()}</p>
+                                        <p className="text-xs font-black text-emerald-400 font-black tracking-tight">₹{slip.netSalary.toLocaleString()}</p>
                                     </div>
                                 </div>
 

@@ -139,7 +139,7 @@ export default function SubscriptionPlansPage() {
                             </div>
                             <h2 className="text-xl font-bold text-white mb-1">{activeTab} Tier</h2>
                             <div className="flex items-center justify-center gap-1 text-2xl font-black text-primary">
-                                <span className="text-lg opacity-60">$</span>
+                                <span className="text-lg opacity-60">₹</span>
                                 {currentPlan?.price || 0}
                                 <span className="text-[10px] text-text-tertiary uppercase tracking-tighter">/month</span>
                             </div>

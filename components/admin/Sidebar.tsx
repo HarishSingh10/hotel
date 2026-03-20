@@ -98,9 +98,10 @@ export default function Sidebar() {
         return ['HOTEL_ADMIN', 'MANAGER', 'RECEPTIONIST'].includes(userRole)
       }
 
-      // MANAGER / RECEPTIONIST: hide finance, reports, content, settings
+      // MANAGER / RECEPTIONIST: restricted access
       if (userRole === 'MANAGER' || userRole === 'RECEPTIONIST') {
-        const forbidden = ['/admin/payroll', '/admin/reports', '/admin/content', '/admin/settings']
+        const forbidden = ['/admin/content', '/admin/settings', '/admin/properties', '/admin/subscription-plans']
+        if (userRole === 'RECEPTIONIST') forbidden.push('/admin/payroll')
         if (forbidden.includes(item.href)) return false
       }
 

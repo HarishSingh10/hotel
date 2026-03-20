@@ -718,14 +718,14 @@ export default function ContentManagementPage() {
                                         {MENU_CATEGORIES.filter(c => c !== 'All Items').map(c => <option key={c} value={c}>{c}</option>)}
                                     </select>
                                 </div>
-                                <Input type="number" label="Price ($)" value={formData.price} onChange={e => setFormData({ ...formData, price: parseFloat(e.target.value) })} />
+                                <Input type="number" label="Price (₹)" value={formData.price} onChange={e => setFormData({ ...formData, price: parseFloat(e.target.value) })} />
                             </div>
                         )}
 
                         {activeTab === 'wellness' && (
                             <div className="grid grid-cols-2 gap-4">
                                 <Input type="number" label="Duration (Min)" value={formData.duration} onChange={e => setFormData({ ...formData, duration: parseInt(e.target.value) })} />
-                                <Input type="number" label="Price ($)" value={formData.price} onChange={e => setFormData({ ...formData, price: parseFloat(e.target.value) })} />
+                                <Input type="number" label="Price (₹)" value={formData.price} onChange={e => setFormData({ ...formData, price: parseFloat(e.target.value) })} />
                             </div>
                         )}
 

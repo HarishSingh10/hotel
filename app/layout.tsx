@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Inter, Outfit } from 'next/font/google'
+import { Inter, Outfit, Cormorant_Garamond } from 'next/font/google'
 import Script from 'next/script'
 import './globals.css'
 import { Toaster } from 'sonner'
@@ -7,6 +7,12 @@ import { cn } from '@/lib/utils'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const outfit = Outfit({ subsets: ['latin'], variable: '--font-outfit' })
+const cormorant = Cormorant_Garamond({ 
+  subsets: ['latin'], 
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-serif',
+  style: 'italic'
+})
 
 export const metadata: Metadata = {
   title: 'Zenbourg - Hotel Management System',
@@ -25,7 +31,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark">
-      <body className={cn(inter.variable, outfit.variable, inter.className)}>
+      <body className={cn(inter.variable, outfit.variable, cormorant.variable, inter.className)}>
         {/* Razorpay Checkout SDK — must be loaded globally before any payment */}
         <Script
           src="https://checkout.razorpay.com/v1/checkout.js"

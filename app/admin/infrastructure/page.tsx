@@ -250,17 +250,38 @@ export default function InfrastructurePage() {
                                             <span className="text-xs font-bold text-gray-400">{node.uptime}</span>
                                         </td>
                                         <td className="px-8 py-6">
-                                            <div className="flex items-center gap-2">
-                                                <div className={cn(
-                                                    "w-1.5 h-1.5 rounded-full",
-                                                    node.status === 'Online' ? "bg-emerald-500" :
-                                                        node.status === 'High Load' ? "bg-amber-500" : "bg-red-500"
-                                                )} />
-                                                <span className={cn(
-                                                    "text-xs font-bold",
-                                                    node.status === 'Online' ? "text-emerald-500" :
-                                                        node.status === 'High Load' ? "text-amber-500" : "text-red-500"
-                                                )}>{node.status}</span>
+                                            <div className="flex items-center justify-between gap-4">
+                                                <div className="flex items-center gap-2">
+                                                    <div className={cn(
+                                                        "w-1.5 h-1.5 rounded-full",
+                                                        node.status === 'Online' ? "bg-emerald-500" :
+                                                            node.status === 'High Load' ? "bg-amber-500" : "bg-red-500"
+                                                    )} />
+                                                    <span className={cn(
+                                                        "text-xs font-bold",
+                                                        node.status === 'Online' ? "text-emerald-500" :
+                                                            node.status === 'High Load' ? "text-amber-500" : "text-red-500"
+                                                    )}>{node.status}</span>
+                                                </div>
+                                                <button 
+                                                    onClick={() => {
+                                                        const { propertyId } = getAdminContext()
+                                                        toast.promise(
+                                                            fetch('/api/admin/infrastructure/simulate', {
+                                                                method: 'POST',
+                                                                headers: { 'Content-Type': 'application/json' },
+                                                                body: JSON.stringify({ 
+                                                                    type: 'IOT_FAILURE',
+                                                                    propertyId: propertyId !== 'ALL' ? propertyId : undefined
+                                                                })
+                                                            }).then(() => fetchInfraData()),
+                                                            { loading: `Simulating alert for ${node.name}...`, success: 'Alert generated.', error: 'Simulation failed.' }
+                                                        )
+                                                    }}
+                                                    className="text-[10px] font-bold text-blue-500 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity hover:underline"
+                                                >
+                                                    Troubleshoot
+                                                </button>
                                             </div>
                                         </td>
                                     </tr>

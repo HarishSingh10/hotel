@@ -6,7 +6,7 @@ import {
     ArrowUp, Bed, X, Loader2, CheckCircle2, Download,
     Wifi, Wind, Tv, Coffee, SlidersHorizontal
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn, formatCurrency } from '@/lib/utils'
 import { toast } from 'sonner'
 import { buildContextUrl } from '@/lib/admin-context'
 
@@ -223,7 +223,7 @@ export default function RoomsPage() {
                                     </td>
                                     <td className="px-4 py-3.5 text-[13px] text-gray-200">{room.type}</td>
                                     <td className="px-4 py-3.5 text-[13px] text-gray-400">{room.floor}</td>
-                                    <td className="px-4 py-3.5 text-[13px] font-semibold text-white">${room.basePrice}</td>
+                                    <td className="px-4 py-3.5 text-[13px] font-semibold text-white">{formatCurrency(room.basePrice)}</td>
                                     <td className="px-4 py-3.5 text-[12px] text-gray-300">{room.maxOccupancy} Adult{room.maxOccupancy > 1 ? 's' : ''}</td>
                                     <td className="px-4 py-3.5">
                                         <span className={cn('flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[11px] font-semibold w-fit', STATUS_STYLE[room.status] || STATUS_STYLE.AVAILABLE)}>
@@ -380,7 +380,7 @@ export default function RoomsPage() {
                                                     <div key={k}>
                                                         <label className="text-[11px] text-gray-500 font-medium mb-1.5 block">{label}</label>
                                                         <div className="relative">
-                                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-[13px]">$</span>
+                                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-[13px]">₹</span>
                                                             <input type="number" value={cfgForm[k as keyof typeof cfgForm] as string}
                                                                 onChange={e => setCfgForm(p => ({ ...p, [k]: e.target.value }))}
                                                                 className="w-full pl-8 pr-3 py-2.5 bg-[#182433] border border-white/[0.08] rounded-lg text-[13px] text-white focus:outline-none focus:border-[#4A9EFF]/40" />
@@ -418,7 +418,7 @@ export default function RoomsPage() {
                                                         </div>
                                                         <div className="min-w-0">
                                                             <p className="text-[11px] font-semibold text-white truncate">{r.type}</p>
-                                                            <p className="text-[9px] text-[#1db954] font-medium">+${(parseFloat(r.basePrice) - parseFloat(cfgForm.basePrice)).toFixed(0)} / night</p>
+                                                            <p className="text-[9px] text-[#1db954] font-medium">+{formatCurrency(parseFloat(r.basePrice) - parseFloat(cfgForm.basePrice))} / night</p>
                                                         </div>
                                                     </div>
                                                 ))}
@@ -492,7 +492,7 @@ export default function RoomsPage() {
                                                         <p className="text-[11px] text-gray-400">Room {r.roomNumber} · Max {r.maxOccupancy}</p>
                                                     </div>
                                                     <div className="text-right shrink-0">
-                                                        <p className="text-[12px] font-bold text-[#1db954]">+${(parseFloat(r.basePrice) - parseFloat(cfgForm.basePrice)).toFixed(0)}</p>
+                                                        <p className="text-[12px] font-bold text-[#1db954]">+{formatCurrency(parseFloat(r.basePrice) - parseFloat(cfgForm.basePrice))}</p>
                                                         <p className="text-[10px] text-gray-500">/ night</p>
                                                     </div>
                                                 </div>
@@ -549,7 +549,7 @@ export default function RoomsPage() {
                                 </div>
                             </div>
                             <div>
-                                <label className="text-[11px] text-gray-500 font-medium mb-1 block">Base Price / night ($)</label>
+                                <label className="text-[11px] text-gray-500 font-medium mb-1 block">Base Price / night (₹)</label>
                                 <input type="number" value={newForm.basePrice} onChange={e => setNewForm({ ...newForm, basePrice: e.target.value })}
                                     className="w-full px-3 py-2 bg-[#182433] border border-white/[0.08] rounded-lg text-[12px] text-white focus:outline-none" />
                             </div>

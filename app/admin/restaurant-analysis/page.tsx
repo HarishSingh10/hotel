@@ -1,6 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import useSWR from 'swr'
+import { formatCurrency } from '@/lib/utils'
+import { Loader2 } from 'lucide-react'
 import {
     Calendar, Download, TrendingUp, Users, Clock,
     ArrowUpRight, ArrowDownRight, Filter, ChevronDown,
@@ -9,23 +12,31 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-const TOP_SELLING = [
-    { name: 'Signature Ribeye Steak', units: 342, progress: 95 },
-    { name: 'Atlantic Salmon Confit', units: 298, progress: 85 },
-    { name: 'Zenbourg Truffle Pasta', units: 245, progress: 70 },
-    { name: 'Lobster Bisque', units: 210, progress: 60 },
-    { name: 'Garden Burrata Salad', units: 188, progress: 55 },
-]
-
-const POOR_PERFORMING = [
-    { id: 'M-102', name: 'Mushroom Risotto', category: 'Main Course', sales: 12, trend: 'down', sentiment: 2.1, status: 'REVIEW REQ.' },
-    { id: 'D-45', name: 'Zesty Lemon Tart', category: 'Dessert', sales: 8, trend: 'down', sentiment: 3.4, status: 'PROMOTION NEEDED' },
-    { id: 'A-22', name: 'Beetroot Carpaccio', category: 'Appetizer', sales: 5, trend: 'stable', sentiment: 1.5, status: 'RE-ENGINEER' },
-]
-
 export default function RestaurantAnalysisPage() {
-    const [timeRange, setTimeRange] = useState('Oct 1, 2023 - Oct 31, 2023')
+    const [timeRange, setTimeRange] = useState('Current Month')
     const [activeTab, setActiveTab] = useState('All Day')
+
+    const { data: analysisData, error, isLoading } = useSWR('/api/admin/analytics/restaurant', 
+        (url: string) => fetch(url).then(res => res.json())
+    )
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-[#0d1117] flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+            </div>
+        )
+    }
+
+    if (!analysisData || analysisData.error) {
+        return (
+            <div className="min-h-screen bg-[#0d1117] flex items-center justify-center text-gray-400">
+                Failed to load restaurant analytics data.
+            </div>
+        )
+    }
+
+    const { stats, topSelling, poorPerforming } = analysisData
 
     return (
         <div className="min-h-screen bg-[#0d1117] text-gray-300 font-sans p-8">
@@ -68,10 +79,10 @@ export default function RestaurantAnalysisPage() {
                 {/* ── QUICK STATS ── */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     {[
-                        { label: 'Total Revenue', value: '$84,230.00', trend: '+12.5%', icon: BarChart3, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-                        { label: 'Avg. Check Size', value: '$42.50', trend: '+4.2%', icon: UtensilsCrossed, color: 'text-purple-500', bg: 'bg-purple-500/10' },
-                        { label: 'Total Covers', value: '1,982', trend: 'Stable', icon: Users, color: 'text-amber-500', bg: 'bg-amber-500/10' },
-                        { label: 'Busy Hour Peak', value: '19:30 - 21:00', trend: 'Fri & Sat', icon: Clock, color: 'text-green-500', bg: 'bg-green-500/10' },
+                        { label: 'Total Revenue', value: formatCurrency(stats.totalRevenue), trend: '+12.5%', icon: BarChart3, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+                        { label: 'Avg. Check Size', value: formatCurrency(stats.avgCheck), trend: '+4.2%', icon: UtensilsCrossed, color: 'text-purple-500', bg: 'bg-purple-500/10' },
+                        { label: 'Total Covers', value: stats.totalCovers.toLocaleString(), trend: 'Stable', icon: Users, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+                        { label: 'Busy Hour Peak', value: stats.peakHours, trend: 'Fri & Sat', icon: Clock, color: 'text-green-500', bg: 'bg-green-500/10' },
                     ].map((stat, i) => (
                         <div key={i} className="bg-[#161b22] border border-gray-800 rounded-xl p-6 shadow-sm group hover:border-gray-700 transition-all">
                             <div className="flex items-start justify-between mb-4">
@@ -103,7 +114,7 @@ export default function RestaurantAnalysisPage() {
                             </button>
                         </div>
                         <div className="space-y-6">
-                            {TOP_SELLING.map((item, i) => (
+                            {topSelling.map((item: any, i: number) => (
                                 <div key={i} className="space-y-2">
                                     <div className="flex justify-between text-sm font-medium">
                                         <span className="text-gray-300">{item.name}</span>
@@ -135,7 +146,7 @@ export default function RestaurantAnalysisPage() {
 
                                 <div className="text-center">
                                     <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest leading-none mb-1">Total</p>
-                                    <p className="text-2xl font-bold text-white leading-none">$84k</p>
+                                    <p className="text-2xl font-bold text-white leading-none">₹84k</p>
                                 </div>
                             </div>
                         </div>
@@ -180,11 +191,11 @@ export default function RestaurantAnalysisPage() {
                             <div className="space-y-4">
                                 <div className="flex justify-between items-center p-4 bg-[#0d1117] rounded-lg border border-gray-800">
                                     <span className="text-sm font-bold text-white">Wagyu Burger</span>
-                                    <span className="text-xs font-bold text-green-500">$12.40 Margin</span>
+                                    <span className="text-xs font-bold text-green-500">₹12.40 Margin</span>
                                 </div>
                                 <div className="flex justify-between items-center p-4 bg-[#0d1117] rounded-lg border border-gray-800">
                                     <span className="text-sm font-bold text-white">Truffle Pizza</span>
-                                    <span className="text-xs font-bold text-green-500">$10.80 Margin</span>
+                                    <span className="text-xs font-bold text-green-500">₹10.80 Margin</span>
                                 </div>
                             </div>
                         </div>
@@ -200,11 +211,11 @@ export default function RestaurantAnalysisPage() {
                             <div className="space-y-4">
                                 <div className="flex justify-between items-center p-4 bg-[#0d1117] rounded-lg border border-gray-800">
                                     <span className="text-sm font-bold text-white">Caesar Salad</span>
-                                    <span className="text-xs font-bold text-amber-500">$3.20 Margin</span>
+                                    <span className="text-xs font-bold text-amber-500">₹3.20 Margin</span>
                                 </div>
                                 <div className="flex justify-between items-center p-4 bg-[#0d1117] rounded-lg border border-gray-800">
                                     <span className="text-sm font-bold text-white">House Fries</span>
-                                    <span className="text-xs font-bold text-amber-500">$1.50 Margin</span>
+                                    <span className="text-xs font-bold text-amber-500">₹1.50 Margin</span>
                                 </div>
                             </div>
                         </div>
@@ -220,11 +231,11 @@ export default function RestaurantAnalysisPage() {
                             <div className="space-y-4">
                                 <div className="flex justify-between items-center p-4 bg-[#0d1117] rounded-lg border border-gray-800">
                                     <span className="text-sm font-bold text-white">Aged Cognac Flight</span>
-                                    <span className="text-xs font-bold text-blue-500">$45.00 Margin</span>
+                                    <span className="text-xs font-bold text-blue-500">₹45.00 Margin</span>
                                 </div>
                                 <div className="flex justify-between items-center p-4 bg-[#0d1117] rounded-lg border border-gray-800">
                                     <span className="text-sm font-bold text-white">Caviar Tasters</span>
-                                    <span className="text-xs font-bold text-blue-500">$38.00 Margin</span>
+                                    <span className="text-xs font-bold text-blue-500">₹38.00 Margin</span>
                                 </div>
                             </div>
                         </div>
@@ -240,11 +251,11 @@ export default function RestaurantAnalysisPage() {
                             <div className="space-y-4">
                                 <div className="flex justify-between items-center p-4 bg-[#0d1117] rounded-lg border border-gray-800">
                                     <span className="text-sm font-bold text-white">Tofu Skewers</span>
-                                    <span className="text-xs font-bold text-red-500">$2.10 Margin</span>
+                                    <span className="text-xs font-bold text-red-500">₹2.10 Margin</span>
                                 </div>
                                 <div className="flex justify-between items-center p-4 bg-[#0d1117] rounded-lg border border-gray-800">
                                     <span className="text-sm font-bold text-white">Iced Herbal Tea</span>
-                                    <span className="text-xs font-bold text-red-500">$1.20 Margin</span>
+                                    <span className="text-xs font-bold text-red-500">₹1.20 Margin</span>
                                 </div>
                             </div>
                         </div>
@@ -269,7 +280,7 @@ export default function RestaurantAnalysisPage() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-800/50">
-                                {POOR_PERFORMING.map((item, i) => (
+                                {poorPerforming.map((item: any, i: number) => (
                                     <tr key={i} className="hover:bg-white/[0.02] transition-colors group">
                                         <td className="px-8 py-6">
                                             <p className="text-sm font-bold text-white mb-0.5">{item.name}</p>
@@ -296,7 +307,7 @@ export default function RestaurantAnalysisPage() {
                                                     />
                                                 </div>
                                                 <span className="text-[10px] font-bold text-gray-500 uppercase tracking-tight">
-                                                    {item.sentiment < 2 ? 'Very Poor' : item.sentiment < 3 ? 'Poor' : 'Mediocre'} ({item.sentiment})
+                                                    {item.sentiment < 2 ? 'Very Poor' : item.sentiment < 3 ? 'Poor' : 'Mediocre'} ({(item.sentiment || 0).toFixed(1)})
                                                 </span>
                                             </div>
                                         </td>

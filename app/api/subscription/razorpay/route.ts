@@ -6,9 +6,9 @@ import { prisma } from '@/lib/db'
 export const dynamic = 'force-dynamic'
 
 const PLAN_PRICES: Record<string, number> = {
-    'GOLD': 7999,      // ~$99
-    'PLATINUM': 15999, // ~$199
-    'DIAMOND': 31999   // ~$399
+    'GOLD': 7999,      // ~₹99
+    'PLATINUM': 15999, // ~₹199
+    'DIAMOND': 31999   // ~₹399
 }
 
 export async function POST(req: NextRequest) {

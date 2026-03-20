@@ -11,10 +11,10 @@ import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
 import Button from '@/components/ui/Button'
 import Avatar from '@/components/common/Avatar'
+import { cn, formatCurrency } from '@/lib/utils'
 import {
-  LogIn, LogOut, BedDouble, Plus, Bell, Search, Send, MoreHorizontal, MessageSquare, Sparkles
+  LogIn, LogOut, BedDouble, Plus, Bell, Search, Send, MoreHorizontal, MessageSquare, Sparkles, BarChart3
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
 
 export default function AdminDashboard() {
   const router = useRouter()
@@ -141,58 +141,80 @@ export default function AdminDashboard() {
     <div className="space-y-4 animate-fade-in">
 
       {/* ===== 4 KPI CARDS ===== */}
-      <div data-tour="stats-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Today Check-ins */}
-        <div className="bg-[#233648] border border-white/[0.07] rounded-xl p-5 hover:border-white/[0.12] transition-colors">
-          <div className="flex items-start justify-between mb-3">
-            <p className="text-[12px] font-medium text-gray-500">Today Check-ins</p>
-            <div className="w-9 h-9 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-              <LogIn className="w-5 h-5 text-emerald-400" />
+      {/* ===== 5 KPI CARDS ===== */}
+      <div data-tour="stats-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        {/* Today Revenue */}
+        <div className="relative overflow-hidden bg-gradient-to-br from-[#233648] to-[#1a2b3c] border border-white/[0.08] rounded-2xl p-5 hover:border-[#4A9EFF]/30 transition-all group group-hover:shadow-2xl shadow-[#4A9EFF]/5">
+          <div className="absolute -right-4 -top-4 w-20 h-20 bg-[#4A9EFF]/5 rounded-full blur-2xl group-hover:bg-[#4A9EFF]/10 transition-all" />
+          <div className="flex items-start justify-between mb-4 relative z-10">
+            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Today Revenue</p>
+            <div className="w-9 h-9 rounded-xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
+              <Sparkles className="w-4 h-4 text-blue-400" />
             </div>
           </div>
-          <p className="text-3xl font-bold text-white mb-1">{stats.todayCheckIns}</p>
-          <p className="text-[11px] font-medium text-emerald-400">{stats.pendingArrivals} Pending arrival</p>
+          <p className="text-2xl font-black text-white mb-1 tracking-tight">{formatCurrency(stats.todayRevenue || 0)}</p>
+          <div className="flex items-center gap-1.5 mt-2">
+             <span className="text-[10px] font-bold text-emerald-400 bg-emerald-400/10 px-1.5 py-0.5 rounded-md">LIVE</span>
+             <p className="text-[10px] text-gray-500 font-medium tracking-wide">Update 1m ago</p>
+          </div>
         </div>
 
-        {/* Today Check-outs */}
-        <div className="bg-[#233648] border border-white/[0.07] rounded-xl p-5 hover:border-white/[0.12] transition-colors">
-          <div className="flex items-start justify-between mb-3">
-            <p className="text-[12px] font-medium text-gray-500">Today Check-outs</p>
-            <div className="w-9 h-9 rounded-lg bg-orange-500/10 flex items-center justify-center">
-              <LogOut className="w-5 h-5 text-orange-400" />
+        {/* Month Revenue */}
+        <div className="bg-[#233648] border border-white/[0.07] rounded-2xl p-5 hover:border-white/[0.12] transition-all hover:scale-[1.02]">
+          <div className="flex items-start justify-between mb-4">
+            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">MTD Revenue</p>
+            <div className="w-9 h-9 rounded-xl bg-purple-500/10 flex items-center justify-center border border-purple-500/20">
+              <BarChart3 className="w-4 h-4 text-purple-400" />
             </div>
           </div>
-          <p className="text-3xl font-bold text-white mb-1">{stats.todayCheckOuts}</p>
-          <p className="text-[11px] font-medium text-gray-500">{stats.remainingDepartures} Remaining in room</p>
+          <p className="text-2xl font-black text-white mb-1 tracking-tight">{formatCurrency(stats.monthRevenue || 0)}</p>
+          <p className="text-[10px] text-gray-500 font-medium">Month to date performance</p>
         </div>
 
         {/* Occupancy */}
-        <div className="bg-[#233648] border border-white/[0.07] rounded-xl p-5 hover:border-white/[0.12] transition-colors">
+        <div className="bg-[#233648] border border-white/[0.07] rounded-2xl p-5 hover:border-white/[0.12] transition-all">
           <div className="flex items-start justify-between mb-3">
-            <p className="text-[12px] font-medium text-gray-500">Occupancy</p>
-            <div className="w-9 h-9 rounded-lg bg-blue-500/10 flex items-center justify-center">
-              <BedDouble className="w-5 h-5 text-blue-400" />
+            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Occupancy</p>
+            <div className="w-9 h-9 rounded-xl bg-orange-500/10 flex items-center justify-center border border-orange-500/20">
+              <BedDouble className="w-4 h-4 text-orange-400" />
             </div>
           </div>
           <div className="flex items-baseline gap-3 mb-2">
-            <p className="text-3xl font-bold text-white">{stats.occupancyRate}%</p>
-            <span className="text-[11px] font-semibold text-emerald-400">+5% vs last week</span>
+            <p className="text-2xl font-black text-white">{stats.occupancyRate}%</p>
+            <span className={cn(
+              "text-[10px] font-bold px-1.5 py-0.5 rounded-md",
+              stats.occupancyTrend?.startsWith('+') ? "text-emerald-400 bg-emerald-400/10" : "text-rose-400 bg-rose-400/10"
+            )}>
+              {stats.occupancyTrend}
+            </span>
           </div>
-          <div className="h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
-            <div className="h-full bg-blue-500 rounded-full transition-all duration-700" style={{ width: `${stats.occupancyRate}%` }} />
+          <div className="h-1 bg-white/[0.06] rounded-full overflow-hidden mt-3">
+            <div className="h-full bg-orange-500 rounded-full transition-all duration-1000" style={{ width: `${stats.occupancyRate}%` }} />
           </div>
         </div>
 
-        {/* Available Rooms */}
-        <div className="bg-[#233648] border border-white/[0.07] rounded-xl p-5 hover:border-white/[0.12] transition-colors">
-          <div className="flex items-start justify-between mb-3">
-            <p className="text-[12px] font-medium text-gray-500">Available Rooms</p>
-            <div className="w-9 h-9 rounded-lg bg-blue-500/10 flex items-center justify-center">
-              <BedDouble className="w-5 h-5 text-blue-400" />
+        {/* Today Check-ins */}
+        <div className="bg-[#233648] border border-white/[0.07] rounded-2xl p-5 hover:border-white/[0.12] transition-all">
+          <div className="flex items-start justify-between mb-4">
+            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Arrivals Today</p>
+            <div className="w-9 h-9 rounded-xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
+              <LogIn className="w-4 h-4 text-emerald-400" />
             </div>
           </div>
-          <p className="text-3xl font-bold text-white mb-1">{stats.availableRooms}</p>
-          <p className="text-[11px] font-medium text-gray-500">{stats.categoryLabels}</p>
+          <p className="text-2xl font-black text-white mb-1 tracking-tight">{stats.todayCheckIns}</p>
+          <p className="text-[10px] text-emerald-400 font-bold">{stats.pendingArrivals} Pending verification</p>
+        </div>
+
+        {/* Today Check-outs */}
+        <div className="bg-[#233648] border border-white/[0.07] rounded-2xl p-5 hover:border-white/[0.12] transition-all">
+          <div className="flex items-start justify-between mb-4">
+            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Departures</p>
+            <div className="w-9 h-9 rounded-xl bg-rose-500/10 flex items-center justify-center border border-rose-500/20">
+              <LogOut className="w-4 h-4 text-rose-400" />
+            </div>
+          </div>
+          <p className="text-2xl font-black text-white mb-1 tracking-tight">{stats.todayCheckOuts}</p>
+          <p className="text-[10px] text-gray-500 font-medium">{stats.remainingDepartures} Rooms still occupied</p>
         </div>
       </div>
 
@@ -225,15 +247,28 @@ export default function AdminDashboard() {
                 <tbody>
                   {stats.recentCheckIns?.length > 0 ? stats.recentCheckIns.map((g: any) => (
                     <tr key={g.id} className="border-t border-white/[0.04] hover:bg-white/[0.02] transition-colors group">
-                      <td className="px-5 py-3.5 text-[13px] font-semibold text-white">{g.guest}</td>
-                      <td className="px-5 py-3.5 text-[13px] text-gray-300">{g.roomType}</td>
-                      <td className="px-5 py-3.5 text-[13px] text-gray-400">{g.eta}</td>
-                      <td className="px-5 py-3.5">{statusBadge(g.status)}</td>
-                      <td className="px-5 py-3.5">
+                      <td className="px-5 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar name={g.guest} size="sm" src={g.guestAvatar} />
+                          <div>
+                            <p className="text-[13px] font-bold text-white leading-none">{g.guest}</p>
+                            <p className="text-[10px] text-gray-500 mt-1 font-medium">{g.guestId || 'GUEST-001'}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-5 py-4">
+                        <p className="text-[13px] text-gray-200 font-medium">{g.roomType}</p>
+                        <p className="text-[10px] text-gray-500 mt-0.5">Base Rate Applied</p>
+                      </td>
+                      <td className="px-5 py-4 text-[13px] text-gray-400 font-medium">{g.eta}</td>
+                      <td className="px-5 py-4">{statusBadge(g.status)}</td>
+                      <td className="px-5 py-4">
                         {g.status === 'RESERVED' ? (
-                          <button onClick={() => handleCheckIn(g.id)} className="opacity-0 group-hover:opacity-100 text-[11px] font-semibold text-blue-400 hover:text-blue-300 transition-all">Check-in</button>
+                          <button onClick={() => handleCheckIn(g.id)} className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500/10 text-blue-400 text-[11px] font-bold rounded-lg hover:bg-blue-500 hover:text-white transition-all">
+                            <LogIn size={12} /> Check-in
+                          </button>
                         ) : (
-                          <button className="text-gray-500 hover:text-white transition-colors"><MoreHorizontal className="w-4 h-4" /></button>
+                          <button className="p-2 text-gray-600 hover:text-white hover:bg-white/5 rounded-lg transition-all"><MoreHorizontal className="w-4 h-4" /></button>
                         )}
                       </td>
                     </tr>
