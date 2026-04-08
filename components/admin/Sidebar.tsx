@@ -13,7 +13,7 @@ import {
   Bell,
   UserCog,
   Clock,
-  DollarSign,
+  IndianRupee,
   BarChart3,
   Settings,
   Building2,
@@ -28,6 +28,7 @@ import {
   Upload,
   MessageSquare,
   Sparkles,
+  X,
 } from 'lucide-react'
 
 interface NavItem {
@@ -41,10 +42,11 @@ const navItems: Omit<NavItem, 'badge'>[] = [
   { label: 'Dashboard', icon: <LayoutDashboard className="w-[18px] h-[18px]" />, href: '/admin/dashboard' },
   { label: 'Reservations', icon: <CalendarDays className="w-[18px] h-[18px]" />, href: '/admin/bookings' },
   { label: 'Front Desk', icon: <ClipboardCheck className="w-[18px] h-[18px]" />, href: '/admin/checkin' },
-  { label: 'Content Management', icon: <Wrench className="w-[18px] h-[18px]" />, href: '/admin/content' },
+  { label: 'Amenities', icon: <Sparkles className="w-[18px] h-[18px]" />, href: '/admin/content/amenities' },
+  { label: 'Food & Beverage Menu', icon: <UtensilsCrossed className="w-[18px] h-[18px]" />, href: '/admin/content/menu' },
   { label: 'Guests', icon: <Users className="w-[18px] h-[18px]" />, href: '/admin/guests' },
   { label: 'Rooms', icon: <BedDouble className="w-[18px] h-[18px]" />, href: '/admin/rooms' },
-  { label: 'Finance', icon: <DollarSign className="w-[18px] h-[18px]" />, href: '/admin/payroll' },
+  { label: 'Payroll', icon: <IndianRupee className="w-[18px] h-[18px]" />, href: '/admin/payroll' },
   { label: 'Services', icon: <Bell className="w-[18px] h-[18px]" />, href: '/admin/services' },
   { label: 'Staff', icon: <UserCog className="w-[18px] h-[18px]" />, href: '/admin/staff' },
   { label: 'Leave Approvals', icon: <CalendarDays className="w-[18px] h-[18px]" />, href: '/admin/leaves' },
@@ -61,10 +63,16 @@ const navItems: Omit<NavItem, 'badge'>[] = [
   { label: 'Subscription Model', icon: <Sparkles className="w-[18px] h-[18px]" />, href: '/admin/subscription-plans' },
 ]
 
-export default function Sidebar() {
+interface SidebarProps {
+  isOpen: boolean
+  onClose: () => void
+}
+
+export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname()
   const { data: session } = useSession()
   const userRole = session?.user?.role || 'STAFF'
+  const userDept = (session?.user as any)?.department
 
   const [serviceCount, setServiceCount] = useState(0)
 
@@ -98,16 +106,23 @@ export default function Sidebar() {
         return ['HOTEL_ADMIN', 'MANAGER', 'RECEPTIONIST'].includes(userRole)
       }
 
+      // Finance Access for ACCOUNTS department - OVERRIDE for any role
+      if (item.href === '/admin/payroll' && userDept === 'ACCOUNTS') return true
+
       // MANAGER / RECEPTIONIST: restricted access
+      // MANAGER / RECEPTIONIST: simplified access
       if (userRole === 'MANAGER' || userRole === 'RECEPTIONIST') {
-        const forbidden = ['/admin/content', '/admin/settings', '/admin/properties', '/admin/subscription-plans']
-        if (userRole === 'RECEPTIONIST') forbidden.push('/admin/payroll')
+        const forbidden = ['/admin/properties', '/admin/subscription-plans', '/admin/settings', '/admin/leaves']
         if (forbidden.includes(item.href)) return false
       }
 
-      // STAFF: very limited access
+      // STAFF: restricted
       if (userRole === 'STAFF') {
-        const allowed = ['/admin/dashboard', '/admin/bookings', '/admin/rooms', '/admin/services', '/admin/attendance', '/admin/leaves']
+        const allowed = [
+          '/admin/dashboard', '/admin/bookings', '/admin/rooms', '/admin/services', 
+          '/admin/attendance', '/admin/content/amenities', '/admin/content/menu'
+        ]
+        if (userDept === 'ACCOUNTS') allowed.push('/admin/payroll')
         return allowed.includes(item.href)
       }
 
@@ -115,20 +130,36 @@ export default function Sidebar() {
     })
 
   return (
-    <aside data-tour="sidebar" className="fixed left-0 top-0 h-full w-[200px] bg-[#0d1117] border-r border-white/[0.06] z-40 flex flex-col">
+    <aside 
+      data-tour="sidebar" 
+      className={cn(
+        "fixed left-0 top-0 h-full w-60 bg-[#0d1117] border-r border-white/[0.06] z-50 flex flex-col transition-transform duration-300 md:translate-x-0",
+        isOpen ? "translate-x-0" : "-translate-x-full"
+      )}
+    >
       {/* Brand */}
-      <div className="px-5 pt-5 pb-4 border-b border-white/[0.06]">
-        <div className="flex items-center gap-2.5 mb-0.5">
-          <div className="w-6 h-6 bg-[#4A9EFF] rounded-md flex items-center justify-center shrink-0">
-            <Building2 className="w-3.5 h-3.5 text-white" />
+      <div className="px-5 pt-5 pb-4 border-b border-white/[0.06] flex items-center justify-between">
+        <div className="flex flex-col">
+          <div className="flex items-center gap-2.5 mb-0.5">
+            <div className="w-6 h-6 bg-[#4A9EFF] rounded-md flex items-center justify-center shrink-0">
+              <Building2 className="w-3.5 h-3.5 text-white" />
+            </div>
+            <span className="text-[15px] font-bold text-white tracking-tight">Zenbourg</span>
           </div>
-          <span className="text-[15px] font-bold text-white tracking-tight">Zenbourg</span>
+          <p className="text-[10px] text-gray-500 font-medium ml-[34px]">Hotel Operations</p>
         </div>
-        <p className="text-[10px] text-gray-500 font-medium ml-[34px]">Hotel Operations</p>
+        
+        {/* Mobile Close Button */}
+        <button 
+          onClick={onClose}
+          className="md:hidden p-2 text-gray-400 hover:text-white transition-colors"
+        >
+          <X className="w-5 h-5" />
+        </button>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-3 py-3 overflow-y-auto space-y-0.5">
+      <nav className="flex-1 px-3 py-3 overflow-y-auto space-y-0.5 custom-scrollbar">
         {visibleItems.map(item => {
           const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
           return (
@@ -136,6 +167,9 @@ export default function Sidebar() {
               key={item.href}
               href={item.href}
               title={item.label}
+              onClick={() => {
+                if (window.innerWidth < 768) onClose()
+              }}
               className={cn(
                 'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 group relative',
                 isActive
@@ -163,17 +197,20 @@ export default function Sidebar() {
       {/* User Profile Footer */}
       <div className="p-4 mt-auto border-t border-white/[0.06]">
         <div className="flex items-center gap-3 px-2 py-2">
-          <div className="w-8 h-8 rounded-full bg-[#4A9EFF] flex items-center justify-center text-white text-[12px] font-black shadow-lg shadow-[#4A9EFF]/20 shrink-0">
+          <div className="w-8 h-8 rounded-full bg-[#4A9EFF] flex items-center justify-center text-white text-[12px] font-bold shadow-lg shadow-[#4A9EFF]/20 shrink-0">
             {session?.user?.name?.charAt(0) || 'A'}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[12px] font-black text-white truncate leading-none mb-1">{session?.user?.name || 'Admin User'}</p>
+            <p className="text-[12px] font-bold text-white truncate leading-none mb-1">{session?.user?.name || 'Admin User'}</p>
             <p className="text-[10px] text-gray-500 truncate">{session?.user?.email || 'admin@zenbourg.com'}</p>
           </div>
         </div>
         <div className="mt-2 space-y-0.5">
           <Link
             href="/admin/settings"
+            onClick={() => {
+              if (window.innerWidth < 768) onClose()
+            }}
             className={cn(
               'flex items-center gap-3 px-3 py-2 rounded-lg transition-all group',
               pathname === '/admin/settings' ? 'bg-[#4A9EFF] text-white' : 'text-gray-500 hover:text-white hover:bg-white/[0.05]'

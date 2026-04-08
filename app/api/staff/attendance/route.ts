@@ -19,40 +19,41 @@ export async function POST(request: Request) {
 
         if (!staff) return new NextResponse('Staff Profile Not Found', { status: 404 })
 
-        const today = new Date()
-        today.setHours(0, 0, 0, 0)
+        const now = new Date()
 
-        // Check for existing attendance
+        // Check for latest attendance
         const existing = await prisma.attendance.findFirst({
             where: {
-                staffId: staff.id,
-                date: today
-            }
+                staffId: staff.id
+            },
+            orderBy: { punchIn: 'desc' }
         })
 
-        if (!existing) {
-            // Punch In
+        if (!existing || existing.punchOut) {
+            // Punch In (allow new if they punched out previously)
             const newAttendance = await prisma.attendance.create({
                 data: {
                     staffId: staff.id,
-                    date: today,
-                    punchIn: new Date(),
+                    date: now,
+                    punchIn: now,
+                    punchOut: null, // Explicitly set null so MongoDB stores the field (not missing)
                     status: 'PRESENT',
-                    punchInLocation: 'On-Site' // Mock location
+                    punchInLocation: 'On-Site'
                 }
             })
             return NextResponse.json({ message: 'Punched In', data: newAttendance })
         } else {
-            // Punch Out (if not already)
-            if (existing.punchOut) {
-                return new NextResponse('Already Punched Out', { status: 400 })
-            }
+            // Punch Out
+            const punchOutTime = new Date()
+            const punchInTime = new Date(existing.punchIn!)
+            const hoursWorked = (punchOutTime.getTime() - punchInTime.getTime()) / (1000 * 60 * 60)
 
             const updated = await prisma.attendance.update({
-                where: { id: existing.id },
+                where: { id: existing!.id },
                 data: {
-                    punchOut: new Date(),
-                    punchOutLocation: 'On-Site'
+                    punchOut: punchOutTime,
+                    punchOutLocation: 'On-Site',
+                    hoursWorked: parseFloat(hoursWorked.toFixed(2))
                 }
             })
             return NextResponse.json({ message: 'Punched Out', data: updated })

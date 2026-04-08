@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Home, ClipboardList, User, LogOut, Bell, MessageSquare, Calendar, CreditCard } from 'lucide-react'
+import { Home, ClipboardList, User, LogOut, Bell, MessageSquare, Calendar, CreditCard, Sparkles } from 'lucide-react'
 import { signOut, useSession } from 'next-auth/react'
 import { cn } from '@/lib/utils'
 import { useEffect } from 'react'
@@ -25,7 +25,6 @@ export default function StaffLayout({
         }
     }, [])
 
-    // Don't show layout on login page
     if (pathname === '/staff/login') return <>{children}</>
 
     const navItems = [
@@ -36,62 +35,91 @@ export default function StaffLayout({
     ]
 
     return (
-        <div className="min-h-screen bg-[#0d1117] text-gray-300 pb-24">
+        <div className="min-h-screen bg-[#0d1117] text-gray-300 pb-24 font-sans selection:bg-blue-500/30">
             <link rel="manifest" href="/manifest.json" />
             <meta name="theme-color" content="#2563eb" />
             <meta name="apple-mobile-web-app-capable" content="yes" />
             <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-            {/* Mobile Header */}
-            <header className="bg-[#161b22] p-4 border-b border-white/[0.05] flex items-center justify-between sticky top-0 z-30 transition-all">
-                <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center font-black text-white text-xs">ZB</div>
-                    <h1 className="font-bold text-sm text-white tracking-tight italic">Zenbourg <span className="text-gray-500 font-medium not-italic ml-1">Staff</span></h1>
+            
+            {/* Header: Premium Glassmorphism */}
+            <header className="fixed top-0 left-0 right-0 z-50 bg-[#0d1117]/80 backdrop-blur-xl border-b border-white/[0.05] h-16 flex items-center justify-between px-6 transition-all duration-300">
+                <div className="flex items-center gap-3 group cursor-pointer" onClick={() => router.push('/staff')}>
+                    <div className="relative">
+                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 p-[1px] shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform">
+                            <div className="w-full h-full rounded-[15px] bg-[#0d1117] flex items-center justify-center overflow-hidden">
+                                <span className="font-black text-[12px] text-white italic tracking-tighter">ZB</span>
+                            </div>
+                        </div>
+                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full border-2 border-[#0d1117] animate-pulse"></div>
+                    </div>
+                    <div className="flex flex-col">
+                        <h1 className="font-black text-[14px] text-white tracking-tighter italic leading-none">ZENBOURG <span className="text-blue-500 not-italic ml-0.5">STAFF</span></h1>
+                        <span className="text-[9px] font-black text-gray-600 uppercase tracking-widest mt-1 italic">Operations Portal</span>
+                    </div>
                 </div>
-                <div className="flex items-center gap-3">
+
+                <div className="flex items-center gap-2">
                     <button
                         onClick={() => router.push('/staff/notifications')}
-                        className="p-2 text-gray-400 hover:text-white relative transition-colors"
+                        className="w-10 h-10 rounded-xl bg-white/[0.03] border border-white/[0.05] flex items-center justify-center text-gray-400 hover:text-white transition-all hover:bg-white/[0.08] relative active:scale-95"
                     >
-                        <Bell className="w-5 h-5" />
-                        <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-[#161b22]"></span>
+                        <Bell className="w-4 h-4" />
+                        <span className="absolute top-2.5 right-2.5 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-[#0d1117] animate-bounce shadow-lg shadow-rose-500/40"></span>
                     </button>
                     <button
                         onClick={() => router.push('/staff/messages')}
-                        className="p-2 text-gray-400 hover:text-white relative transition-colors"
+                        className="w-10 h-10 rounded-xl bg-white/[0.03] border border-white/[0.05] flex items-center justify-center text-gray-400 hover:text-white transition-all hover:bg-white/[0.08] relative active:scale-95 ml-1"
                     >
-                        <MessageSquare className="w-5 h-5" />
-                        <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-blue-500 rounded-full border-2 border-[#161b22]"></span>
+                        <MessageSquare className="w-4 h-4" />
+                        <span className="absolute top-2.5 right-2.5 w-1.5 h-1.5 bg-blue-500 rounded-full border border-[#0d1117]"></span>
                     </button>
                 </div>
             </header>
 
-            <main className="px-4 py-6 max-w-lg mx-auto">
+            <main className="px-5 py-24 max-w-lg mx-auto min-h-screen">
                 {children}
             </main>
 
-            {/* Bottom Nav */}
-            <nav className="fixed bottom-0 left-0 right-0 bg-[#0d1117]/80 backdrop-blur-xl border-t border-white/[0.05] flex justify-around items-center p-3 z-40 pb-safe shadow-[0_-8px_30px_rgb(0,0,0,0.5)]">
-                {navItems.map((item) => {
-                    const isActive = item.href === '/staff'
-                        ? pathname === '/staff'
-                        : pathname.startsWith(item.href)
+            {/* Bottom Nav: Premium Floating Design */}
+            <div className="fixed bottom-0 left-0 right-0 z-50 px-6 pb-6 pointer-events-none">
+                <nav className="max-w-md mx-auto h-20 bg-[#161b22]/90 backdrop-blur-2xl border border-white/[0.1] rounded-[35px] flex justify-around items-center px-4 pointer-events-auto shadow-[0_20px_60px_-15px_rgba(0,0,0,0.8)] relative group overflow-hidden">
+                    {/* Interior Glow */}
+                    <div className="absolute inset-0 bg-blue-600 opacity-[0.02] pointer-events-none"></div>
+                    
+                    {navItems.map((item) => {
+                        const isActive = item.href === '/staff'
+                            ? pathname === '/staff'
+                            : pathname.startsWith(item.href)
 
-                    return (
-                        <Link
-                            key={item.href}
-                            href={item.href}
-                            className={cn(
-                                "flex flex-col items-center gap-1 min-w-[64px] transition-all duration-300",
-                                isActive ? 'text-blue-500 scale-110' : 'text-gray-500 hover:text-gray-300'
-                            )}
-                        >
-                            <item.icon className={cn("w-5 h-5", isActive ? "drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]" : "")} />
-                            <span className="text-[9px] font-black uppercase tracking-widest">{item.label}</span>
-                            {isActive && <div className="absolute -bottom-3 w-8 h-1 bg-blue-500 rounded-full"></div>}
-                        </Link>
-                    )
-                })}
-            </nav>
+                        return (
+                            <Link
+                                key={item.href}
+                                href={item.href}
+                                className={cn(
+                                    "relative flex flex-col items-center justify-center gap-1.5 h-full transition-all duration-500 px-4",
+                                    isActive ? 'text-blue-500' : 'text-gray-500 hover:text-gray-300'
+                                )}
+                            >
+                                <div className={cn(
+                                    "transition-all duration-300 p-2 rounded-2xl relative",
+                                    isActive ? "bg-blue-600/10 scale-100" : "bg-transparent scale-90"
+                                )}>
+                                    <item.icon className={cn("w-5 h-5", isActive ? "stroke-[2.5]" : "stroke-2")} />
+                                    {isActive && (
+                                        <div className="absolute inset-0 bg-blue-500/20 blur-xl rounded-full"></div>
+                                    )}
+                                </div>
+                                <span className={cn(
+                                    "text-[9px] font-black uppercase tracking-[0.15em] transition-all duration-300",
+                                    isActive ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1"
+                                )}>
+                                    {item.label}
+                                </span>
+                            </Link>
+                        )
+                    })}
+                </nav>
+            </div>
         </div>
     )
 }

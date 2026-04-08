@@ -12,11 +12,10 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
     const status = searchParams.get('status')
     const queryPropertyId = searchParams.get('propertyId')
+    const start = searchParams.get('start')
+    const end = searchParams.get('end')
 
     const where: any = {}
-
-    // RBAC: If Super Admin, they can filter by any property or see all. 
-    // Otherwise, they are locked to their own property.
     if (session.user.role === 'SUPER_ADMIN') {
         if (queryPropertyId && queryPropertyId !== 'ALL') {
             where.propertyId = queryPropertyId
@@ -26,6 +25,8 @@ export async function GET(request: Request) {
         if (propertyId) where.propertyId = propertyId
     }
     if (status && status !== 'ALL') where.status = status as any
+    const roomType = searchParams.get('type')
+    if (roomType && roomType !== 'ALL') where.type = roomType as any
 
     try {
         const rooms = await prisma.room.findMany({
@@ -33,7 +34,13 @@ export async function GET(request: Request) {
             include: {
                 bookings: {
                     where: {
-                        status: { in: ['CHECKED_IN', 'RESERVED'] }
+                        status: { in: ['CHECKED_IN', 'RESERVED'] },
+                        // If date range provided, filter bookings within that range too
+                        ...(start && end ? {
+                            OR: [
+                                { checkIn: { lte: new Date(end) }, checkOut: { gte: new Date(start) } }
+                            ]
+                        } : {})
                     },
                     select: {
                         id: true,
@@ -47,13 +54,24 @@ export async function GET(request: Request) {
             orderBy: { roomNumber: 'asc' }
         })
 
+        // Filter out rooms that HAVE bookings if start/end is provided (real-time availability)
+        let filteredRooms = rooms
+        if (start && end && status === 'AVAILABLE') {
+            filteredRooms = rooms.filter(room => room.bookings.length === 0)
+        }
+
         // Auto-correct mis-synchronized statuses
         const now = new Date()
-        const syncedRooms = await Promise.all(rooms.map(async (room) => {
-            const hasActiveBooking = room.bookings.some(b => b.status === 'CHECKED_IN');
+        const syncedRooms = await Promise.all(filteredRooms.map(async (room) => {
+            // Room should be OCCUPIED if it has a CHECKED_IN or a RESERVED booking for "now"
+            const hasBookingNow = room.bookings.some(b => {
+                const ci = new Date(b.checkIn).getTime()
+                const co = new Date(b.checkOut).getTime()
+                return ci <= now.getTime() && co >= now.getTime()
+            });
 
-            // If room is marked OCCUPIED but has no active CHECKED_IN booking right now, set it back to AVAILABLE
-            if (room.status === 'OCCUPIED' && !hasActiveBooking) {
+            // If room is marked OCCUPIED but has no active booking right now, set it back to AVAILABLE
+            if (room.status === 'OCCUPIED' && !hasBookingNow) {
                 await prisma.room.update({
                     where: { id: room.id },
                     data: { status: 'AVAILABLE' }
@@ -61,8 +79,8 @@ export async function GET(request: Request) {
                 return { ...room, status: 'AVAILABLE' };
             }
 
-            // If room is AVAILABLE but HAS an active CHECKED_IN booking, set it to OCCUPIED
-            if (room.status === 'AVAILABLE' && hasActiveBooking) {
+            // If room is AVAILABLE but HAS an active booking, set it to OCCUPIED
+            if (room.status === 'AVAILABLE' && hasBookingNow) {
                 await prisma.room.update({
                     where: { id: room.id },
                     data: { status: 'OCCUPIED' }

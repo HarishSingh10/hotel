@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
+import Avatar from '@/components/common/Avatar'
 
 // ---- helpers ----
 function getInitials(name: string) {
@@ -50,7 +51,7 @@ export default function CheckInManagerPage() {
     const [filter, setFilter] = useState<'all' | 'pending' | 'completed'>('all')
     const [search, setSearch] = useState('')
     const [bookings, setBookings] = useState<any[]>([])
-    const [stats, setStats] = useState({ expected: 0, completed: 0, pending: 0, verificationPending: 0 })
+    const [stats, setStats] = useState({ expected: 0, completed: 0, pending: 0, verificationPending: 0, monthlyAverage: 0, monthlyChange: 0 })
     const [loading, setLoading] = useState(true)
     const [selected, setSelected] = useState<Set<string>>(new Set())
     const [activeGuest, setActiveGuest] = useState<any>(null)
@@ -61,15 +62,20 @@ export default function CheckInManagerPage() {
     const frontRef = useRef<HTMLInputElement>(null)
     const backRef = useRef<HTMLInputElement>(null)
 
-    const fetchData = useCallback(async () => {
-        setLoading(true)
+    const fetchData = useCallback(async (isAuto = false) => {
+        if (!isAuto) setLoading(true)
         try {
             const res = await fetch(`/api/admin/checkin?filter=${filter}`)
             if (res.ok) {
                 const data = await res.json()
                 setBookings(data.bookings || [])
-                setStats(data.stats || { expected: 0, completed: 0, pending: 0, verificationPending: 0 })
-                // auto-select first for preview
+                setStats(data.stats ? {
+                    ...data.stats,
+                    monthlyAverage: data.monthlyAverage || 0,
+                    monthlyChange: data.monthlyChange || 0
+                } : { expected: 0, completed: 0, pending: 0, verificationPending: 0, monthlyAverage: 0, monthlyChange: 0 })
+                
+                // auto-select first for preview if nothing selected
                 if (data.bookings?.length > 0 && !activeGuest) {
                     setActiveGuest(data.bookings[0])
                 }
@@ -77,23 +83,29 @@ export default function CheckInManagerPage() {
         } catch (err) {
             console.error(err)
         } finally {
-            setLoading(false)
+            if (!isAuto) setLoading(false)
         }
-    }, [filter])
+    }, [filter, activeGuest])
 
-    useEffect(() => { fetchData() }, [fetchData])
+    useEffect(() => { 
+        fetchData() 
+        // Real-time polling: Refresh every 15 seconds
+        const interval = setInterval(() => fetchData(true), 15000)
+        return () => clearInterval(interval)
+    }, [fetchData])
 
     // Filter by search
     const filtered = bookings.filter(b =>
         b.guestName.toLowerCase().includes(search.toLowerCase()) ||
         b.resId.toLowerCase().includes(search.toLowerCase()) ||
-        b.roomNumber.includes(search)
+        (b.roomNumber && b.roomNumber.toString().includes(search))
     )
 
     const handleSelect = (id: string) => {
         setSelected(prev => {
             const next = new Set(prev)
-            next.has(id) ? next.delete(id) : next.add(id)
+            if (next.has(id)) next.delete(id)
+            else next.add(id)
             return next
         })
     }
@@ -137,7 +149,6 @@ export default function CheckInManagerPage() {
         if (ids.length === 0) { toast.error('Select at least one guest'); return }
         setIsSending(true)
         try {
-            // Send link for each selected booking
             await Promise.all(ids.map(id => {
                 const booking = bookings.find(b => b.id === id)
                 if (!booking) return Promise.resolve()
@@ -157,12 +168,30 @@ export default function CheckInManagerPage() {
         }
     }
 
-    const handleWhatsApp = () => {
-        if (selected.size === 0) { toast.error('Select at least one guest'); return }
-        const nums = Array.from(selected)
-            .map(id => bookings.find(b => b.id === id)?.guestPhone)
-            .filter(Boolean)
-        toast.success(`WhatsApp message queued for ${nums.length} guest(s)`)
+    const handleWhatsApp = (bookingIds?: string[]) => {
+        const ids = bookingIds || Array.from(selected)
+        if (ids.length === 0) { toast.error('Select at least one guest'); return }
+
+        const baseUrl = window.location.origin
+        const activeBookings = ids.map(id => bookings.find(b => b.id === id)).filter(Boolean)
+
+        activeBookings.forEach((b, index) => {
+            const phone = b.guestPhone?.replace(/\D/g, '') || ''
+            if (!phone) {
+                toast.error(`No phone number for ${b.guestName}`)
+                return
+            }
+
+            const message = `Hello *${b.guestName}*, \n\nWelcome to *Zenbourg Hotel*! ✨\nTo skip the queue and enjoy an express check-in, please complete your registration here: \n\n${baseUrl}/guest/check-in?bookingId=${b.id}&phone=${phone}\n\nWe look forward to seeing you!`
+            const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
+            
+            setTimeout(() => {
+                window.open(waUrl, '_blank')
+            }, index * 500)
+        })
+
+        toast.success(`WhatsApp message generated for ${activeBookings.length} guest(s)`)
+        if (ids.length === selected.size) setSelected(new Set())
     }
 
     // Document upload from manager side
@@ -209,11 +238,18 @@ export default function CheckInManagerPage() {
         } catch { toast.error('Failed to verify') }
     }
 
-    const formatArrival = (dateStr: string) => {
+    const formatArrival = (booking: any) => {
+        // Preference: 
+        // 1. Actual completion time of online check-in (most relevant for arrivals list)
+        // 2. Actual check-in time (if already checked in)
+        // 3. Planned check-in date
+        const dateStr = booking.checkInCompletedAt || booking.actualCheckIn || booking.checkIn
         const d = new Date(dateStr)
-        if (isToday(d)) return `Today  ${format(d, 'HH:mm')} PM`
-        if (isTomorrow(d)) return `Tomorrow  ${format(d, 'HH:mm')} AM`
-        return format(d, 'dd MMM  HH:mm')
+        const timeStr = format(d, 'hh:mm a')
+        
+        if (isToday(d)) return `Today ${timeStr}`
+        if (isTomorrow(d)) return `Tomorrow ${timeStr}`
+        return format(d, 'dd MMM hh:mm a')
     }
 
     return (
@@ -227,7 +263,7 @@ export default function CheckInManagerPage() {
             </div>
 
             {/* ===== STAT CARDS ===== */}
-            <div className="shrink-0 grid grid-cols-3 gap-4 px-5 py-3">
+            <div className="shrink-0 grid grid-cols-1 md:grid-cols-3 gap-4 px-5 py-3">
                 {/* Expected Today */}
                 <div className="bg-[#233648] border border-white/[0.07] rounded-xl p-5 relative overflow-hidden">
                     <div className="absolute right-4 top-4 opacity-10">
@@ -251,12 +287,18 @@ export default function CheckInManagerPage() {
                     </div>
                     <p className="text-[11px] text-gray-500 font-medium mb-2">Completed Online</p>
                     <p className="text-4xl font-bold text-white">{stats.completed}</p>
-                    <p className="text-[11px] text-[#1db954] mt-1 flex items-center gap-1">
-                        <ArrowUpRight className="w-3 h-3" />
-                        +12% vs yesterday
+                    <p className={cn(
+                        "text-[11px] mt-1 flex items-center gap-1",
+                        stats.monthlyChange >= 0 ? "text-[#1db954]" : "text-[#e53e3e]"
+                    )}>
+                        {stats.monthlyChange >= 0 ? <ArrowUpRight className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
+                        {stats.monthlyChange >= 0 ? '+' : ''}{Math.round(stats.monthlyChange)}% vs monthly avg
                     </p>
                     <div className="mt-3 h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
-                        <div className="h-full bg-[#1db954] rounded-full" style={{ width: '75%' }} />
+                        <div 
+                            className="h-full bg-[#1db954] rounded-full transition-all duration-1000" 
+                            style={{ width: stats.monthlyAverage > 0 ? `${(stats.completed / stats.monthlyAverage) * 100}%` : '75%' }} 
+                        />
                     </div>
                 </div>
 
@@ -277,7 +319,7 @@ export default function CheckInManagerPage() {
             </div>
 
             {/* ===== MAIN CONTENT (guest list + verification panel) ===== */}
-            <div className="flex-1 flex gap-4 px-5 pb-5 overflow-hidden min-h-0">
+            <div className="flex-1 flex flex-col lg:flex-row gap-4 px-5 pb-5 overflow-hidden min-h-0">
 
                 {/* LEFT — Guest List */}
                 <div className="flex-1 flex flex-col bg-[#233648] border border-white/[0.07] rounded-xl overflow-hidden min-w-0">
@@ -304,7 +346,7 @@ export default function CheckInManagerPage() {
                                 <span className="text-[12px] text-gray-400 font-medium">{selected.size} Selected</span>
                             )}
                             <button
-                                onClick={handleWhatsApp}
+                                onClick={() => handleWhatsApp()}
                                 className="flex items-center gap-1.5 px-3 py-1.5 bg-[#25D366]/10 hover:bg-[#25D366]/20 border border-[#25D366]/30 text-[#25D366] text-[11px] font-semibold rounded-lg transition-colors"
                             >
                                 <MessageSquare className="w-3.5 h-3.5" /> WhatsApp
@@ -318,7 +360,7 @@ export default function CheckInManagerPage() {
                                 {isSending ? 'Sending...' : 'Send Link'}
                             </button>
                             <button
-                                onClick={fetchData}
+                                onClick={() => fetchData()}
                                 className="p-1.5 hover:bg-white/[0.06] rounded-lg transition-colors"
                                 title="Refresh"
                             >
@@ -382,9 +424,7 @@ export default function CheckInManagerPage() {
 
                                         {/* Guest & Res ID */}
                                         <div className="flex items-center gap-2.5 min-w-0">
-                                            <div className={cn('w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0', avatar.bg, avatar.text)}>
-                                                {getInitials(booking.guestName)}
-                                            </div>
+                                            <Avatar name={booking.guestName} size="sm" />
                                             <div className="min-w-0">
                                                 <p className="text-[13px] font-semibold text-white truncate">{booking.guestName}</p>
                                                 <p className="text-[10px] text-gray-500">{booking.resId}</p>
@@ -394,9 +434,8 @@ export default function CheckInManagerPage() {
                                         {/* Arrival */}
                                         <div className="flex flex-col justify-center">
                                             <p className="text-[12px] text-white">
-                                                {isToday(new Date(booking.checkIn)) ? 'Today' : isTomorrow(new Date(booking.checkIn)) ? 'Tomorrow' : format(new Date(booking.checkIn), 'dd MMM')}
+                                                {formatArrival(booking)}
                                             </p>
-                                            <p className="text-[11px] text-gray-500">{format(new Date(booking.checkIn), 'hh:mm a')}</p>
                                         </div>
 
                                         {/* Channel */}
@@ -430,7 +469,7 @@ export default function CheckInManagerPage() {
                 </div>
 
                 {/* RIGHT — Verification Panel */}
-                <div className="w-[340px] shrink-0 flex flex-col gap-3">
+                <div className="w-full lg:w-[340px] shrink-0 flex flex-col gap-3">
                     {activeGuest ? (
                         <div className="flex-1 bg-[#233648] border border-white/[0.07] rounded-xl flex flex-col overflow-hidden">
                             {/* Panel header */}
@@ -447,10 +486,7 @@ export default function CheckInManagerPage() {
                             <div className="flex-1 overflow-y-auto p-5 space-y-5">
                                 {/* Guest identity */}
                                 <div className="flex items-center gap-3">
-                                    <div className={cn('w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold shrink-0',
-                                        getAvatarColor(activeGuest.guestName).bg, getAvatarColor(activeGuest.guestName).text)}>
-                                        {getInitials(activeGuest.guestName)}
-                                    </div>
+                                    <Avatar name={activeGuest.guestName} size="lg" />
                                     <div>
                                         <p className="text-[15px] font-bold text-white">{activeGuest.guestName}</p>
                                         <div className="flex items-center gap-2 mt-1">
@@ -597,16 +633,25 @@ export default function CheckInManagerPage() {
                                 {/* Guest contact */}
                                 {activeGuest.guestPhone && (
                                     <div className="flex items-center justify-between p-3 bg-[#182433] rounded-lg">
-                                        <div>
+                                        <div className="flex-1">
                                             <p className="text-[9px] text-gray-500 uppercase font-bold mb-0.5">Contact</p>
-                                            <p className="text-[12px] text-white">{activeGuest.guestPhone}</p>
+                                            <p className="text-[12px] text-white truncate mr-2">{activeGuest.guestPhone}</p>
                                         </div>
-                                        <button
-                                            onClick={() => handleSendLink([activeGuest.id])}
-                                            className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#4A9EFF]/10 hover:bg-[#4A9EFF]/20 text-[#4A9EFF] text-[11px] font-medium rounded-lg border border-[#4A9EFF]/20 transition-colors"
-                                        >
-                                            <Send className="w-3 h-3" /> Send Link
-                                        </button>
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                onClick={() => handleWhatsApp([activeGuest.id])}
+                                                className="p-1.5 hover:bg-[#25D366]/10 text-[#25D366] rounded-lg border border-white/[0.05] transition-colors"
+                                                title="Send WhatsApp"
+                                            >
+                                                <MessageSquare className="w-3.5 h-3.5" />
+                                            </button>
+                                            <button
+                                                onClick={() => handleSendLink([activeGuest.id])}
+                                                className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#4A9EFF]/10 hover:bg-[#4A9EFF]/20 text-[#4A9EFF] text-[11px] font-medium rounded-lg border border-[#4A9EFF]/20 transition-colors"
+                                            >
+                                                <Send className="w-3 h-3" /> Link
+                                            </button>
+                                        </div>
                                     </div>
                                 )}
                             </div>

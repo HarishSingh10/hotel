@@ -16,7 +16,7 @@ export async function POST(request: Request) {
         }
 
         const body = await request.json()
-        const { name, address, phone, email, description } = body
+        const { name, address, phone, email, description, latitude, longitude } = body
 
         if (!name || !address || !phone || !email) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -29,6 +29,8 @@ export async function POST(request: Request) {
                 phone,
                 email,
                 description,
+                latitude: latitude ? parseFloat(latitude) : null,
+                longitude: longitude ? parseFloat(longitude) : null,
                 checkInTime: '14:00',
                 checkOutTime: '11:00',
             }

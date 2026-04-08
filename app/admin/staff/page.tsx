@@ -291,7 +291,7 @@ export default function StaffPage() {
                     {loading ? (
                         <div className="p-12 text-center text-text-secondary animate-pulse">Loading staff directory...</div>
                     ) : filteredStaff.length === 0 ? (
-                        <div className="p-12 text-center text-text-tertiary italic">
+                        <div className="p-12 text-center text-text-tertiary ">
                             No staff members found matching your search.
                         </div>
                     ) : (

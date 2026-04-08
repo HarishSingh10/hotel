@@ -8,6 +8,7 @@ declare module "next-auth" {
             role: string
             propertyId?: string | null
             ownedPropertyIds?: string[] | null
+            department?: string | null
         } & DefaultSession["user"]
     }
 
@@ -15,6 +16,7 @@ declare module "next-auth" {
         role: string
         propertyId?: string | null
         ownedPropertyIds?: string[] | null
+        department?: string | null
     }
 }
 
@@ -23,5 +25,6 @@ declare module "next-auth/jwt" {
         id: string
         role: string
         propertyId?: string | null
+        department?: string | null
     }
 }

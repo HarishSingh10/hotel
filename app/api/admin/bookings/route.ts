@@ -29,11 +29,11 @@ export async function GET(request: Request) {
     }
 
     // If date range provided (for calendar)
+    // We want any booking that OVERLAPS with this range:
+    // (checkIn <= end) AND (checkOut >= start)
     if (start && end) {
-        whereClause.checkIn = {
-            gte: new Date(start),
-            lte: new Date(end)
-        }
+        whereClause.checkIn = { lte: new Date(end) }
+        whereClause.checkOut = { gte: new Date(start) }
     }
 
     try {
@@ -89,12 +89,6 @@ export async function POST(request: Request) {
                 guest: { select: { name: true, phone: true } },
                 room: { select: { roomNumber: true } }
             }
-        })
-
-        // Update Room Status
-        await prisma.room.update({
-            where: { id: body.roomId },
-            data: { status: 'OCCUPIED' }
         })
 
         // Mock Notification System

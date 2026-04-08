@@ -74,7 +74,7 @@ export async function POST(req: Request) {
         if (!session) return new NextResponse('Unauthorized', { status: 401 })
 
         const body = await req.json()
-        const { name, email, phone, idType, idNumber, guestCount = 1 } = body
+        const { name, email, phone, idType, idNumber, address, dateOfBirth, guestCount = 1 } = body
 
         if (!name || !phone) {
             return new NextResponse('Name and Phone are required', { status: 400 })
@@ -87,7 +87,9 @@ export async function POST(req: Request) {
                 name,
                 email,
                 idType,
-                idNumber
+                idNumber,
+                address,
+                dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : undefined,
             },
             create: {
                 name,
@@ -95,15 +97,13 @@ export async function POST(req: Request) {
                 phone,
                 idType,
                 idNumber,
+                address,
+                dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : undefined,
                 checkInStatus: 'PENDING'
             }
         })
 
-        return NextResponse.json({
-            success: true,
-            guest,
-            message: 'Guest profile created/updated'
-        })
+        return NextResponse.json(guest)
     } catch (error) {
         console.error('[GUESTS_POST]', error)
         return new NextResponse('Internal Error', { status: 500 })

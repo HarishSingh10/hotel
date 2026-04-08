@@ -41,16 +41,13 @@ export async function GET(request: Request) {
         }
 
         // Fetch all related data in parallel
-        const [attendance, tasks, unreadNotifications, unreadMessages, systemAlerts] = await Promise.all([
+        const [attendance, tasks, unreadNotifications, unreadMessages, systemAlerts, performanceScore] = await Promise.all([
             // 2. Today's Attendance
             prisma.attendance.findFirst({
                 where: {
-                    staffId: staff.id,
-                    date: {
-                        gte: new Date(new Date().setHours(0, 0, 0, 0)),
-                        lt: new Date(new Date().setHours(23, 59, 59, 999))
-                    }
-                }
+                    staffId: staff.id
+                },
+                orderBy: { punchIn: 'desc' }
             }),
             // 3. Assigned Tasks
             staff.id === 'admin-view' 
@@ -75,6 +72,11 @@ export async function GET(request: Request) {
                 where: { propertyId: staff.propertyId },
                 orderBy: { timestamp: 'desc' },
                 take: 3
+            }),
+            // 6. Latest Performance
+            prisma.performanceScore.findFirst({
+                where: { staffId: staff.id },
+                orderBy: { createdAt: 'desc' }
             })
         ])
 
@@ -83,6 +85,7 @@ export async function GET(request: Request) {
             attendance,
             tasks,
             systemAlerts,
+            performanceScore,
             unreadCounts: {
                 notifications: unreadNotifications,
                 messages: unreadMessages
@@ -91,6 +94,24 @@ export async function GET(request: Request) {
 
     } catch (error) {
         console.error("Staff Me API Error:", error)
+        return new NextResponse('Internal Server Error', { status: 500 })
+    }
+}
+
+export async function PATCH(request: Request) {
+    const session = await getServerSession(authOptions)
+    if (!session) return new NextResponse('Unauthorized', { status: 401 })
+
+    try {
+        const { dndEnabled } = await request.json()
+        
+        const updatedUser = await prisma.user.update({
+            where: { id: session.user.id },
+            data: { dndEnabled }
+        })
+
+        return NextResponse.json(updatedUser)
+    } catch (error) {
         return new NextResponse('Internal Server Error', { status: 500 })
     }
 }

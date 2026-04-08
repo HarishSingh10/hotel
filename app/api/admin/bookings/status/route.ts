@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/options'
 import { prisma } from '@/lib/db'
+import { performAutoAssignment } from '@/lib/service-utils'
 
 export const dynamic = 'force-dynamic'
 
@@ -17,22 +18,26 @@ export async function POST(request: Request) {
         const { bookingId, action } = body // action: 'CHECK_IN' | 'CHECK_OUT' | 'CANCEL'
 
         let status = 'RESERVED'
-        let roomStatus = 'OCCUPIED'
+        let roomStatus = 'AVAILABLE'
+        const updateData: any = {}
 
         if (action === 'CHECK_IN') {
             status = 'CHECKED_IN'
             roomStatus = 'OCCUPIED'
+            updateData.actualCheckIn = new Date()
         } else if (action === 'CHECK_OUT') {
             status = 'CHECKED_OUT'
             roomStatus = 'CLEANING'
+            updateData.actualCheckOut = new Date()
         } else if (action === 'CANCEL') {
             status = 'CANCELLED'
             roomStatus = 'AVAILABLE'
         }
+        updateData.status = status
 
         const booking = await prisma.booking.update({
             where: { id: bookingId },
-            data: { status: status as any },
+            data: updateData,
             include: { room: true }
         })
 
@@ -54,7 +59,8 @@ export async function POST(request: Request) {
                     description: `Guest checked out at ${new Date().toLocaleTimeString()}. Standard turnover required.`,
                     priority: 'URGENT',
                     status: 'PENDING',
-                    slaMinutes: 30
+                    slaMinutes: 30,
+                    assignedToId: null
                 }
             })
 
@@ -77,6 +83,9 @@ export async function POST(request: Request) {
                     }))
                 })
             }
+
+            // Trigger auto-assignment immediately
+            await performAutoAssignment(booking.propertyId, 0)
         }
 
         return NextResponse.json(booking)

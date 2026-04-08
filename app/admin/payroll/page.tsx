@@ -10,7 +10,7 @@ import Badge from '@/components/ui/Badge'
 import Modal from '@/components/ui/Modal'
 import Select from '@/components/ui/Select'
 import {
-    DollarSign,
+    IndianRupee,
     Calendar,
     ArrowUpRight,
     ArrowDownRight,
@@ -280,7 +280,7 @@ export default function PayrollPage() {
                         onChange={(e) => setMonth(e.target.value)}
                         className="bg-surface border border-white/10 rounded-xl px-4 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-medium"
                     />
-                    <Button variant="primary" onClick={handleRunPayroll} leftIcon={<DollarSign className="w-4 h-4" />}>
+                    <Button variant="primary" onClick={handleRunPayroll} leftIcon={<IndianRupee className="w-4 h-4" />}>
                         Run Payroll
                     </Button>
                 </div>
@@ -306,29 +306,27 @@ export default function PayrollPage() {
             )}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <Card className="p-5 border-primary/20 bg-surface relative overflow-hidden group">
-                    <DollarSign className="absolute -right-2 -bottom-2 w-20 h-20 text-primary/10 group-hover:scale-110 transition-transform" />
+                    <IndianRupee className="absolute -right-2 -bottom-2 w-20 h-20 text-primary/10 group-hover:scale-110 transition-transform" />
                     <p className="text-xs font-bold text-text-tertiary uppercase tracking-wider">Total Disbursement</p>
-                    <p className="text-2xl font-black text-text-primary mt-1">{formatCurrency(stats.totalPayroll)}</p>
-                    <div className="flex items-center gap-1 text-[10px] text-success mt-1 font-bold">
-                        <ArrowUpRight className="w-3 h-3" /> +12% from last month
+                    <p className="text-2xl font-bold text-text-primary mt-1">{formatCurrency(stats.totalPayroll)}</p>
+                    <div className="flex items-center gap-1 text-[10px] text-text-tertiary mt-1 font-medium">
+                        Computed for this cycle
                     </div>
                 </Card>
                 <Card className="p-5 border-white/[0.05]">
                     <p className="text-xs font-bold text-text-tertiary uppercase tracking-wider">Payments Made</p>
-                    <p className="text-2xl font-black text-emerald-500 mt-1">{stats.paidCount}</p>
-                    <p className="text-[10px] text-text-tertiary mt-1 font-medium italic">Success rate: 100%</p>
+                    <p className="text-2xl font-bold text-emerald-500 mt-1">{stats.paidCount}</p>
+                    <p className="text-[10px] text-text-tertiary mt-1 font-medium ">Total disbursements</p>
                 </Card>
                 <Card className="p-5 border-white/[0.05]">
                     <p className="text-xs font-bold text-text-tertiary uppercase tracking-wider">Pending Payments</p>
-                    <p className="text-2xl font-black text-warning mt-1">{stats.pendingCount}</p>
-                    <p className="text-[10px] text-text-tertiary mt-1 font-medium italic">Requires action</p>
+                    <p className="text-2xl font-bold text-warning mt-1">{stats.pendingCount}</p>
+                    <p className="text-[10px] text-text-tertiary mt-1 font-medium ">Requires action</p>
                 </Card>
                 <Card className="p-5 border-white/[0.05]">
                     <p className="text-xs font-bold text-text-tertiary uppercase tracking-wider">Avg. Salary</p>
-                    <p className="text-2xl font-black text-text-primary mt-1">{formatCurrency(stats.avgSalary)}</p>
-                    <div className="flex items-center gap-1 text-[10px] text-rose-500 mt-1 font-bold">
-                        <ArrowDownRight className="w-3 h-3" /> -2% from last month
-                    </div>
+                    <p className="text-2xl font-bold text-text-primary mt-1">{formatCurrency(stats.avgSalary)}</p>
+                    <p className="text-[10px] text-text-tertiary mt-1 font-medium ">Median monthly scale</p>
                 </Card>
             </div>
 
@@ -370,12 +368,12 @@ export default function PayrollPage() {
                     <table className="w-full text-left">
                         <thead>
                             <tr className="border-b border-white/[0.04] bg-white/[0.02]">
-                                <th className="px-6 py-4 text-[10px] font-black text-text-tertiary uppercase tracking-widest">Employee</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-text-tertiary uppercase tracking-widest text-center">Base Salary</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-text-tertiary uppercase tracking-widest text-center">Adjustments</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-text-tertiary uppercase tracking-widest text-center">Net Payable</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-text-tertiary uppercase tracking-widest">Status</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-text-tertiary uppercase tracking-widest text-right">Action</th>
+                                <th className="px-6 py-4 text-[10px] font-bold text-text-tertiary uppercase tracking-widest">Employee</th>
+                                <th className="px-6 py-4 text-[10px] font-bold text-text-tertiary uppercase tracking-widest text-center">Base Salary</th>
+                                <th className="px-6 py-4 text-[10px] font-bold text-text-tertiary uppercase tracking-widest text-center">Adjustments</th>
+                                <th className="px-6 py-4 text-[10px] font-bold text-text-tertiary uppercase tracking-widest text-center">Net Payable</th>
+                                <th className="px-6 py-4 text-[10px] font-bold text-text-tertiary uppercase tracking-widest">Status</th>
+                                <th className="px-6 py-4 text-[10px] font-bold text-text-tertiary uppercase tracking-widest text-right">Action</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/[0.04]">
@@ -481,7 +479,7 @@ export default function PayrollPage() {
                             <div className="relative z-10">
                                 <div className="flex justify-between items-start mb-8">
                                     <div>
-                                        <h3 className="text-2xl font-black text-text-primary">ZENBOURG</h3>
+                                        <h3 className="text-2xl font-bold text-text-primary">ZENBOURG</h3>
                                         <p className="text-[10px] text-text-tertiary font-bold uppercase tracking-widest">Grand Hotel & Resorts</p>
                                     </div>
                                     <div className="text-right">
@@ -508,8 +506,8 @@ export default function PayrollPage() {
                                         <span className="text-sm font-mono text-rose-400">-{formatCurrency(selectedPayroll.deductions || 0)}</span>
                                     </div>
                                     <div className="flex justify-between py-4 mt-2">
-                                        <span className="text-lg font-black text-text-primary uppercase tracking-tighter">Net Payable Amount</span>
-                                        <span className="text-2xl font-black text-primary font-mono">{formatCurrency(selectedPayroll.netSalary)}</span>
+                                        <span className="text-lg font-bold text-text-primary uppercase tracking-tighter">Net Payable Amount</span>
+                                        <span className="text-2xl font-bold text-primary font-mono">{formatCurrency(selectedPayroll.netSalary)}</span>
                                     </div>
                                 </div>
                             </div>

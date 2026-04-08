@@ -57,8 +57,16 @@ export async function GET(req: NextRequest) {
 
         // ===== 2. OCCUPANCY =====
         const totalRooms = await prisma.room.count({ where: whereProperty })
-        const occupiedRooms = await prisma.room.count({ where: { ...whereProperty, status: 'OCCUPIED' } })
-        const occupancyRate = totalRooms > 0 ? Math.round((occupiedRooms / totalRooms) * 100) : 0
+        const activeBookingsToday = await prisma.booking.findMany({
+            where: {
+                ...whereProperty,
+                status: { in: ['CHECKED_IN', 'RESERVED'] },
+                checkIn: { lte: endOfDay(now) },
+                checkOut: { gte: startOfDay(now) }
+            }
+        })
+        const occupiedRoomsCount = new Set(activeBookingsToday.map(b => b.roomId)).size
+        const occupancyRate = totalRooms > 0 ? Math.round((occupiedRoomsCount / totalRooms) * 100) : 0
 
         // Last month occupancy estimate from bookings
         const lastMonthBookings = await prisma.booking.count({

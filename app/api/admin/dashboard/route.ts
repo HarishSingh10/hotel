@@ -61,15 +61,17 @@ export async function GET(req: NextRequest) {
             prisma.booking.count({
                 where: {
                     ...whereProperty,
-                    checkIn: { gte: startOfDay(today), lte: endOfDay(today) },
-                    status: 'RESERVED'
+                    OR: [
+                        { checkIn: { lte: endOfDay(today) }, status: 'RESERVED' },
+                        { checkIn: { gte: startOfDay(today), lte: endOfDay(today) }, status: 'CHECKED_IN' }
+                    ]
                 }
             }),
             prisma.booking.count({
                 where: {
                     ...whereProperty,
                     checkOut: { gte: startOfDay(today), lte: endOfDay(today) },
-                    status: 'CHECKED_IN'
+                    status: { in: ['CHECKED_IN', 'CHECKED_OUT'] }
                 }
             }),
 
@@ -103,10 +105,13 @@ export async function GET(req: NextRequest) {
             prisma.booking.findMany({
                 where: {
                     ...whereProperty,
-                    checkIn: { gte: startOfDay(today), lte: endOfDay(today) }
+                    OR: [
+                        { checkIn: { lte: endOfDay(today) }, status: 'RESERVED' },
+                        { checkIn: { gte: startOfDay(today), lte: endOfDay(today) }, status: 'CHECKED_IN' }
+                    ]
                 },
                 include: {
-                    guest: { select: { name: true } },
+                    guest: { select: { name: true, phone: true } },
                     room: { select: { roomNumber: true, type: true } }
                 },
                 take: 10,
@@ -117,11 +122,10 @@ export async function GET(req: NextRequest) {
             prisma.booking.findMany({
                 where: {
                     ...whereProperty,
-                    checkOut: { gte: startOfDay(today), lte: endOfDay(today) },
-                    status: 'CHECKED_IN'
+                    checkOut: { gte: startOfDay(today), lte: endOfDay(today) }
                 },
                 include: {
-                    guest: { select: { name: true } },
+                    guest: { select: { name: true, phone: true } },
                     room: { select: { roomNumber: true, type: true } }
                 },
                 take: 5,
@@ -144,15 +148,19 @@ export async function GET(req: NextRequest) {
                 orderBy: { createdAt: 'desc' }
             }),
 
-            // 9. On-duty staff
-            prisma.attendance.findMany({
+            // 9. On-duty staff (anyone currently punched in)
+            // Query from Staff side so propertyId filter works directly
+            prisma.staff.findMany({
                 where: {
-                    date: { gte: startOfDay(today), lte: endOfDay(today) },
-                    punchOut: null,
-                    staff: whereProperty
+                    ...whereProperty,
+                    attendances: {
+                        some: {
+                            punchOut: null
+                        }
+                    }
                 },
                 include: {
-                    staff: { include: { user: { select: { name: true } } } }
+                    user: { select: { name: true } }
                 }
             }),
 
@@ -185,19 +193,63 @@ export async function GET(req: NextRequest) {
             })
         ])
 
-        // Calculate occupancy trend (very simplified: compare with yesterday)
-        const yesterday = subDays(today, 1)
-        const yesterdayOccupancyCount = await prisma.booking.count({
+        // Strictly count ONLY checked-in bookings for LIVE occupancy
+        const activeBookingsToday = await prisma.booking.findMany({
             where: {
                 ...whereProperty,
-                checkIn: { lte: endOfDay(yesterday) },
-                checkOut: { gte: startOfDay(yesterday) },
-                status: { in: ['CHECKED_IN', 'CHECKED_OUT'] }
+                status: 'CHECKED_IN', // Only people who are actually THERE
+                checkIn: { lte: endOfDay(today) },
+                checkOut: { gte: startOfDay(today) }
+            },
+            include: { 
+                guest: { select: { name: true, phone: true } }, 
+                room: { select: { id: true, roomNumber: true, type: true } } 
             }
         })
-        const yesterdayOccupancyRate = totalRooms > 0 ? Math.round((yesterdayOccupancyCount / totalRooms) * 100) : 0
-        const currentOccupancyRate = totalRooms > 0 ? Math.round((occupiedRooms / totalRooms) * 100) : 0
-        const occupancyTrend = currentOccupancyRate - yesterdayOccupancyRate
+        
+        // Merge manual RoomStatus.OCCUPIED with active CHECKED_IN bookings
+        const manuallyOccupiedRooms = await prisma.room.findMany({
+            where: { ...whereProperty, status: 'OCCUPIED' },
+            select: { id: true }
+        })
+
+        const occupiedRoomIds = new Set([
+            ...manuallyOccupiedRooms.map(r => r.id),
+            ...activeBookingsToday.map(b => b.roomId)
+        ])
+
+        const occupiedRoomsCount = occupiedRoomIds.size
+        const currentOccupancyRate = totalRooms > 0 ? Math.round((occupiedRoomsCount / totalRooms) * 100) : 0
+
+        // Calculate Average Monthly Occupancy
+        const startOfMonthDate = new Date(today.getFullYear(), today.getMonth(), 1)
+        const daysInMonthSoFar = today.getDate()
+        
+        const monthBookings = await prisma.booking.findMany({
+            where: {
+                ...whereProperty,
+                status: { in: ['CHECKED_IN', 'CHECKED_OUT'] },
+                OR: [
+                    { checkIn: { gte: startOfMonthDate, lte: endOfDay(today) } },
+                    { checkOut: { gte: startOfMonthDate, lte: endOfDay(today) } },
+                    { AND: [{ checkIn: { lte: startOfMonthDate } }, { checkOut: { gte: endOfDay(today) } }] }
+                ]
+            }
+        })
+
+        let totalNightsThisMonth = 0
+        monthBookings.forEach(b => {
+            const start = b.checkIn < startOfMonthDate ? startOfMonthDate : b.checkIn
+            const end = b.checkOut > today ? today : b.checkOut
+            const diffTime = Math.max(0, end.getTime() - start.getTime())
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+            totalNightsThisMonth += diffDays
+        })
+
+        const totalCapacityThisMonth = totalRooms * daysInMonthSoFar
+        const avgMonthlyOccupancy = totalCapacityThisMonth > 0 
+            ? Math.round((totalNightsThisMonth / totalCapacityThisMonth) * 100) 
+            : 0
         // Process and sort activity logs
         const allActivity = [
             ...recentActivity.map((a: any) => ({
@@ -218,8 +270,20 @@ export async function GET(req: NextRequest) {
             }))
         ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 6)
 
-        const pendingArrivals = recentArrivals.filter((b: any) => b.status === 'RESERVED').length
-        const remainingDepartures = todayDepartures
+        const pendingArrivals = await prisma.booking.count({
+            where: {
+                ...whereProperty,
+                checkIn: { lte: endOfDay(today) },
+                status: 'RESERVED'
+            }
+        })
+        const remainingDepartures = await prisma.booking.count({
+            where: {
+                ...whereProperty,
+                checkOut: { gte: startOfDay(today), lte: endOfDay(today) },
+                status: 'CHECKED_IN'
+            }
+        })
 
         const categoryLabels = availableRoomsByCategory.map((c: any) =>
             c.category.charAt(0) + c.category.slice(1).toLowerCase()
@@ -228,17 +292,17 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({
             todayCheckIns: todayArrivals,
             todayCheckOuts: todayDepartures,
-            occupancyRate: totalRooms > 0 ? Math.round((occupiedRooms / totalRooms) * 100) : 0,
-            availableRooms: totalRooms - occupiedRooms,
+            occupancyRate: currentOccupancyRate,
+            avgMonthlyOccupancy: avgMonthlyOccupancy,
+            availableRooms: totalRooms - occupiedRoomsCount,
             pendingHousekeeping: pendingServices,
             activeFoodOrders: activeServices,
-            slaBreaches: 0, // In a real system you'd calculate this properly from response times
-            occupancyTrend: occupancyTrend >= 0 ? `+${occupancyTrend}%` : `${occupancyTrend}%`,
+            slaBreaches: 0, 
             onDutyStaff: onDutyStaffFull.length,
-            onDutyStaffNames: onDutyStaffFull.map((a: any) => a.staff.user.name),
-            onDutyStaffDetails: onDutyStaffFull.map((a: any) => ({
-                name: a.staff.user.name,
-                department: a.staff.department?.replace('_', ' ') || 'Staff'
+            onDutyStaffNames: onDutyStaffFull.map((s: any) => s.user.name),
+            onDutyStaffDetails: onDutyStaffFull.map((s: any) => ({
+                name: s.user.name,
+                department: s.department?.replace('_', ' ') || 'Staff'
             })),
             todayRevenue: todayRevenue._sum.totalAmount || 0,
             monthRevenue: monthlyRevenue._sum.totalAmount || 0,
@@ -250,15 +314,26 @@ export async function GET(req: NextRequest) {
                 guest: b.guest.name,
                 room: b.room.roomNumber,
                 roomType: `${b.room.type} (${b.room.roomNumber})`,
-                eta: new Date(b.checkIn).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
-                status: b.status
+                eta: new Date(b.actualCheckIn || b.checkIn).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
+                status: b.status,
+                phone: b.guest.phone || 'N/A'
             })),
             recentDepartures: recentDepartures.map((b: any) => ({
                 id: b.id,
                 guest: b.guest.name,
                 room: b.room.roomNumber,
                 roomType: `${b.room.type} (${b.room.roomNumber})`,
-                status: b.status
+                status: b.status,
+                phone: b.guest.phone || 'N/A',
+                time: new Date(b.actualCheckOut || b.checkOut).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })
+            })),
+            occupancyGuests: activeBookingsToday.map(b => ({
+                id: b.id,
+                guest: b.guest.name,
+                room: b.room.roomNumber,
+                roomType: b.room.type,
+                phone: b.guest.phone || 'N/A',
+                status: b.status 
             })),
             housekeeping: {
                 dirty: dirtyRooms + maintenanceRooms,

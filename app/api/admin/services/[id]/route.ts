@@ -36,7 +36,14 @@ export async function GET(
                         profilePhoto: true,
                         department: true,
                         designation: true,
-                        user: { select: { name: true, role: true } }
+                        user: { 
+                            select: { 
+                                name: true, 
+                                role: true,
+                                email: true,
+                                phone: true
+                            } 
+                        }
                     }
                 },
                 property: true,

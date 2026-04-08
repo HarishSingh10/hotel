@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
         if (authResult instanceof NextResponse) return authResult
 
         const body = await req.json()
-        const { id, propertyId, name, description, category, price, isVeg, isAvailable, image } = body
+        const { id, propertyId, name, description, category, price, margin, isVeg, isAvailable, image, images } = body
 
         const targetPropertyId = propertyId || authResult.user.propertyId
 
@@ -56,16 +56,19 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized for this property' }, { status: 403 })
         }
 
-        const data = {
-            name,
-            description,
-            category,
-            price: parseFloat(price.toString()),
-            isVeg: !!isVeg,
-            isAvailable: !!isAvailable,
-            image,
-            propertyId: targetPropertyId
+        const data: any = {
+            // Standard fields
         }
+
+        if (name !== undefined) data.name = name
+        if (description !== undefined) data.description = description
+        if (category !== undefined) data.category = category
+        if (price !== undefined) data.price = parseFloat(price.toString())
+        if (margin !== undefined) data.margin = parseFloat(margin.toString())
+        if (isVeg !== undefined) data.isVeg = !!isVeg
+        if (isAvailable !== undefined) data.isAvailable = !!isAvailable
+        if (images !== undefined) data.images = images
+        else if (image !== undefined) data.images = [image]
 
         let menuItem
         if (id) {
@@ -74,8 +77,15 @@ export async function POST(req: NextRequest) {
                 data
             })
         } else {
+            // For new items, ensure required fields are there
+            if (!name || !category || price === undefined) {
+                return NextResponse.json({ error: 'Missing required fields for new item' }, { status: 400 })
+            }
             menuItem = await prisma.menuItem.create({
-                data
+                data: {
+                    ...data,
+                    property: { connect: { id: targetPropertyId } }
+                }
             })
         }
 
@@ -83,6 +93,42 @@ export async function POST(req: NextRequest) {
 
     } catch (error: any) {
         console.error('[MENU_POST_ERROR]', error)
+        return NextResponse.json({ error: 'Internal Error' }, { status: 500 })
+    }
+}
+
+/**
+ * DELETE /api/admin/content/menu
+ * Remove a menu item
+ */
+export async function DELETE(req: NextRequest) {
+    try {
+        const authResult = await requireAuth(req, ['SUPER_ADMIN', 'HOTEL_ADMIN', 'MANAGER'])
+        if (authResult instanceof NextResponse) return authResult
+
+        const { searchParams } = new URL(req.url)
+        const id = searchParams.get('id')
+
+        if (!id) {
+            return NextResponse.json({ error: 'Item ID is required' }, { status: 400 })
+        }
+
+        // Check ownership/authorization
+        const existing = await prisma.menuItem.findUnique({ where: { id } })
+        if (!existing) {
+            return NextResponse.json({ error: 'Item not found' }, { status: 404 })
+        }
+
+        if (authResult.user.role !== 'SUPER_ADMIN' && authResult.user.propertyId !== existing.propertyId) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+        }
+
+        await prisma.menuItem.delete({ where: { id } })
+
+        return NextResponse.json({ success: true, message: 'Item deleted' })
+
+    } catch (error: any) {
+        console.error('[MENU_DELETE_ERROR]', error)
         return NextResponse.json({ error: 'Internal Error' }, { status: 500 })
     }
 }

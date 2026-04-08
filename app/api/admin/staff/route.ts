@@ -14,8 +14,17 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url)
     const queryPropertyId = searchParams.get('propertyId')
+    const activeOnly = searchParams.get('activeOnly') === 'true'
 
-    let where: any = {}
+    let where: any = {
+        user: { status: 'ACTIVE' } // Never show inactive accounts
+    }
+
+    if (activeOnly) {
+        where.attendances = {
+            some: { punchOut: null }
+        }
+    }
 
     // RBAC: If Super Admin, they can filter by any property or see all. 
     // Otherwise, they are locked to their own property.
@@ -30,8 +39,7 @@ export async function GET(request: Request) {
     }
 
     try {
-        const today = new Date()
-        today.setHours(0, 0, 0, 0)
+        // Time threshold: we consider shifts valid up to 24 hours back if not checked out
 
         const staff = await prisma.staff.findMany({
             where: where,
@@ -46,9 +54,7 @@ export async function GET(request: Request) {
                     }
                 },
                 attendances: {
-                    where: {
-                        date: today
-                    },
+                    orderBy: { punchIn: 'desc' },
                     take: 1
                 }
             },
@@ -63,7 +69,8 @@ export async function GET(request: Request) {
                 if (attendance.punchIn && !attendance.punchOut) {
                     dutyStatus = 'ON_DUTY'
                 } else if (attendance.punchOut) {
-                    dutyStatus = 'PUNCHED_OUT'
+                    const punchedOutToday = (new Date().getTime() - new Date(attendance.punchOut).getTime()) < 24 * 60 * 60 * 1000
+                    dutyStatus = punchedOutToday ? 'PUNCHED_OUT' : 'OFF_DUTY'
                 }
             } else {
                 dutyStatus = 'NOT_STARTED'

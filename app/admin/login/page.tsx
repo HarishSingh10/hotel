@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { signIn } from 'next-auth/react'
+import { signIn, getSession } from 'next-auth/react'
 import Link from 'next/link'
 import { Eye, EyeOff, Building2 } from 'lucide-react'
 import Button from '@/components/ui/Button'
@@ -33,10 +33,19 @@ export default function AdminLoginPage() {
         toast.error('Invalid credentials')
       } else if (result?.ok) {
         toast.success('Login successful!')
-        router.refresh()
-        setTimeout(() => {
-          router.push('/admin/dashboard')
-        }, 300)
+        
+        // Use timeout to let session propagate
+        setTimeout(async () => {
+          const session = await getSession()
+          const user = session?.user as any
+          
+          if (user?.department === 'ACCOUNTS') {
+            router.push('/admin/payroll')
+          } else {
+            router.push('/admin/dashboard')
+          }
+          router.refresh()
+        }, 500)
       }
     } catch (error) {
       toast.error('Something went wrong. Please try again.')

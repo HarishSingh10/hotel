@@ -267,7 +267,7 @@ export default function ServicesPage() {
             <div className="shrink-0 p-6 sm:px-8 bg-[#101922] border-b border-white/[0.06]">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                     <div>
-                        <h1 className="text-2xl font-black text-white tracking-tight">Service Operations</h1>
+                        <h1 className="text-2xl font-bold text-white tracking-tight">Service Operations</h1>
                         <p className="text-sm text-gray-500 mt-1">Manage and track guest requests in real-time</p>
                     </div>
                     <div className="flex items-center gap-3">
@@ -277,14 +277,6 @@ export default function ServicesPage() {
                             onClick={() => router.push('/admin/rooms')}
                         >
                             <LayoutGrid className="w-4 h-4 mr-2" /> Room Config
-                        </Button>
-                        <Button
-                            variant="secondary"
-                            className="bg-blue-500/10 border-blue-500/20 text-blue-400 hover:bg-blue-500/20"
-                            onClick={handleAutoAssign}
-                            loading={isAutoAssigning}
-                        >
-                            <Zap className="w-4 h-4 mr-2 fill-current" /> Smart Auto-Assign
                         </Button>
                         <Button
                             variant="secondary"
@@ -308,8 +300,8 @@ export default function ServicesPage() {
                     ].map((s, i) => (
                         <div key={i} className="bg-white/[0.02] border border-white/[0.04] rounded-2xl p-4 flex items-center justify-between">
                             <div>
-                                <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-1">{s.label}</p>
-                                <p className={cn("text-2xl font-black", s.color)}>{s.value}</p>
+                                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">{s.label}</p>
+                                <p className={cn("text-2xl font-bold", s.color)}>{s.value}</p>
                             </div>
                             <s.icon className={cn("w-5 h-5 opacity-20", s.color)} />
                         </div>
@@ -364,12 +356,12 @@ export default function ServicesPage() {
                     <table className="w-full text-left border-collapse">
                         <thead className="sticky top-0 bg-[#0f1115] z-20 border-b border-white/[0.06]">
                             <tr>
-                                <th className="px-8 py-4 text-[10px] font-black text-gray-600 uppercase tracking-widest">Request Type</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-gray-600 uppercase tracking-widest">Room #</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-gray-600 uppercase tracking-widest">Guest Name</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-gray-600 uppercase tracking-widest">Time Elapsed (SLA)</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-gray-600 uppercase tracking-widest">Assigned Staff</th>
-                                <th className="px-6 py-4 text-right pr-10 text-[10px] font-black text-gray-600 uppercase tracking-widest">Status</th>
+                                <th className="px-8 py-4 text-[10px] font-bold text-gray-600 uppercase tracking-widest">Request Type</th>
+                                <th className="px-6 py-4 text-[10px] font-bold text-gray-600 uppercase tracking-widest">Room #</th>
+                                <th className="px-6 py-4 text-[10px] font-bold text-gray-600 uppercase tracking-widest">Guest Name</th>
+                                <th className="px-6 py-4 text-[10px] font-bold text-gray-600 uppercase tracking-widest">Time Elapsed (SLA)</th>
+                                <th className="px-6 py-4 text-[10px] font-bold text-gray-600 uppercase tracking-widest">Assigned Staff</th>
+                                <th className="px-6 py-4 text-right pr-10 text-[10px] font-bold text-gray-600 uppercase tracking-widest">Status</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -389,20 +381,20 @@ export default function ServicesPage() {
                                                 {getServiceIcon(req.type)}
                                             </div>
                                             <div>
-                                                <p className="text-[15px] font-black text-white leading-tight">{req.title}</p>
+                                                <p className="text-[15px] font-bold text-white leading-tight">{req.title}</p>
                                                 <p className="text-[11px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">{req.type.toLowerCase().replace('_', ' ')}</p>
                                             </div>
                                         </div>
                                     </td>
                                     <td className="px-6 py-5">
-                                        <span className="text-lg font-black text-white">{req.room}</span>
+                                        <span className="text-lg font-bold text-white">{req.room}</span>
                                     </td>
                                     <td className="px-6 py-5 text-[14px] font-bold text-gray-300">
                                         {req.guest}
                                     </td>
                                     <td className="px-6 py-5">
                                         <div className={cn(
-                                            "inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-[12px] font-black border",
+                                            "inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-[12px] font-bold border",
                                             req.status === 'OVERDUE' ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' :
                                                 getSLAPrecent(req.requestTime, req.slaLimit) > 75 ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
                                                     'bg-[#1db954]/10 text-[#1db954] border-[#1db954]/20'
@@ -424,12 +416,12 @@ export default function ServicesPage() {
                                                 <div className="w-8 h-8 rounded-full bg-white/[0.03] border border-white/[0.05] flex items-center justify-center">
                                                     <Users className="w-4 h-4" />
                                                 </div>
-                                                <span className="text-[13px] italic font-medium">Unassigned</span>
+                                                <span className="text-[13px]  font-medium">Unassigned</span>
                                             </div>
                                         )}
                                     </td>
                                     <td className="px-4 py-5 text-right pr-10">
-                                        <span className={cn('px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] rounded-full border', getStatusStyle(req.status))}>
+                                        <span className={cn('px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] rounded-full border', getStatusStyle(req.status))}>
                                             {req.status === 'ACCEPTED' ? 'OPEN' : req.status.replace('_', ' ')}
                                         </span>
                                     </td>
@@ -520,7 +512,7 @@ export default function ServicesPage() {
 
                     <div className="space-y-4">
                         <div className="flex items-center justify-between">
-                            <p className="text-xs font-black uppercase tracking-widest text-gray-400">Path Steps & Durations</p>
+                            <p className="text-xs font-bold uppercase tracking-widest text-gray-400">Path Steps & Durations</p>
                             <Button
                                 variant="secondary"
                                 size="sm"
@@ -568,13 +560,13 @@ export default function ServicesPage() {
 
                         <div className="bg-blue-500/5 p-4 rounded-xl border border-blue-500/10 flex justify-between items-center">
                             <span className="text-sm font-bold text-blue-400">Total SLA Duration</span>
-                            <span className="text-lg font-black text-blue-400">{configSteps.reduce((acc, s) => acc + s.duration, 0)} Minutes</span>
+                            <span className="text-lg font-bold text-blue-400">{configSteps.reduce((acc, s) => acc + s.duration, 0)} Minutes</span>
                         </div>
                     </div>
 
                     <div className="space-y-4">
                         <div className="flex items-center justify-between">
-                            <p className="text-xs font-black uppercase tracking-widest text-gray-400">Guest Options (App Display)</p>
+                            <p className="text-xs font-bold uppercase tracking-widest text-gray-400">Guest Options (App Display)</p>
                             <Button
                                 variant="secondary"
                                 size="sm"

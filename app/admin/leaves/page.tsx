@@ -90,7 +90,7 @@ export default function LeavesManagementPage() {
         <div className="space-y-8 animate-fade-in max-w-[1400px] mx-auto pb-20">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-black text-white tracking-tight italic">Leave Approvals</h1>
+                    <h1 className="text-3xl font-bold text-white tracking-tight ">Leave Approvals</h1>
                     <p className="text-gray-500 font-bold uppercase tracking-widest text-[10px] mt-1">Manage staff absence and time-off requests</p>
                 </div>
                 <div className="flex items-center gap-3">
@@ -100,7 +100,7 @@ export default function LeavesManagementPage() {
                                 key={s}
                                 onClick={() => setFilterStatus(s)}
                                 className={cn(
-                                    "px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
+                                    "px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all",
                                     filterStatus === s ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20" : "text-gray-500 hover:text-gray-300"
                                 )}
                             >
@@ -115,12 +115,12 @@ export default function LeavesManagementPage() {
                 {loading ? (
                     <div className="py-20 flex flex-col items-center gap-4">
                         <Loader2 className="w-10 h-10 text-blue-500 animate-spin" />
-                        <p className="text-xs font-black uppercase tracking-widest text-gray-700">Fetching requests...</p>
+                        <p className="text-xs font-bold uppercase tracking-widest text-gray-700">Fetching requests...</p>
                     </div>
                 ) : requests.length === 0 ? (
                     <div className="py-32 text-center bg-white/[0.02] border border-dashed border-white/10 rounded-[3rem]">
                         <CalendarDays className="w-16 h-16 text-gray-800 mx-auto mb-6" />
-                        <p className="text-lg font-black text-gray-600 italic">No pending leave requests found</p>
+                        <p className="text-lg font-bold text-gray-600 ">No pending leave requests found</p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -147,7 +147,7 @@ export default function LeavesManagementPage() {
                                                 <Icon className="w-6 h-6" />
                                             </div>
                                             <div>
-                                                <h3 className="font-black text-white italic tracking-tight">{req.staff.user.name}</h3>
+                                                <h3 className="font-bold text-white  tracking-tight">{req.staff.user.name}</h3>
                                                 <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{req.staff.designation}</p>
                                             </div>
                                         </div>
@@ -159,29 +159,29 @@ export default function LeavesManagementPage() {
                                     <div className="space-y-4">
                                         <div className="bg-black/20 rounded-2xl p-4 border border-white/5">
                                             <div className="flex items-center justify-between mb-2">
-                                                <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Type</p>
-                                                <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest">{req.leaveType}</p>
+                                                <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">Type</p>
+                                                <p className="text-[10px] font-bold text-blue-500 uppercase tracking-widest">{req.leaveType}</p>
                                             </div>
                                             <div className="flex items-center justify-between">
-                                                <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Duration</p>
-                                                <p className="text-sm font-black text-white italic">{req.totalDays} Days</p>
+                                                <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">Duration</p>
+                                                <p className="text-sm font-bold text-white ">{req.totalDays} Days</p>
                                             </div>
                                         </div>
 
                                         <div className="flex items-center gap-4 px-2">
                                             <div className="flex-1">
-                                                <p className="text-[9px] font-black text-gray-600 uppercase tracking-[0.2em] mb-1">From</p>
-                                                <p className="text-xs font-black text-white">{format(new Date(req.startDate), 'MMM dd, yyyy')}</p>
+                                                <p className="text-[9px] font-bold text-gray-600 uppercase tracking-[0.2em] mb-1">From</p>
+                                                <p className="text-xs font-bold text-white">{format(new Date(req.startDate), 'MMM dd, yyyy')}</p>
                                             </div>
                                             <ChevronRight className="w-4 h-4 text-gray-800" />
                                             <div className="flex-1 text-right">
-                                                <p className="text-[9px] font-black text-gray-600 uppercase tracking-[0.2em] mb-1">To</p>
-                                                <p className="text-xs font-black text-white">{format(new Date(req.endDate), 'MMM dd, yyyy')}</p>
+                                                <p className="text-[9px] font-bold text-gray-600 uppercase tracking-[0.2em] mb-1">To</p>
+                                                <p className="text-xs font-bold text-white">{format(new Date(req.endDate), 'MMM dd, yyyy')}</p>
                                             </div>
                                         </div>
 
                                         <div className="pt-4 border-t border-white/5">
-                                            <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-2">Reason</p>
+                                            <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-2">Reason</p>
                                             <p className="text-xs font-medium text-gray-500 line-clamp-2 leading-relaxed">&ldquo;{req.reason}&rdquo;</p>
                                         </div>
                                     </div>
@@ -229,22 +229,22 @@ export default function LeavesManagementPage() {
                     <div className="bg-white/5 rounded-2xl p-5 space-y-4">
                         <div className="flex justify-between">
                             <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">Leave Type</span>
-                            <span className="text-xs font-black text-white">{selectedRequest?.leaveType}</span>
+                            <span className="text-xs font-bold text-white">{selectedRequest?.leaveType}</span>
                         </div>
                         <div className="flex justify-between">
                             <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">Dates</span>
-                            <span className="text-xs font-black text-white">
+                            <span className="text-xs font-bold text-white">
                                 {selectedRequest && format(new Date(selectedRequest.startDate), 'MMM dd')} - {selectedRequest && format(new Date(selectedRequest.endDate), 'MMM dd, yyyy')}
                             </span>
                         </div>
                         <div className="pt-3 border-t border-white/5">
                             <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Employee Statement</p>
-                            <p className="text-sm font-medium text-gray-300 leading-relaxed italic">&ldquo;{selectedRequest?.reason}&rdquo;</p>
+                            <p className="text-sm font-medium text-gray-300 leading-relaxed ">&ldquo;{selectedRequest?.reason}&rdquo;</p>
                         </div>
                     </div>
 
                     <div className="space-y-3">
-                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Rejection Reason (If rejecting)</label>
+                        <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest ml-1">Rejection Reason (If rejecting)</label>
                         <textarea
                             value={rejectionReason}
                             onChange={(e) => setRejectionReason(e.target.value)}

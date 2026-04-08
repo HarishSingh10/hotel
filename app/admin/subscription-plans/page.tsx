@@ -138,7 +138,7 @@ export default function SubscriptionPlansPage() {
                                 {activeTab === 'DIAMOND' && <Gem className="w-8 h-8 text-indigo-400" />}
                             </div>
                             <h2 className="text-xl font-bold text-white mb-1">{activeTab} Tier</h2>
-                            <div className="flex items-center justify-center gap-1 text-2xl font-black text-primary">
+                            <div className="flex items-center justify-center gap-1 text-2xl font-bold text-primary">
                                 <span className="text-lg opacity-60">₹</span>
                                 {currentPlan?.price || 0}
                                 <span className="text-[10px] text-text-tertiary uppercase tracking-tighter">/month</span>
@@ -146,7 +146,7 @@ export default function SubscriptionPlansPage() {
                         </div>
                         <div className="p-6 space-y-4">
                             <div>
-                                <label className="text-[10px] font-black uppercase text-text-tertiary mb-2 block">Monthly Pricing</label>
+                                <label className="text-[10px] font-bold uppercase text-text-tertiary mb-2 block">Monthly Pricing</label>
                                 <input 
                                     type="number" 
                                     value={currentPlan?.price || 0}

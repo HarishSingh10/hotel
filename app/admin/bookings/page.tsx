@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { startOfWeek, addDays, format, differenceInDays, isToday } from 'date-fns'
-import { ChevronLeft, ChevronRight, Plus, Star, Download } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Plus, Star, Download, Loader2, Calendar } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { CheckCircle2, LogOut, XCircle } from 'lucide-react'
@@ -12,7 +12,7 @@ import { downloadCSV } from '@/lib/csv'
 const STATUS_CONFIG: Record<string, { bar: string; label: string; dot: string; text: string }> = {
   RESERVED: { bar: 'bg-[#5a5200] border-l-[3px] border-[#d4aa00]', label: 'RESERVED', dot: 'bg-[#d4aa00]', text: 'text-[#ffe066]' },
   CHECKED_IN: { bar: 'bg-[#0d3d1e] border-l-[3px] border-[#1db954]', label: 'CHECKED-IN', dot: 'bg-[#1db954]', text: 'text-[#4ade80]' },
-  COMPLETED: { bar: 'bg-[#1a1f2e] border-l-[3px] border-[#4a5568]', label: 'CHECKED-OUT', dot: 'bg-[#4a5568]', text: 'text-[#94a3b8]' },
+  CHECKED_OUT: { bar: 'bg-[#1a1f2e] border-l-[3px] border-[#4a5568]', label: 'CHECKED-OUT', dot: 'bg-[#4a5568]', text: 'text-[#94a3b8]' },
   CANCELLED: { bar: 'bg-[#3d0d0d] border-l-[3px] border-[#e53e3e]', label: 'CANCELLED', dot: 'bg-[#e53e3e]', text: 'text-[#fc8181]' },
   AIRBNB: { bar: 'bg-[#2d1a47] border-l-[3px] border-[#805ad5]', label: 'AIRBNB', dot: 'bg-[#805ad5]', text: 'text-[#c084fc]' },
   DIRECT: { bar: 'bg-[#1a3a5c] border-l-[3px] border-[#3b82f6]', label: 'DIRECT', dot: 'bg-[#3b82f6]', text: 'text-[#60a5fa]' },
@@ -36,6 +36,20 @@ const LEGEND = [
   { label: 'Block/OTA', cls: 'bg-[#805ad5]' },
 ]
 
+const toLocalDateStr = (date: Date) => {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+}
+
+function parseLocal(str: string) {
+    if (!str) return new Date()
+    // Ensure we parse as LOCAL midnight, not UTC
+    if (str.includes('T')) str = str.split('T')[0]
+    return new Date(str + 'T00:00:00')
+}
+
 export default function BookingsPage() {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [viewMode, setViewMode] = useState<'day' | 'week' | 'month'>('week')
@@ -47,9 +61,19 @@ export default function BookingsPage() {
   const [roomFilter, setRoomFilter] = useState('All Rooms')
   const [floorFilter, setFloorFilter] = useState('All Floors')
 
-  const startDate = useMemo(() => startOfWeek(currentDate, { weekStartsOn: 1 }), [currentDate])
-  const days = useMemo(() => Array.from({ length: 7 }).map((_, i) => addDays(startDate, i)), [startDate])
-  const endDate = useMemo(() => days[6], [days])
+  const startDate = useMemo(() => {
+    let start: Date
+    if (viewMode === 'day') start = currentDate
+    else start = startOfWeek(currentDate, { weekStartsOn: 1 })
+    return parseLocal(toLocalDateStr(start))
+  }, [currentDate, viewMode])
+
+  const days = useMemo(() => {
+    const count = viewMode === 'day' ? 1 : viewMode === 'week' ? 7 : 30
+    return Array.from({ length: count }).map((_, i) => addDays(startDate, i))
+  }, [startDate, viewMode])
+
+  const endDate = useMemo(() => days[days.length - 1], [days])
 
   const fetchData = useCallback(async () => {
     setLoading(true)
@@ -65,9 +89,9 @@ export default function BookingsPage() {
         id: b.id,
         guest: b.guest?.name ?? 'Guest',
         room: b.room?.roomNumber ?? '',
-        startDate: new Date(b.checkIn),
-        endDate: new Date(b.checkOut),
-        nights: differenceInDays(new Date(b.checkOut), new Date(b.checkIn)),
+        startDate: parseLocal(b.checkIn),
+        endDate: parseLocal(b.checkOut),
+        nights: differenceInDays(parseLocal(b.checkOut), parseLocal(b.checkIn)) || 1,
         status: b.status,
         source: b.source ?? '',
         isVip: b.isVip ?? false,
@@ -96,7 +120,8 @@ export default function BookingsPage() {
         setSelectedBooking(null)
         fetchData()
       } else {
-        toast.error('Failed to update booking')
+        const err = await res.json()
+        toast.error(err.error || 'Failed to update booking')
       }
     } catch {
       toast.error('Something went wrong')
@@ -105,17 +130,32 @@ export default function BookingsPage() {
     }
   }
 
-  const handlePrevWeek = () => setCurrentDate(addDays(currentDate, -7))
-  const handleNextWeek = () => setCurrentDate(addDays(currentDate, 7))
+  const handlePrev = () => {
+    const offset = viewMode === 'day' ? -1 : viewMode === 'week' ? -7 : -30
+    setCurrentDate(addDays(currentDate, offset))
+  }
+  const handleNext = () => {
+    const offset = viewMode === 'day' ? 1 : viewMode === 'week' ? 7 : 30
+    setCurrentDate(addDays(currentDate, offset))
+  }
   const handleToday = () => setCurrentDate(new Date())
 
   const getBookingStyle = (booking: any) => {
+    const totalDays = days.length
     const startDiff = differenceInDays(booking.startDate, startDate)
     const leftOffset = Math.max(0, startDiff)
-    const width = Math.min(booking.nights, 7 - leftOffset)
+    const visibleNights = differenceInDays(
+      // Ensure we compare local midnights
+      booking.endDate > endDate ? parseLocal(toLocalDateStr(addDays(endDate, 1))) : booking.endDate,
+      booking.startDate < startDate ? startDate : booking.startDate
+    )
+    
+    // Safety check for width
+    const width = Math.max(0.5, Math.min(visibleNights, totalDays - leftOffset))
+    
     return {
-      left: `calc(${(leftOffset / 7) * 100}% + 2px)`,
-      width: `calc(${(width / 7) * 100}% - 4px)`,
+      left: `calc(${(leftOffset / totalDays) * 100}% + 2px)`,
+      width: `calc(${(width / totalDays) * 100}% - 4px)`,
     }
   }
 
@@ -127,6 +167,11 @@ export default function BookingsPage() {
 
   const filteredRooms = useMemo(() => {
     return rooms.filter(room => {
+      // Room Filter
+      if (roomFilter !== 'All Rooms') {
+        if (`Room ${room.roomNumber}` !== roomFilter) return false
+      }
+      // Floor Filter
       if (floorFilter !== 'All Floors') {
         const floorNum = parseInt(floorFilter.replace('Floor ', ''))
         const roomFloor = Math.floor((parseInt(room.roomNumber) || 0) / 100)
@@ -134,9 +179,9 @@ export default function BookingsPage() {
       }
       return true
     })
-  }, [rooms, floorFilter])
+  }, [rooms, floorFilter, roomFilter])
 
-  const monthLabel = format(startDate, 'MMMM yyyy')
+  const monthLabel = viewMode === 'day' ? format(currentDate, 'MMMM dd, yyyy') : format(startDate, 'MMMM yyyy')
 
   return (
     <div className="h-[calc(100vh-4rem)] flex flex-col gap-0 bg-[#101922] text-white">
@@ -155,14 +200,14 @@ export default function BookingsPage() {
         {/* Center: nav + today + filters */}
         <div className="flex items-center gap-2">
           <button
-            onClick={handlePrevWeek}
+            onClick={handlePrev}
             className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-white/10 transition-colors"
           >
             <ChevronLeft className="w-4 h-4 text-gray-400" />
           </button>
           <span className="text-sm font-medium text-white min-w-[120px] text-center">{monthLabel}</span>
           <button
-            onClick={handleNextWeek}
+            onClick={handleNext}
             className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-white/10 transition-colors"
           >
             <ChevronRight className="w-4 h-4 text-gray-400" />
@@ -237,141 +282,141 @@ export default function BookingsPage() {
         </div>
       </div>
 
-      {/* === CALENDAR GRID === */}
-      <div className="flex-1 flex flex-col overflow-hidden bg-[#101922]">
-        {/* Column Headers */}
-        <div className="flex border-b border-white/[0.07] shrink-0 bg-[#233648]">
-          {/* Room label column */}
-          <div className="w-[200px] shrink-0 flex items-center px-4 py-2 border-r border-white/[0.07]">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Rooms</span>
+      {/* === CALENDAR GRID (Desktop) / LIST (Mobile) === */}
+      <div className="flex-1 flex flex-col overflow-hidden bg-[#101922] relative">
+        {/* Desktop Header */}
+        <div className="hidden md:flex border-b border-white/[0.07] shrink-0 bg-[#233648]">
+          <div className="w-[180px] shrink-0 flex items-center px-4 py-3 border-r border-white/[0.07]">
+            <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">Inventory Hub</span>
           </div>
-          {/* Day columns */}
-          <div className="flex-1 grid grid-cols-7">
-            {days.map(day => {
-              const today = isToday(day)
-              return (
-                <div
-                  key={day.toString()}
-                  className={cn(
-                    'py-2 px-1 text-center border-r border-white/[0.07] last:border-r-0',
-                    today ? 'bg-[#4A9EFF]/5' : ''
-                  )}
-                >
-                  <p className="text-[9px] font-bold uppercase tracking-widest text-gray-500 mb-0.5">
-                    {format(day, 'EEE')}
-                  </p>
-                  <p className={cn(
-                    'text-sm font-bold inline-flex w-6 h-6 items-center justify-center rounded-full mx-auto',
-                    today
-                      ? 'bg-[#4A9EFF] text-white text-xs'
-                      : 'text-white'
-                  )}>
-                    {format(day, 'd')}
-                  </p>
-                </div>
-              )
-            })}
+          <div className="flex-1 grid" style={{ gridTemplateColumns: `repeat(${days.length}, 1fr)` }}>
+            {days.map((day, idx) => (
+              <div
+                key={day.toString()}
+                className={cn(
+                  'py-3 px-1 text-center border-r border-white/[0.07] last:border-r-0',
+                  isToday(day) ? 'bg-[#4A9EFF]/5' : '',
+                  viewMode === 'month' && idx % 3 !== 0 ? 'hidden lg:block' : ''
+                )}
+              >
+                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500 mb-1">
+                   {viewMode === 'day' ? format(day, 'EEEE') : format(day, 'EEE')}
+                </p>
+                <p className={cn(
+                  'text-[15px] font-black inline-flex w-7 h-7 items-center justify-center rounded-lg transition-all',
+                  isToday(day) ? 'bg-[#4A9EFF] text-white shadow-lg' : 'text-white'
+                )}>{format(day, 'd')}</p>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Room Rows */}
-        <div className="flex-1 overflow-y-auto">
+        {/* Desktop Rows */}
+        <div className="hidden md:block flex-1 overflow-y-auto custom-scrollbar">
           {loading ? (
-            <div className="flex items-center justify-center h-40">
-              <div className="flex flex-col items-center gap-3">
-                <div className="w-8 h-8 border-2 border-[#4A9EFF] border-t-transparent rounded-full animate-spin" />
-                <p className="text-sm text-gray-500">Loading schedule...</p>
-              </div>
-            </div>
-          ) : filteredRooms.length === 0 ? (
-            <div className="flex items-center justify-center h-40">
-              <p className="text-sm text-gray-500">No rooms found</p>
-            </div>
-          ) : (
-            filteredRooms.map((room, idx) => {
+             <div className="flex items-center justify-center h-full"><Loader2 className="w-8 h-8 animate-spin text-blue-500" /></div>
+          ) : filteredRooms.map((room, idx) => {
               const roomBookings = bookings.filter(b => b.room === room.roomNumber)
-              const roomStatus = room.status || 'CLEAN'
-              const statusCfg = ROOM_STATUS_CONFIG[roomStatus] || ROOM_STATUS_CONFIG['CLEAN']
-
+              const statusCfg = ROOM_STATUS_CONFIG[room.status || 'CLEAN'] || ROOM_STATUS_CONFIG['CLEAN']
               return (
-                <div
-                  key={room.id}
-                  className={cn(
-                    'flex border-b border-white/[0.05] h-[76px] group transition-colors',
-                    idx % 2 === 0 ? 'bg-[#101922]' : 'bg-[#141d28]',
-                    'hover:bg-[#182433]/40'
-                  )}
-                >
-                  {/* Room Info */}
-                  <div className="w-[200px] shrink-0 px-4 flex flex-col justify-center border-r border-white/[0.07] gap-1">
+                <div key={room.id} className={cn('flex border-b border-white/[0.05] h-[80px] group transition-colors', idx % 2 === 0 ? 'bg-[#101922]' : 'bg-[#141d28]', 'hover:bg-white/[0.02]')}>
+                  <div className="w-[180px] shrink-0 px-4 flex flex-col justify-center border-r border-white/[0.07] gap-1.5">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-bold text-white">{room.roomNumber}</span>
-                      <span className={cn('text-[9px] font-semibold px-1.5 py-0.5 rounded-md', statusCfg.cls)}>
-                        {statusCfg.label}
-                      </span>
+                      <span className="text-sm font-black text-white">{room.roomNumber}</span>
+                      <span className={cn('text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-md', statusCfg.cls)}>{statusCfg.label}</span>
                     </div>
-                    <span className="text-[10px] text-gray-500 leading-tight">
-                      {room.type ? room.type.replace('_', ' ') : 'Standard'}
-                    </span>
+                    <span className="text-[10px] font-bold text-gray-500 capitalize tracking-tight">{(room.type || 'standard').replace('_', ' ')}</span>
                   </div>
-
-                  {/* Timeline */}
-                  <div className="flex-1 grid grid-cols-7 relative">
+                  <div className="flex-1 grid relative" style={{ gridTemplateColumns: `repeat(${days.length}, 1fr)` }}>
                     {days.map(day => (
-                      <div
-                        key={day.toString()}
-                        className={cn(
-                          'border-r border-white/[0.05] last:border-r-0 h-full',
-                          isToday(day) ? 'bg-[#4A9EFF]/[0.03]' : ''
-                        )}
-                      />
+                      <div key={day.toString()} className={cn('border-r border-white/[0.04] last:border-r-0 h-full', isToday(day) ? 'bg-blue-400/[0.02]' : '')} />
                     ))}
-
-                    {/* Booking bars */}
                     {roomBookings.map(booking => {
-                      if (differenceInDays(booking.startDate, endDate) > 0) return null
-                      if (differenceInDays(booking.endDate, startDate) < 0) return null
-
+                      if (differenceInDays(booking.startDate, endDate) > 0 || differenceInDays(booking.endDate, startDate) < 0) return null
                       const cfg = getStatusConfig(booking.status)
                       return (
                         <div
                           key={booking.id}
                           onClick={() => setSelectedBooking(booking)}
-                          className={cn(
-                            'absolute top-[10px] bottom-[10px] rounded-md cursor-pointer transition-all',
-                            'hover:brightness-110 hover:scale-y-105 hover:z-20',
-                            'flex flex-col justify-center px-2 overflow-hidden z-10',
-                            cfg.bar
-                          )}
+                          className={cn('absolute top-[12px] bottom-[12px] rounded-lg cursor-pointer transition-all z-10 flex flex-col justify-center px-3 overflow-hidden shadow-xl border-l-4', cfg.bar)}
                           style={getBookingStyle(booking)}
                         >
                           <div className="flex items-center justify-between gap-1">
-                            <p className="text-[11px] font-semibold text-white truncate">{booking.guest}</p>
-                            {booking.isVip && <Star className="w-2.5 h-2.5 text-[#d4aa00] shrink-0 fill-[#d4aa00]" />}
+                            <p className="text-[11px] font-black text-white truncate uppercase tracking-tight">{booking.guest}</p>
+                            {booking.isVip && <Star className="w-3 h-3 text-amber-500 fill-amber-500" />}
                           </div>
-                          <div className="flex items-center gap-1 mt-0.5">
-                            <span className={cn('text-[9px] font-bold uppercase tracking-wide', cfg.text)}>
-                              {cfg.label}
-                            </span>
-                            <span className="text-[9px] text-gray-400">• {booking.nights} Night{booking.nights !== 1 ? 's' : ''}</span>
-                          </div>
+                          <p className={cn('text-[9px] font-black uppercase tracking-widest', cfg.text)}>
+                            {cfg.label} • {booking.nights}N
+                          </p>
                         </div>
                       )
                     })}
                   </div>
                 </div>
               )
-            })
+          })}
+        </div>
+
+        {/* Mobile View: Vertical Booking List */}
+        <div className="md:hidden flex-1 overflow-y-auto custom-scrollbar bg-[#0d1117]">
+          {loading ? (
+             <div className="flex items-center justify-center h-40"><Loader2 className="w-6 h-6 animate-spin text-blue-500" /></div>
+          ) : bookings.length === 0 ? (
+             <div className="flex flex-col items-center justify-center h-64 opacity-30 gap-3">
+                <Calendar className="w-12 h-12" />
+                <p className="text-sm font-black uppercase tracking-widest">No Bookings this week</p>
+             </div>
+          ) : (
+            <div className="p-4 space-y-4">
+               <h3 className="text-[11px] font-black text-gray-500 uppercase tracking-[0.3em] mb-4">Current Week Schedule</h3>
+               {bookings.sort((a,b) => a.startDate.getTime() - b.startDate.getTime()).map(booking => {
+                 const cfg = getStatusConfig(booking.status)
+                 return (
+                   <div 
+                     key={booking.id}
+                     onClick={() => setSelectedBooking(booking)}
+                     className={cn("p-4 rounded-2xl border transition-all active:scale-[0.98] relative overflow-hidden", cfg.bar)}
+                   >
+                      <div className="flex items-start justify-between mb-3">
+                         <div>
+                            <p className="text-[15px] font-black text-white leading-tight mb-1">{booking.guest}</p>
+                            <div className="flex items-center gap-2">
+                               <span className="text-[10px] font-black text-blue-400 bg-blue-400/10 px-1.5 py-0.5 rounded border border-blue-400/20">ROOM {booking.room}</span>
+                               <span className={cn("text-[10px] font-black uppercase tracking-widest", cfg.text)}>{cfg.label}</span>
+                            </div>
+                         </div>
+                         {booking.isVip && <div className="w-8 h-8 bg-amber-500/10 rounded-full flex items-center justify-center border border-amber-500/20"><Star className="w-4 h-4 text-amber-500 fill-amber-500" /></div>}
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3 bg-black/20 rounded-xl p-3 border border-white/5">
+                         <div>
+                            <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1">Check-in</p>
+                            <p className="text-[12px] font-bold text-white">{format(booking.startDate, 'MMM dd, EEE')}</p>
+                         </div>
+                         <div>
+                            <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1">Check-out</p>
+                            <p className="text-[12px] font-bold text-white">{format(booking.endDate, 'MMM dd, EEE')}</p>
+                         </div>
+                      </div>
+                      
+                      <div className="mt-3 flex items-center justify-between">
+                         <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{booking.nights} Nights Stay</span>
+                         <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{booking.source}</span>
+                      </div>
+                   </div>
+                 )
+               })}
+            </div>
           )}
         </div>
       </div>
 
       {/* === LEGEND === */}
-      <div className="flex items-center justify-center gap-6 py-2.5 px-4 border-t border-white/[0.07] bg-[#233648] shrink-0">
+      <div className="flex items-center justify-center gap-4 md:gap-8 py-4 px-4 border-t border-white/[0.07] bg-[#233648] shrink-0 flex-wrap">
         {LEGEND.map(item => (
-          <div key={item.label} className="flex items-center gap-1.5">
-            <span className={cn('w-3 h-3 rounded-sm', item.cls)} />
-            <span className="text-[10px] text-gray-400">{item.label}</span>
+          <div key={item.label} className="flex items-center gap-2">
+            <span className={cn('w-2.5 h-2.5 rounded-full shadow-lg shadow-black/20', item.cls)} />
+            <span className="text-[9px] font-black uppercase tracking-widest text-gray-400">{item.label}</span>
           </div>
         ))}
       </div>
@@ -459,7 +504,7 @@ export default function BookingsPage() {
                       {isUpdating ? 'Updating...' : 'Check Out Guest'}
                     </button>
                   )}
-                  {selectedBooking.status !== 'COMPLETED' && selectedBooking.status !== 'CANCELLED' && (
+                  {selectedBooking.status !== 'CHECKED_OUT' && selectedBooking.status !== 'CANCELLED' && (
                     <button
                       disabled={isUpdating}
                       onClick={() => handleUpdateStatus('CANCEL')}

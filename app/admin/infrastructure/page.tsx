@@ -123,7 +123,7 @@ export default function InfrastructurePage() {
                                 <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center", stat.bg)}>
                                     <stat.icon className={cn("w-5 h-5", stat.color)} />
                                 </div>
-                                <span className={cn("text-[9px] font-black tracking-[0.2em]", stat.labelColor)}>{stat.tag}</span>
+                                <span className={cn("text-[9px] font-bold tracking-[0.2em]", stat.labelColor)}>{stat.tag}</span>
                             </div>
                             <div className="space-y-1">
                                 <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">{stat.label}</p>
@@ -288,7 +288,7 @@ export default function InfrastructurePage() {
                                 ))}
                                 {nodes.length === 0 && (
                                     <tr>
-                                        <td colSpan={5} className="px-8 py-20 text-center text-gray-500 italic">
+                                        <td colSpan={5} className="px-8 py-20 text-center text-gray-500 ">
                                             Scanning for infrastructure nodes...
                                         </td>
                                     </tr>

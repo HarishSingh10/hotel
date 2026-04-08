@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { requireAuth } from '@/lib/auth/middleware'
-import { subMonths, startOfMonth, endOfMonth } from 'date-fns'
+import { startOfMonth, endOfMonth, subMonths, format } from 'date-fns'
 
 export const dynamic = 'force-dynamic'
 
@@ -10,102 +10,135 @@ export async function GET(req: NextRequest) {
         const authResult = await requireAuth(req, ['SUPER_ADMIN', 'HOTEL_ADMIN', 'MANAGER', 'RECEPTIONIST'])
         if (authResult instanceof NextResponse) return authResult
 
-        const totalGuests = await prisma.guest.count()
-        
-        // Fetch all guests with their bookings to calculate metrics
-        const guests = await prisma.guest.findMany({
+        const propertyId = authResult.user.propertyId
+        if (!propertyId && authResult.user.role !== 'SUPER_ADMIN') {
+             return NextResponse.json({ error: 'Property context required' }, { status: 400 })
+        }
+
+        // 1. Fetch all bookings for the property to analyze guest loyalty
+        const bookings = await prisma.booking.findMany({
+            where: propertyId ? { propertyId } : {},
             include: {
-                bookings: {
+                guest: {
                     select: {
-                        totalAmount: true,
-                        status: true,
-                        createdAt: true
+                        id: true,
+                        name: true,
+                        email: true,
+                        phone: true,
                     }
                 }
             }
         })
 
-        const repeatGuests = guests.filter(g => g.bookings.length > 1)
-        const repeatRate = totalGuests > 0 ? (repeatGuests.length / totalGuests) * 100 : 0
+        // 2. Group by Guest
+        const guestStats: Record<string, { 
+            name: string; 
+            email: string; 
+            stays: number; 
+            spent: number; 
+            lastVisit: Date;
+            sources: Set<string>;
+        }> = {}
 
-        const totalSpent = guests.reduce((sum, g) => {
-            const guestSpent = g.bookings
-                .filter(b => b.status === 'CHECKED_OUT' || b.status === 'CHECKED_IN')
-                .reduce((s, b) => s + (b.totalAmount || 0), 0)
-            return sum + guestSpent
-        }, 0)
+        let totalRevenue = 0
+        bookings.forEach(b => {
+            if (!b.guest) return
+            const gid = b.guestId
+            if (!guestStats[gid]) {
+                guestStats[gid] = { 
+                    name: b.guest.name, 
+                    email: b.guest.email || 'N/A', 
+                    stays: 0, 
+                    spent: 0, 
+                    lastVisit: b.checkIn,
+                    sources: new Set()
+                }
+            }
+            guestStats[gid].stays += 1
+            guestStats[gid].spent += b.totalAmount
+            if (b.checkIn > guestStats[gid].lastVisit) {
+                guestStats[gid].lastVisit = b.checkIn
+            }
+            guestStats[gid].sources.add(b.source)
+            totalRevenue += b.totalAmount
+        })
 
-        const loyaltyRevenue = repeatGuests.reduce((sum, g) => {
-            const guestSpent = g.bookings
-                .filter(b => b.status === 'CHECKED_OUT' || b.status === 'CHECKED_IN')
-                .reduce((s, b) => s + (b.totalAmount || 0), 0)
-            return sum + guestSpent
-        }, 0)
+        const guests = Object.values(guestStats)
+        const totalGuests = guests.length
+        const repeatGuests = guests.filter(g => g.stays > 1)
+        const repeatGuestCount = repeatGuests.length
+        const repeatRate = totalGuests > 0 ? Math.round((repeatGuestCount / totalGuests) * 100) : 0
+        
+        const loyaltyRevenue = repeatGuests.reduce((sum, g) => sum + g.spent, 0)
+        const loyaltyRevenuePercent = totalRevenue > 0 ? Math.round((loyaltyRevenue / totalRevenue) * 100) : 0
+        const avgLTV = totalGuests > 0 ? totalRevenue / totalGuests : 0
 
-        const avgLTV = totalGuests > 0 ? totalSpent / totalGuests : 0
-
-        // Format top guests for the table
+        // 3. Top Guests Ranking
         const topGuests = guests
+            .sort((a, b) => b.spent - a.spent)
+            .slice(0, 10)
             .map(g => {
-                const completedBookings = g.bookings.filter(b => b.status === 'CHECKED_OUT' || b.status === 'CHECKED_IN')
-                const totalSpent = completedBookings.reduce((s, b) => s + (b.totalAmount || 0), 0)
-                
-                // Determine tier
-                let tier = 'SILVER'
-                let color = 'text-gray-400'
-                let bg = 'bg-gray-400/10'
-                let border = 'border-gray-400/20'
+                let tier = 'BRONZE'
+                let color = 'text-orange-400'
+                let bg = 'bg-orange-400/10'
+                let border = 'border-orange-400/20'
 
-                if (totalSpent > 100000 || completedBookings.length > 10) {
-                    tier = 'DIAMOND'
-                    color = 'text-indigo-400'
-                    bg = 'bg-indigo-400/10'
-                    border = 'border-indigo-400/20'
-                } else if (totalSpent > 50000 || completedBookings.length > 5) {
+                if (g.spent > 50000 || g.stays > 10) {
                     tier = 'PLATINUM'
-                    color = 'text-blue-400'
-                    bg = 'bg-blue-400/10'
-                    border = 'border-blue-400/20'
-                } else if (totalSpent > 20000 || completedBookings.length > 2) {
+                    color = 'text-cyan-400'
+                    bg = 'bg-cyan-400/10'
+                    border = 'border-cyan-400/20'
+                } else if (g.spent > 20000 || g.stays > 5) {
                     tier = 'GOLD'
-                    color = 'text-amber-500'
-                    bg = 'bg-amber-500/10'
-                    border = 'border-amber-500/20'
+                    color = 'text-amber-400'
+                    bg = 'bg-amber-400/10'
+                    border = 'border-amber-400/20'
+                } else if (g.spent > 10000 || g.stays > 2) {
+                    tier = 'SILVER'
+                    color = 'text-slate-400'
+                    bg = 'bg-slate-400/10'
+                    border = 'border-slate-400/20'
                 }
 
                 return {
-                    id: g.id,
-                    name: g.name,
-                    email: g.email || 'N/A',
-                    stays: completedBookings.length,
-                    spent: totalSpent,
-                    lastVisit: g.updatedAt,
+                    ...g,
                     tier,
                     color,
                     bg,
                     border
                 }
             })
-            .sort((a, b) => b.spent - a.spent)
-            .slice(0, 50)
 
-        // Mock chart data for "First-time vs. Repeat Visitors"
-        // In a real app, we'd group by month
-        const months = ['Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-        const chartData = months.map(m => ({
-            month: m,
-            repeat: Math.floor(Math.random() * 40 + 20),
-            firstTime: Math.floor(Math.random() * 30 + 10)
-        }))
+        // 4. Chart Data (Last 6 Months)
+        const chartData = []
+        for (let i = 5; i >= 0; i--) {
+            const mDate = subMonths(new Date(), i)
+            const mStart = startOfMonth(mDate)
+            const mEnd = endOfMonth(mDate)
+            
+            const monthBookings = bookings.filter(b => b.createdAt >= mStart && b.createdAt <= mEnd)
+            const repeatOnes = monthBookings.filter(b => {
+                // Was this person a repeat guest AT THE TIME of this booking?
+                // Simple heuristic: check if they had any booking BEFORE this one's createdAt
+                const priorBookings = bookings.filter(pb => pb.guestId === b.guestId && pb.createdAt < b.createdAt)
+                return priorBookings.length > 0
+            })
+
+            chartData.push({
+                month: format(mDate, 'MMM'),
+                repeat: repeatOnes.length,
+                firstTime: monthBookings.length - repeatOnes.length
+            })
+        }
 
         return NextResponse.json({
             stats: {
-                totalGuests,
-                repeatGuestCount: repeatGuests.length,
-                repeatRate: repeatRate.toFixed(1),
+                repeatRate,
+                repeatGuestCount,
                 loyaltyRevenue,
+                loyaltyRevenuePercent,
                 avgLTV,
-                loyaltyRevenuePercent: totalSpent > 0 ? ((loyaltyRevenue / totalSpent) * 100).toFixed(1) : 0
+                totalGuests
             },
             topGuests,
             chartData

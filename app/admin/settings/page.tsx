@@ -7,7 +7,7 @@ import { useSession } from 'next-auth/react'
 import {
     Save, UserCog, Bell, Building2, CreditCard,
     Shield, LayoutDashboard, Bed,
-    Users, DollarSign, Calendar, Settings as SettingsIcon,
+    Users, IndianRupee, Calendar, Settings as SettingsIcon,
     Search, ChevronRight, Info, ShieldCheck,
     Smartphone, Database, Globe, Command,
     CheckCircle2, Clock, AlertTriangle, ExternalLink,
@@ -33,7 +33,7 @@ const GLOBAL_CONFIG = [
     { id: 'branding', label: 'General Info & Branding', desc: 'Configure hotel name, address, timezone, and brand assets.', icon: Building2 },
     { id: 'roles', label: 'Roles & Permissions', desc: 'Manage staff access levels, invite new users, and audit logs.', icon: UserCog },
     { id: 'ops', label: 'Operations & Notifications', desc: 'Setup email templates, SMS alerts, and housekeeping schedules.', icon: Smartphone },
-    { id: 'financial', label: 'Financial & Payments', desc: 'Connect payment gateways, set tax rates, and configure invoices.', icon: DollarSign },
+    { id: 'financial', label: 'Financial & Payments', desc: 'Connect payment gateways, set tax rates, and configure invoices.', icon: IndianRupee },
     { id: 'subscription', label: 'Subscription & Plan', desc: 'Manage your Zenbourg plan, view active features, and billing.', icon: Sparkles },
 ]
 
@@ -54,7 +54,7 @@ const MODULES = [
     { id: 'rooms', label: 'Room Management', icon: Bed },
     { id: 'guests', label: 'Guest Directory', icon: Users },
     { id: 'services', label: 'Service Requests', icon: Bell },
-    { id: 'finance', label: 'Finance & Payments', icon: DollarSign },
+    { id: 'finance', label: 'Finance & Payments', icon: IndianRupee },
     { id: 'content', label: 'Content Management', icon: LayoutGrid },
     { id: 'staff', label: 'Staff Management', icon: UserCheck },
     { id: 'settings', label: 'System Settings', icon: SettingsIcon },
@@ -96,7 +96,7 @@ const PERMISSIONS_SCHEMA = [
         id: 'finance',
         label: 'Finance & Accounts',
         description: 'Revenue tracking and invoicing',
-        icon: DollarSign,
+        icon: IndianRupee,
         permissions: [
             { id: 'view_reports', label: 'View Financial Reports', description: 'Access daily and monthly revenue reports.' },
             { id: 'manage_invoices', label: 'Manage Invoices', description: 'Create and edit guest invoices.' },
@@ -139,7 +139,8 @@ export default function SettingsOverviewPage() {
         coverImage: '',
         plan: 'GOLD',
         features: [] as string[],
-        planExpiresAt: null as string | null
+        planExpiresAt: null as string | null,
+        ranking: 0 // SEO Visibility Ranking
     })
 
     // Payments Logic
@@ -601,7 +602,7 @@ export default function SettingsOverviewPage() {
         <div className="min-h-screen bg-[#0B0F17] text-[#94A3B8]">
             {/* ── HEADER ── */}
             <div className="p-10 pb-6 max-w-[1700px] mx-auto w-full">
-                <div className="flex items-center gap-2 text-[10px] text-[#475569] font-black uppercase tracking-[0.2em] mb-6">
+                <div className="flex items-center gap-2 text-[10px] text-[#475569] font-bold uppercase tracking-[0.2em] mb-6">
                     <span className="hover:text-white cursor-pointer transition-colors">ZENBOURG</span>
                     <ChevronRight className="w-3 h-3 text-[#1E293B]" />
                     <span className={cn("transition-colors", view !== 'OVERVIEW' ? "cursor-pointer hover:text-white" : "text-[#38BDF8]")} onClick={() => setView('OVERVIEW')}>Settings</span>
@@ -621,7 +622,7 @@ export default function SettingsOverviewPage() {
                             </button>
                         )}
                         <div>
-                            <h1 className="text-4xl font-black tracking-[-0.04em] text-white mb-2 uppercase italic leading-none">
+                            <h1 className="text-3xl font-bold tracking-tight text-white mb-2 uppercase leading-none">
                                 {view === 'OVERVIEW' ? 'Command Center' : view === 'INTEGRATIONS' ? 'Integrations' : view === 'ROLES' ? 'Permissions' : view === 'BRANDING' ? 'Identity' : view === 'PAYMENT' ? 'Financials' : view === 'SUBSCRIPTION' ? 'Subscription' : view === 'PLANS' ? 'Subscription Tiers' : 'Operations'}
                             </h1>
                             <div className="flex items-center gap-3 text-sm text-[#475569] font-semibold tracking-tight">
@@ -649,7 +650,7 @@ export default function SettingsOverviewPage() {
                         <button
                             onClick={getSaveHandler()}
                             disabled={saving}
-                            className="flex items-center gap-2 px-8 py-3 bg-[#38BDF8] hover:bg-[#0EA5E9] text-[#0B0F17] text-[13px] font-black uppercase tracking-widest rounded-[14px] shadow-lg shadow-[#38BDF8]/10 transition-all active:scale-95 disabled:opacity-50"
+                            className="flex items-center gap-2 px-8 py-3 bg-[#38BDF8] hover:bg-[#0EA5E9] text-[#0B0F17] text-[13px] font-bold uppercase tracking-widest rounded-[14px] shadow-lg shadow-[#38BDF8]/10 transition-all active:scale-95 disabled:opacity-50"
                         >
                             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Commit Changes
                         </button>
@@ -671,7 +672,7 @@ export default function SettingsOverviewPage() {
                         />
                         <div className="absolute right-6 top-1/2 -translate-y-1/2 flex items-center gap-2 px-3 py-1.5 bg-[#1E293B] border border-[#334155] rounded-xl">
                             <Command className="w-3.5 h-3.5 text-[#475569]" />
-                            <span className="text-[11px] font-black text-[#475569] uppercase tracking-widest">K</span>
+                            <span className="text-[11px] font-bold text-[#475569] uppercase tracking-widest">K</span>
                         </div>
                     </div>
                 )}
@@ -685,7 +686,7 @@ export default function SettingsOverviewPage() {
                 <div className="lg:col-span-3 space-y-14">
                     {/* Role Debugger (Visible to Admin only) */}
                     {(session?.user?.role === 'SUPER_ADMIN' || session?.user?.email?.includes('superadmin')) && (
-                        <div className="px-6 py-2 bg-white/5 border border-white/10 rounded-full w-fit text-[10px] font-black text-gray-500 uppercase tracking-widest mb-4">
+                        <div className="px-6 py-2 bg-white/5 border border-white/10 rounded-full w-fit text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-4">
                             Access Level: <span className="text-[#38BDF8] ml-2">{session?.user?.role}</span> | {session?.user?.email}
                         </div>
                     )}
@@ -696,7 +697,7 @@ export default function SettingsOverviewPage() {
                             {(session?.user?.role === 'SUPER_ADMIN' || session?.user?.email === 'superadmin@zenboug.com' || session?.user?.email === 'superadmin@zenbourg.com') && (
                                 <div className="space-y-8 animate-in slide-in-from-top-4 duration-700">
                                     <div className="flex items-center justify-between ml-2">
-                                        <h3 className="text-[11px] font-black text-[#38BDF8] uppercase tracking-[0.4em]">Administrative Core</h3>
+                                        <h3 className="text-[11px] font-bold text-[#38BDF8] uppercase tracking-[0.4em]">Administrative Core</h3>
                                         <div className="h-px flex-1 bg-gradient-to-r from-[#38BDF8]/30 to-transparent ml-6" />
                                     </div>
                                     <div 
@@ -708,11 +709,11 @@ export default function SettingsOverviewPage() {
                                                 <ShieldAlert className="w-10 h-10" />
                                             </div>
                                             <div className="space-y-2">
-                                                <div className="flex items-center gap-4">
-                                                    <h4 className="text-3xl font-black text-white uppercase italic tracking-tighter">Plan Master Control</h4>
-                                                    <div className="px-4 py-1.5 bg-[#38BDF8]/10 border border-[#38BDF8]/30 rounded-full text-[10px] font-black text-[#38BDF8] uppercase tracking-widest animate-pulse">Core Access</div>
+                                                <div className="flex flex-col md:flex-row md:items-center gap-4">
+                                                    <h4 className="text-2xl font-bold text-white uppercase tracking-tight">Plan Master Control</h4>
+                                                    <div className="w-fit px-3 py-1 bg-[#38BDF8]/10 border border-[#38BDF8]/30 rounded-full text-[10px] font-bold text-[#38BDF8] uppercase tracking-widest">System Protocol</div>
                                                 </div>
-                                                <p className="text-[15px] text-[#475569] font-bold leading-tight">Define global tier protocols: toggle specific features and price points for Gold, Platinum, and Diamond subscriptions.</p>
+                                                <p className="text-sm text-slate-400 font-medium leading-relaxed">Define global tier protocols: toggle specific features and price points for Gold, Platinum, and Diamond subscriptions.</p>
                                             </div>
                                          </div>
                                          <div className="absolute -top-20 -right-20 w-80 h-80 bg-[#38BDF8]/5 rounded-full blur-[120px] pointer-events-none group-hover:bg-[#38BDF8]/10 transition-all duration-700" />
@@ -723,7 +724,7 @@ export default function SettingsOverviewPage() {
                             {/* Global Config Section */}
                             <div className="space-y-8">
                                 <div className="flex items-center justify-between ml-2">
-                                    <h3 className="text-[11px] font-black text-[#475569] uppercase tracking-[0.3em]">Institutional Configuration</h3>
+                                    <h3 className="text-[11px] font-bold text-[#475569] uppercase tracking-[0.3em]">Institutional Configuration</h3>
                                     <div className="h-px flex-1 bg-gradient-to-r from-[#1E293B] to-transparent ml-6" />
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -752,8 +753,8 @@ export default function SettingsOverviewPage() {
                                                 </div>
                                             </div>
                                             <div>
-                                                <h4 className="text-[20px] font-black text-white tracking-tight mb-2 uppercase">{item.label}</h4>
-                                                <p className="text-[13px] text-[#475569] font-medium leading-relaxed max-w-[90%]">{item.desc}</p>
+                                                <h4 className="text-lg font-bold text-white tracking-tight mb-2 uppercase">{item.label}</h4>
+                                                <p className="text-sm text-slate-500 font-medium leading-relaxed">{item.desc}</p>
                                             </div>
                                             <div className="absolute -bottom-8 -right-8 w-24 h-24 bg-[#38BDF8]/5 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
                                         </div>
@@ -765,7 +766,7 @@ export default function SettingsOverviewPage() {
                             {/* System & Data Section */}
                             <div className="space-y-8">
                                 <div className="flex items-center justify-between ml-2">
-                                    <h3 className="text-[11px] font-black text-[#475569] uppercase tracking-[0.3em]">Critical Infrastructure</h3>
+                                    <h3 className="text-[11px] font-bold text-[#475569] uppercase tracking-[0.3em]">Critical Infrastructure</h3>
                                     <div className="h-px flex-1 bg-gradient-to-r from-[#1E293B] to-transparent ml-6" />
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -791,8 +792,8 @@ export default function SettingsOverviewPage() {
                                                     <item.icon className="w-7 h-7" />
                                                 </div>
                                                 <div>
-                                                    <h4 className="text-[18px] font-black text-white uppercase tracking-tight">{item.label}</h4>
-                                                    <p className="text-[13px] text-[#475569] font-medium mt-1 leading-relaxed">{item.desc}</p>
+                                                    <h4 className="text-base font-bold text-white uppercase tracking-tight">{item.label}</h4>
+                                                    <p className="text-sm text-slate-500 font-medium mt-1 leading-relaxed">{item.desc}</p>
                                                 </div>
                                             </div>
                                             <ChevronRight className="w-5 h-5 text-[#1F2937] group-hover:text-white transition-all transform group-hover:translate-x-1" />
@@ -808,7 +809,7 @@ export default function SettingsOverviewPage() {
                                     <div key={app.id} className="p-8 bg-[#111827] border border-white/[0.06] rounded-[2rem] shadow-2xl relative overflow-hidden group hover:border-[#38BDF8]/20 transition-all">
                                         <div className="flex items-start justify-between relative z-10">
                                             <div className="space-y-4">
-                                                <div className={cn("w-14 h-14 rounded-[1.5rem] bg-white flex items-center justify-center text-2xl font-black", app.color)}>
+                                                <div className={cn("w-14 h-14 rounded-[1.5rem] bg-white flex items-center justify-center text-2xl font-bold", app.color)}>
                                                     {app.name.charAt(0)}
                                                 </div>
                                                 <div>
@@ -818,24 +819,24 @@ export default function SettingsOverviewPage() {
                                             </div>
                                             <div className="flex flex-col items-end gap-3">
                                                 {connectedApps.includes(app.id) ? (
-                                                    <div className="flex items-center gap-2 px-3 py-1.5 bg-[#1db954]/10 border border-[#1db954]/20 rounded-full text-[10px] font-black text-[#1db954] uppercase tracking-widest">
+                                                    <div className="flex items-center gap-2 px-3 py-1.5 bg-[#1db954]/10 border border-[#1db954]/20 rounded-full text-[10px] font-bold text-[#1db954] uppercase tracking-widest">
                                                         <CheckCircle2 className="w-3.5 h-3.5" /> Connected
                                                     </div>
                                                 ) : (
-                                                    <div className="flex items-center gap-2 px-3 py-1.5 bg-white/[0.03] border border-white/[0.06] rounded-full text-[10px] font-black text-gray-600 uppercase tracking-widest">
+                                                    <div className="flex items-center gap-2 px-3 py-1.5 bg-white/[0.03] border border-white/[0.06] rounded-full text-[10px] font-bold text-gray-600 uppercase tracking-widest">
                                                         Not Linked
                                                     </div>
                                                 )}
                                             </div>
                                         </div>
                                         <div className="mt-8 pt-6 border-t border-white/[0.04] relative z-10">
-                                            <p className="text-sm text-gray-500 font-medium italic mb-6">
+                                            <p className="text-sm text-gray-500 font-medium  mb-6">
                                                 Sync your {app.name} bookings, listings and pricing directly with Zenbourg PMS.
                                             </p>
                                             <button
                                                 onClick={() => handleIntegrationClick(app.id)}
                                                 className={cn(
-                                                    "w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl text-[12px] font-black uppercase tracking-[0.15em] transition-all active:scale-95 shadow-lg",
+                                                    "w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl text-[12px] font-bold uppercase tracking-[0.15em] transition-all active:scale-95 shadow-lg",
                                                     connectedApps.includes(app.id)
                                                         ? "bg-white/[0.04] border border-white/[0.1] text-white hover:bg-white/[0.08]"
                                                         : "bg-[#38BDF8] text-white hover:bg-[#0EA5E9] shadow-[#38BDF8]/10"
@@ -862,11 +863,11 @@ export default function SettingsOverviewPage() {
                         <div key={planType} className="bg-[#111827] border border-white/[0.06] rounded-[2.5rem] p-10 shadow-2xl relative overflow-hidden group">
                             <div className="flex items-center justify-between mb-8 relative z-10">
                                 <div className="space-y-2">
-                                    <h3 className={cn("text-2xl font-black italic tracking-tighter", 
+                                    <h3 className={cn("text-xl font-bold tracking-tight", 
                                         planType === 'GOLD' ? "text-amber-500" : 
                                         planType === 'PLATINUM' ? "text-blue-400" : "text-[#38BDF8]"
                                     )}>{planType}</h3>
-                                    <p className="text-xs text-gray-500 font-bold uppercase tracking-widest leading-none">Subscription Tier</p>
+                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest leading-none">Subscription Tier</p>
                                 </div>
                                 <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white/20 group-hover:text-white/40 transition-colors">
                                     <ShieldCheck className="w-7 h-7" />
@@ -875,15 +876,15 @@ export default function SettingsOverviewPage() {
 
                             <div className="space-y-6 mb-10 relative z-10">
                                 <div className="space-y-1">
-                                    <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Base Rate</p>
+                                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Base Rate</p>
                                     <div className="flex items-baseline gap-1">
-                                        <span className="text-3xl font-black text-white tracking-tighter">₹{plan.price.toLocaleString()}</span>
+                                        <span className="text-3xl font-bold text-white tracking-tighter">₹{plan.price.toLocaleString()}</span>
                                         <span className="text-xs font-bold text-gray-500">/mo</span>
                                     </div>
                                 </div>
                                 <div className="h-px bg-white/5" />
                                 <div className="space-y-4">
-                                    <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Included Protocols</p>
+                                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest ml-1">Included Protocols</p>
                                     <div className="grid grid-cols-1 gap-2.5">
                                         {plan.features.slice(0, 4).map((f: string) => (
                                             <div key={f} className="flex items-center gap-2.5 p-3.5 bg-white/[0.02] border border-white/5 rounded-2xl text-[11px] font-bold text-gray-300">
@@ -894,10 +895,10 @@ export default function SettingsOverviewPage() {
                                             </div>
                                         ))}
                                         {plan.features.length > 4 && (
-                                            <p className="text-[10px] font-bold text-[#38BDF8] ml-2 italic tracking-tight">+ {plan.features.length - 4} more advanced features</p>
+                                            <p className="text-[10px] font-bold text-[#38BDF8] ml-2  tracking-tight">+ {plan.features.length - 4} more advanced features</p>
                                         )}
                                         {plan.features.length === 0 && (
-                                            <p className="text-[11px] text-gray-600 italic ml-2">No features configured</p>
+                                            <p className="text-[11px] text-gray-600  ml-2">No features configured</p>
                                         )}
                                     </div>
                                 </div>
@@ -905,7 +906,7 @@ export default function SettingsOverviewPage() {
 
                             <button 
                                 onClick={() => setEditingPlan(plan)}
-                                className="w-full py-4 bg-white/5 border border-white/10 hover:bg-[#38BDF8] hover:text-[#0B0F17] hover:border-[#38BDF8] text-white text-[12px] font-black uppercase tracking-widest rounded-2xl transition-all relative z-10 shadow-xl"
+                                className="w-full py-4 bg-white/5 border border-white/10 hover:bg-[#38BDF8] hover:text-[#0B0F17] hover:border-[#38BDF8] text-white text-[12px] font-bold uppercase tracking-widest rounded-2xl transition-all relative z-10 shadow-xl"
                             >
                                 Configure Tier
                             </button>
@@ -927,20 +928,20 @@ export default function SettingsOverviewPage() {
                                 <LayoutDashboard className="w-7 h-7" />
                             </div>
                             <div>
-                                <h3 className="text-2xl font-black text-white uppercase italic tracking-tighter">Editing {editingPlan.plan} Tier</h3>
+                                <h3 className="text-2xl font-bold text-white uppercase  tracking-tighter">Editing {editingPlan.plan} Tier</h3>
                                 <p className="text-sm font-bold text-gray-500">Global Feature Entitlement Map</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
                             <div className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl">
-                                <span className="text-[11px] font-black text-gray-500 uppercase tracking-widest">Pricing Model</span>
+                                <span className="text-[11px] font-bold text-gray-500 uppercase tracking-widest">Pricing Model</span>
                                 <div className="flex items-center gap-2 mt-1">
-                                    <span className="text-white font-black">₹</span>
+                                    <span className="text-white font-bold">₹</span>
                                     <input 
                                         type="number" 
                                         value={editingPlan.price}
                                         onChange={e => setEditingPlan({ ...editingPlan, price: parseFloat(e.target.value) })}
-                                        className="bg-transparent border-none text-white font-black p-0 w-24 focus:outline-none focus:ring-0"
+                                        className="bg-transparent border-none text-white font-bold p-0 w-24 focus:outline-none focus:ring-0"
                                     />
                                 </div>
                             </div>
@@ -980,7 +981,7 @@ export default function SettingsOverviewPage() {
                                         {editingPlan.features.includes(feat.id) ? <Check className="w-5 h-5" /> : <Plus className="w-5 h-5 opacity-40" />}
                                     </div>
                                     <div className="space-y-1">
-                                        <h4 className={cn("text-sm font-black uppercase tracking-tight", 
+                                        <h4 className={cn("text-sm font-bold uppercase tracking-tight", 
                                             editingPlan.features.includes(feat.id) ? "text-[#38BDF8]" : "text-gray-400"
                                         )}>{feat.label}</h4>
                                         <p className="text-[11px] text-gray-500 font-medium leading-tight">{feat.desc}</p>
@@ -993,13 +994,13 @@ export default function SettingsOverviewPage() {
                     <div className="flex items-center justify-end gap-4 p-8 bg-black/20 rounded-[2.5rem] border border-white/5">
                         <button 
                             onClick={() => setEditingPlan(null)}
-                            className="px-8 py-3 text-[11px] font-black text-gray-500 uppercase tracking-widest hover:text-white transition-colors"
+                            className="px-8 py-3 text-[11px] font-bold text-gray-500 uppercase tracking-widest hover:text-white transition-colors"
                         >
                             Discard Changes
                         </button>
                         <button 
                             onClick={handleSavePlanDefinitions}
-                            className="flex items-center gap-2 px-10 py-3 bg-[#38BDF8] text-[#0B0F17] text-[11px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-[#0EA5E9] transition-all shadow-2xl shadow-[#38BDF8]/20"
+                            className="flex items-center gap-2 px-10 py-3 bg-[#38BDF8] text-[#0B0F17] text-[11px] font-bold uppercase tracking-[0.2em] rounded-2xl hover:bg-[#0EA5E9] transition-all shadow-2xl shadow-[#38BDF8]/20"
                         >
                             Deploy Tier Protocols
                         </button>
@@ -1011,10 +1012,10 @@ export default function SettingsOverviewPage() {
                         <div className="flex flex-col lg:flex-row gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500 min-h-[700px]">
                             <div className="w-full lg:w-80 space-y-6">
                                 <div className="space-y-4">
-                                    <h3 className="text-[10px] font-black text-[#475569] uppercase tracking-[0.2em] ml-2">Access Roles</h3>
+                                    <h3 className="text-[10px] font-bold text-[#475569] uppercase tracking-[0.2em] ml-2">Access Roles</h3>
                                     <button
                                         onClick={() => setIsAddRoleModalOpen(true)}
-                                        className="w-full flex items-center justify-center gap-2 py-4 bg-[#38BDF8] text-[#0B0F17] text-[13px] font-black uppercase tracking-widest rounded-2xl transition-all active:scale-95 shadow-lg shadow-[#38BDF8]/10"
+                                        className="w-full flex items-center justify-center gap-2 py-4 bg-[#38BDF8] text-[#0B0F17] text-[13px] font-bold uppercase tracking-widest rounded-2xl transition-all active:scale-95 shadow-lg shadow-[#38BDF8]/10"
                                     >
                                         <Plus className="w-5 h-5" /> New Role
                                     </button>
@@ -1050,14 +1051,14 @@ export default function SettingsOverviewPage() {
                             </div>
                             <div className="flex-1 space-y-8">
                                 <div className="bg-[#111827] border border-white/[0.06] rounded-[2.5rem] p-10 shadow-2xl">
-                                    <h2 className="text-3xl font-black text-white mb-8 uppercase italic tracking-tight flex items-center gap-3">
-                                        <Shield className="w-8 h-8 text-[#38BDF8]" /> {selectedRole} Privileges
+                                    <h2 className="text-2xl font-bold text-white mb-8 uppercase tracking-tight flex items-center gap-3">
+                                        <Shield className="w-6 h-6 text-[#38BDF8]" /> {selectedRole} Privileges
                                     </h2>
                                     <div className="space-y-6">
                                         {PERMISSIONS_SCHEMA.map(module => (
                                             <div key={module.id} className="space-y-4">
                                                 <div className="flex items-center justify-between mb-4">
-                                                    <h4 className="text-[13px] font-black text-[#94A3B8] uppercase tracking-widest">{module.label}</h4>
+                                                    <h4 className="text-[13px] font-bold text-[#94A3B8] uppercase tracking-widest">{module.label}</h4>
                                                     <div className="h-px flex-1 bg-white/5 ml-4" />
                                                 </div>
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1089,16 +1090,29 @@ export default function SettingsOverviewPage() {
                         <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
                              <div className="bg-[#111827] border border-white/[0.06] rounded-[2.5rem] p-10 space-y-10 shadow-2xl">
                                 <div className="flex items-center justify-between mb-4">
-                                    <h3 className="text-[13px] font-black text-white uppercase italic tracking-widest flex items-center gap-3">
+                                    <h3 className="text-[13px] font-bold text-white uppercase  tracking-widest flex items-center gap-3">
                                         <Building2 className="w-6 h-6 text-[#38BDF8]" /> Identity Profile
                                     </h3>
                                     <div className="h-px flex-1 bg-white/5 ml-6" />
                                 </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                                     <Input label="Institutional Name" value={hotelInfo.name} onChange={e => setHotelInfo({...hotelInfo, name: e.target.value})} />
                                     <Input label="Primary Administrative Email" value={hotelInfo.email} onChange={e => setHotelInfo({...hotelInfo, email: e.target.value})} />
                                     <Input label="Contact Line" value={hotelInfo.phone} onChange={e => setHotelInfo({...hotelInfo, phone: e.target.value})} />
                                     <Input label="Geographic Address" value={hotelInfo.address} onChange={e => setHotelInfo({...hotelInfo, address: e.target.value})} />
+                                    
+                                    {/* Ranking Display Card */}
+                                    <div className="p-6 bg-white/[0.03] border border-white/5 rounded-3xl flex items-center justify-between group overflow-hidden relative shadow-inner">
+                                        <div className="relative z-10">
+                                            <p className="text-[10px] font-black text-[#38BDF8] uppercase tracking-[0.2em] mb-1">Visibility Index</p>
+                                            <p className="text-3xl font-black text-white leading-none">#{hotelInfo.ranking || 0}</p>
+                                            <p className="text-[9px] text-gray-500 font-bold uppercase mt-2 tracking-widest">Search Priority Rank</p>
+                                        </div>
+                                        <div className="p-4 rounded-2xl bg-[#38BDF8]/10 text-[#38BDF8] border border-[#38BDF8]/20 relative z-10">
+                                            <TrendingUp className="w-8 h-8" />
+                                        </div>
+                                        <div className="absolute inset-0 bg-gradient-to-br from-[#38BDF8]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    </div>
                                 </div>
                                 <Textarea label="Executive Summary / Description" value={hotelInfo.description} onChange={e => setHotelInfo({...hotelInfo, description: e.target.value})} />
                              </div>
@@ -1107,14 +1121,14 @@ export default function SettingsOverviewPage() {
                         <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
                              <div className="bg-[#111827] border border-white/[0.06] rounded-[2.5rem] p-10 space-y-10 shadow-2xl">
                                 <div className="flex items-center justify-between mb-4">
-                                    <h3 className="text-[13px] font-black text-white uppercase italic tracking-widest flex items-center gap-3">
-                                        <DollarSign className="w-6 h-6 text-[#38BDF8]" /> Financial Ledger Protocol
+                                    <h3 className="text-[13px] font-bold text-white uppercase  tracking-widest flex items-center gap-3">
+                                        <IndianRupee className="w-6 h-6 text-[#38BDF8]" /> Financial Ledger Protocol
                                     </h3>
                                     <div className="h-px flex-1 bg-white/5 ml-6" />
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                                     <div className="space-y-4">
-                                        <label className="text-[11px] font-black text-[#475569] uppercase tracking-widest ml-1">Reporting Currency</label>
+                                        <label className="text-[11px] font-bold text-[#475569] uppercase tracking-widest ml-1">Reporting Currency</label>
                                         <div className="relative">
                                             <select 
                                                 value={paymentSettings.baseCurrency} 
@@ -1137,7 +1151,7 @@ export default function SettingsOverviewPage() {
                         <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
                              <div className="bg-[#111827] border border-white/[0.06] rounded-[2.5rem] p-10 space-y-12">
                                 <div className="space-y-8">
-                                    <h3 className="text-[13px] font-black text-white uppercase italic tracking-widest mb-6">Automated Communication</h3>
+                                    <h3 className="text-[13px] font-bold text-white uppercase  tracking-widest mb-6">Automated Communication</h3>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         {Object.entries(opsSettings.emailTemplates).map(([key, val]) => (
                                             <div key={key} className="flex items-center justify-between p-6 bg-[#0B0F17] border border-white/5 rounded-2xl">
@@ -1173,7 +1187,7 @@ export default function SettingsOverviewPage() {
                                     <div className="relative z-10">
                                         <div className="flex items-center gap-3 mb-2">
                                             <ShieldAlert className="w-6 h-6 text-[#38BDF8]" />
-                                            <h3 className="text-xl font-black text-white uppercase italic tracking-tight">Legal Hold Mode</h3>
+                                            <h3 className="text-xl font-bold text-white uppercase  tracking-tight">Legal Hold Mode</h3>
                                         </div>
                                         <p className="text-[13px] text-[#475569] font-medium max-w-[500px]">
                                             When enabled, all data purge cycles are suspended indefinitely for regulatory compliance or active investigations.
@@ -1200,7 +1214,7 @@ export default function SettingsOverviewPage() {
                              </div>
                              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div className="bg-[#111827] border border-white/[0.06] rounded-[2rem] p-8 shadow-2xl">
-                                    <h4 className="text-white font-black text-[13px] uppercase italic tracking-[0.2em] mb-8 flex items-center gap-2">
+                                    <h4 className="text-white font-bold text-[13px] uppercase  tracking-[0.2em] mb-8 flex items-center gap-2">
                                         <Sparkles className="w-5 h-5 text-[#38BDF8]" /> Active Protocols
                                     </h4>
                                     <div className="grid grid-cols-1 gap-4">
@@ -1232,7 +1246,7 @@ export default function SettingsOverviewPage() {
                                                 </div>
                                                 <button 
                                                     onClick={() => handleUpgradePlan(p.id)}
-                                                    className="px-4 py-2 bg-[#38BDF8] text-[#0B0F17] text-[10px] font-black uppercase rounded-lg hover:bg-[#0EA5E9] transition-all"
+                                                    className="px-4 py-2 bg-[#38BDF8] text-[#0B0F17] text-[10px] font-bold uppercase rounded-lg hover:bg-[#0EA5E9] transition-all"
                                                 >
                                                     Upgrade
                                                 </button>
@@ -1254,10 +1268,10 @@ export default function SettingsOverviewPage() {
                 <div className="space-y-10">
                     <div className="bg-[#111827] border border-[#1F2937] rounded-[32px] p-8 shadow-2xl relative overflow-hidden">
                         <div className="flex items-center justify-between mb-8">
-                            <h3 className="text-[11px] font-black text-white uppercase tracking-[0.3em]">Mission Control</h3>
+                            <h3 className="text-[11px] font-bold text-white uppercase tracking-[0.3em]">Mission Control</h3>
                             <div className="flex items-center gap-2 px-2.5 py-1 bg-[#10B981]/10 border border-[#10B981]/20 rounded-full">
                                 <div className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse" />
-                                <span className="text-[9px] font-black text-[#10B981] uppercase tracking-wider">Operational</span>
+                                <span className="text-[9px] font-bold text-[#10B981] uppercase tracking-wider">Operational</span>
                             </div>
                         </div>
                         
@@ -1268,22 +1282,22 @@ export default function SettingsOverviewPage() {
                                 { label: 'Booking Engine', status: 'Live', icon: Globe, color: 'text-amber-500' },
                                 { label: 'Payment Gateway', status: 'Verified', icon: CreditCard, color: 'text-indigo-500' }
                             ].map((stat, idx) => (
-                                <div key={idx} className="flex items-center justify-between p-4 bg-[#0B0F17] border border-[#1F2937] rounded-2xl">
-                                    <div className="flex items-center gap-4">
-                                        <div className={cn("p-2 bg-[#1F2937]/50 rounded-xl", stat.color)}>
+                                <div key={idx} className="flex items-center justify-between p-4 bg-[#0B0F17] border border-[#1F2937] rounded-xl hover:border-slate-700 transition-colors">
+                                    <div className="flex items-center gap-3">
+                                        <div className={cn("p-2 bg-[#1F2937]/50 rounded-lg", stat.color)}>
                                             <stat.icon className="w-4 h-4" />
                                         </div>
-                                        <span className="text-[13px] font-bold text-gray-300">{stat.label}</span>
+                                        <span className="text-sm font-semibold text-slate-300">{stat.label}</span>
                                     </div>
-                                    <span className="text-[11px] font-black text-[#475569] uppercase tracking-tighter">{stat.status}</span>
+                                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{stat.status}</span>
                                 </div>
                             ))}
                         </div>
 
                         <div className="mt-10 p-5 bg-gradient-to-br from-[#1E293B] to-[#0B0F17] border border-[#334155]/30 rounded-3xl relative overflow-hidden">
-                            <h4 className="text-[15px] font-black text-white mb-2 uppercase italic tracking-tight">System Health</h4>
+                            <h4 className="text-[15px] font-bold text-white mb-2 uppercase  tracking-tight">System Health</h4>
                             <div className="flex items-end gap-2 mb-4">
-                                <span className="text-3xl font-black text-white tracking-tighter">99.98</span>
+                                <span className="text-3xl font-bold text-white tracking-tighter">99.98</span>
                                 <span className="text-[12px] font-bold text-[#475569] mb-1.5">%</span>
                             </div>
                             <div className="h-1.5 bg-[#0B0F17] rounded-full overflow-hidden">
@@ -1296,7 +1310,7 @@ export default function SettingsOverviewPage() {
                     <div className="p-8 bg-[#38BDF8] rounded-[32px] relative overflow-hidden group cursor-pointer shadow-2xl">
                         <div className="relative z-10">
                             <HelpCircle className="w-10 h-10 text-[#0B0F17] mb-4" />
-                            <h3 className="text-xl font-black text-[#0B0F17] uppercase tracking-tighter mb-2">Technical Support</h3>
+                            <h3 className="text-xl font-bold text-[#0B0F17] uppercase tracking-tighter mb-2">Technical Support</h3>
                             <p className="text-[13px] text-[#0B0F17]/70 font-bold leading-tight">Access white-glove support 24/7 for all configuration needs.</p>
                         </div>
                         <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-white/20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" />
@@ -1313,7 +1327,7 @@ export default function SettingsOverviewPage() {
                     </div>
                     <button 
                         onClick={handleCreateRole}
-                        className="w-full py-4 bg-[#38BDF8] text-[#0B0F17] text-[13px] font-black uppercase tracking-widest rounded-2xl hover:bg-[#0EA5E9] transition-all shadow-lg shadow-[#38BDF8]/10"
+                        className="w-full py-4 bg-[#38BDF8] text-[#0B0F17] text-[13px] font-bold uppercase tracking-widest rounded-2xl hover:bg-[#0EA5E9] transition-all shadow-lg shadow-[#38BDF8]/10"
                     >
                         Initialize Role
                     </button>
