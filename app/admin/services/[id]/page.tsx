@@ -6,7 +6,8 @@ import {
     ChevronRight, X, Clock, AlertTriangle, CheckCircle2,
     LayoutGrid, User, MessageSquare, ArrowUpRight,
     Utensils, Brush, Settings as Tools, Shirt, AlertCircle,
-    History, Camera, Plus, ShieldAlert, List, Search
+    History, Camera, Plus, ShieldAlert, List, Search,
+    Mail, Phone
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
@@ -64,7 +65,7 @@ export default function ServiceDetailPage() {
     }, [id, router])
 
     const fetchStaff = async () => {
-        const res = await fetch('/api/admin/staff')
+        const res = await fetch('/api/admin/staff?activeOnly=true')
         if (res.ok) setStaffList(await res.json())
     }
 
@@ -86,8 +87,14 @@ export default function ServiceDetailPage() {
             if (res.ok) {
                 toast.success(`Order ${status.toLowerCase()}`)
                 fetchDetail()
+            } else {
+                const errText = res.status === 401 ? 'Unauthorized: Permission denied' : 'API Error'
+                toast.error(errText)
             }
-        } catch { toast.error('Update failed') }
+        } catch (err) { 
+            console.error(err)
+            toast.error('Update failed. Check network.') 
+        }
         finally { setIsUpdating(false) }
     }
 
@@ -477,21 +484,64 @@ export default function ServiceDetailPage() {
                         <div className="p-8 space-y-8">
                             <div>
                                 <label className="text-[10px] text-gray-600 font-black uppercase tracking-widest mb-3 block">Assigned To</label>
-                                <div className="relative">
-                                    <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none">
-                                        <div className="w-7 h-7 rounded-full bg-white/[0.05] border border-white/[0.08] flex items-center justify-center">
-                                            <User className="w-4 h-4 text-gray-500" />
+                                <div className="space-y-4">
+                                    <div className="relative">
+                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none">
+                                            <div className="w-7 h-7 rounded-full bg-white/[0.05] border border-white/[0.08] flex items-center justify-center">
+                                                <User className="w-4 h-4 text-gray-500" />
+                                            </div>
                                         </div>
+                                        <select
+                                            value={detail.assignedToId || ''}
+                                            onChange={(e) => handleAssign(e.target.value)}
+                                            className="w-full bg-[#101922] border border-white/[0.06] rounded-xl pl-14 pr-10 py-3 text-sm text-white font-black outline-none hover:border-blue-500/30 transition-all cursor-pointer appearance-none shadow-inner"
+                                        >
+                                            <option value="">Unassigned</option>
+                                            {staffList.map(s => <option key={s.id} value={s.id}>{s.name || s.user?.name}</option>)}
+                                        </select>
+                                        <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600 rotate-90 pointer-events-none" />
                                     </div>
-                                    <select
-                                        value={detail.assignedToId || ''}
-                                        onChange={(e) => handleAssign(e.target.value)}
-                                        className="w-full bg-[#101922] border border-white/[0.06] rounded-xl pl-14 pr-10 py-3 text-sm text-white font-black outline-none hover:border-blue-500/30 transition-all cursor-pointer appearance-none shadow-inner"
-                                    >
-                                        <option value="">Unassigned</option>
-                                        {staffList.map(s => <option key={s.id} value={s.id}>{s.name || s.user?.name}</option>)}
-                                    </select>
-                                    <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600 rotate-90 pointer-events-none" />
+
+                                    {detail.assignedTo && (
+                                        <div className="bg-[#101922] border border-white/[0.06] rounded-2xl p-4 space-y-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 font-black relative overflow-hidden">
+                                                    {detail.assignedTo.profilePhoto ? (
+                                                        <img src={detail.assignedTo.profilePhoto} alt="" className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <User className="w-5 h-5" />
+                                                    )}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <h4 className="text-sm font-black text-white truncate">{detail.assignedTo.user?.name}</h4>
+                                                    <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest truncate">{detail.assignedTo.designation || detail.assignedTo.department}</p>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={() => {
+                                                        const email = detail.assignedTo.user?.email;
+                                                        if (email) window.location.href = `mailto:${email}`;
+                                                        else toast.error('No email found for staff');
+                                                    }}
+                                                    className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-white/[0.04] hover:bg-white/[0.08] text-white text-[10px] font-black uppercase tracking-widest rounded-xl border border-white/[0.06] transition-all"
+                                                >
+                                                    <Mail className="w-3.5 h-3.5" /> Email
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        const phone = detail.assignedTo.user?.phone;
+                                                        if (phone) window.location.href = `tel:${phone}`;
+                                                        else toast.error('No phone number found for staff');
+                                                    }}
+                                                    className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 text-[10px] font-black uppercase tracking-widest rounded-xl border border-blue-500/20 transition-all"
+                                                >
+                                                    <Phone className="w-3.5 h-3.5" /> Call
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 

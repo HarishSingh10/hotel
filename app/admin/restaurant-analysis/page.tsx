@@ -8,17 +8,40 @@ import {
     Calendar, Download, TrendingUp, Users, Clock,
     ArrowUpRight, ArrowDownRight, Filter, ChevronDown,
     PieChart, BarChart3, UtensilsCrossed, Star,
-    AlertCircle, Search, MoreHorizontal
+    AlertCircle, Search, MoreHorizontal, Check, X
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { toast } from 'sonner'
+import { mutate } from 'swr'
 
 export default function RestaurantAnalysisPage() {
     const [timeRange, setTimeRange] = useState('Current Month')
     const [activeTab, setActiveTab] = useState('All Day')
 
-    const { data: analysisData, error, isLoading } = useSWR('/api/admin/analytics/restaurant', 
+    const rangeMap: Record<string, string> = {
+        'Current Month': 'month',
+        'Last Month': 'lastMonth',
+        '90 Days': 'quarter',
+        'This Year': 'year'
+    }
+
+    const { data: analysisData, error, isLoading, mutate: revalidate } = useSWR(`/api/admin/analytics/restaurant?tab=${activeTab}&range=${rangeMap[timeRange]}`, 
         (url: string) => fetch(url).then(res => res.json())
     )
+
+    const handleTimeToggle = () => {
+        const ranges = Object.keys(rangeMap)
+        const idx = ranges.indexOf(timeRange)
+        const next = ranges[(idx + 1) % ranges.length]
+        setTimeRange(next)
+    }
+
+    const [editingId, setEditingId] = useState<string | null>(null)
+    const [editingValue, setEditingValue] = useState('')
+
+    const handleExportPDF = () => {
+        window.print()
+    }
 
     if (isLoading) {
         return (
@@ -36,11 +59,47 @@ export default function RestaurantAnalysisPage() {
         )
     }
 
-    const { stats, topSelling, poorPerforming } = analysisData
+    const { stats, topSelling, poorPerforming, matrix, categories } = analysisData
+
+    const handleUpdateMargin = async (itemId: string, newMargin: number) => {
+        try {
+            const res = await fetch('/api/admin/content/menu', {
+                method: 'POST', // The route handles both create and update
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: itemId, margin: newMargin })
+            })
+            if (res.ok) {
+                toast.success('Margin optimized!')
+                setEditingId(null)
+                mutate('/api/admin/analytics/restaurant')
+            }
+        } catch (error) {
+            toast.error('Failed to update margin')
+        }
+    }
 
     return (
-        <div className="min-h-screen bg-[#0d1117] text-gray-300 font-sans p-8">
+        <div className="min-h-screen bg-[#0d1117] text-gray-300 font-sans p-8 print:p-0 print:bg-white print:text-black">
+            <style jsx global>{`
+                @media print {
+                    body { background: white !important; color: black !important; }
+                    .bg-[#161b22] { background: #f9fafb !important; border: 1px solid #e5e7eb !important; }
+                    .text-white { color: black !important; }
+                    .text-gray-300 { color: #374151 !important; }
+                    .border-gray-800 { border-color: #e5e7eb !important; }
+                    button { display: none !important; }
+                    .print-header { display: block !important; }
+                    .shadow-sm { shadow: none !important; }
+                }
+            `}</style>
+
             <div className="max-w-[1600px] mx-auto space-y-10">
+                
+                {/* Print Only Header */}
+                <div className="hidden print:block mb-10 border-b-2 border-black pb-4 text-center">
+                    <h1 className="text-4xl font-black uppercase">Restaurant Performance Report</h1>
+                    <p className="text-sm font-bold mt-2">{new Date().toLocaleDateString()} • {activeTab} Performance</p>
+                </div>
 
                 {/* ── HEADER ── */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
@@ -49,17 +108,24 @@ export default function RestaurantAnalysisPage() {
                         <p className="text-gray-500 font-medium">Detailed analytics on restaurant performance and menu item optimization.</p>
                     </div>
                     <div className="flex items-center gap-3">
-                        <button className="flex items-center gap-2 px-4 py-2.5 bg-[#161b22] border border-gray-800 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors">
-                            <Calendar className="w-4 h-4 text-gray-500" /> {timeRange}
+                        <button 
+                            onClick={handleTimeToggle}
+                            className="flex items-center gap-3 px-5 py-2.5 bg-[#161b22] border border-gray-800 rounded-lg text-sm font-semibold hover:border-blue-500/50 hover:bg-[#1c2128] transition-all group active:scale-95"
+                        >
+                            <Calendar className="w-4 h-4 text-blue-500 group-hover:scale-110 transition-transform" /> 
+                            <span className="text-gray-300">{timeRange}</span>
                         </button>
-                        <button className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold rounded-lg shadow-sm transition-all active:scale-[0.98]">
+                        <button 
+                            onClick={handleExportPDF}
+                            className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold rounded-lg shadow-sm transition-all active:scale-[0.98] print:hidden"
+                        >
                             <Download className="w-4 h-4" /> Export PDF
                         </button>
                     </div>
                 </div>
 
                 {/* ── TABS ── */}
-                <div className="flex bg-[#161b22] p-1 rounded-lg border border-gray-800 w-fit">
+                <div className="flex bg-[#161b22] p-1 rounded-lg border border-gray-800 w-fit print:hidden">
                     {['All Day', 'Breakfast', 'Lunch', 'Dinner'].map((tab) => (
                         <button
                             key={tab}
@@ -118,7 +184,7 @@ export default function RestaurantAnalysisPage() {
                                 <div key={i} className="space-y-2">
                                     <div className="flex justify-between text-sm font-medium">
                                         <span className="text-gray-300">{item.name}</span>
-                                        <span className="text-gray-500 font-mono italic">{item.units} units</span>
+                                        <span className="text-gray-500 font-mono ">{item.units} units</span>
                                     </div>
                                     <div className="h-1.5 w-full bg-[#0d1117] rounded-full overflow-hidden">
                                         <div
@@ -140,28 +206,31 @@ export default function RestaurantAnalysisPage() {
                         <div className="relative flex-1 flex items-center justify-center p-10">
                             <div className="relative w-48 h-48 rounded-full border-[16px] border-[#0d1117] flex items-center justify-center shadow-inner">
                                 {/* Simulated Doughnut Segments */}
-                                <div className="absolute inset-[-16px] rounded-full border-[16px] border-blue-600" style={{ clipPath: 'polygon(50% 50%, 100% 0, 100% 100%, 0 100%, 0 0)' }} />
-                                <div className="absolute inset-[-16px] rounded-full border-[16px] border-green-500" style={{ clipPath: 'polygon(50% 50%, 0 0, 100% 0, 100% 24%)' }} />
-                                <div className="absolute inset-[-16px] rounded-full border-[16px] border-amber-500" style={{ clipPath: 'polygon(50% 50%, 100% 24%, 100% 38%)' }} />
+                                {categories.map((cat: any, i: number) => (
+                                    <div 
+                                        key={i}
+                                        className="absolute inset-[-16px] rounded-full border-[16px]" 
+                                        style={{ 
+                                            borderColor: i === 0 ? '#2563eb' : i === 1 ? '#22c55e' : '#f59e0b',
+                                            clipPath: `polygon(50% 50%, ${i === 0 ? '100% 0, 100% 100%, 0 100%, 0 0' : i === 1 ? '0 0, 100% 0, 100% 24%' : '100% 24%, 100% 38%'})`
+                                        }} 
+                                    />
+                                ))}
 
                                 <div className="text-center">
                                     <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest leading-none mb-1">Total</p>
-                                    <p className="text-2xl font-bold text-white leading-none">₹84k</p>
+                                    <p className="text-2xl font-bold text-white leading-none">{formatCurrency(stats.totalRevenue)}</p>
                                 </div>
                             </div>
                         </div>
                         <div className="grid grid-cols-1 gap-4 mt-auto">
-                            {[
-                                { label: 'Mains', value: '62%', color: 'bg-blue-600' },
-                                { label: 'Drinks', value: '24%', color: 'bg-green-500' },
-                                { label: 'Appetizers', value: '14%', color: 'bg-amber-500' },
-                            ].map((cat, i) => (
+                            {categories.map((cat: any, i: number) => (
                                 <div key={i} className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
-                                        <div className={cn("w-2 h-2 rounded-full", cat.color)} />
+                                        <div className={cn("w-2 h-2 rounded-full", i === 0 ? 'bg-blue-600' : i === 1 ? 'bg-green-500' : 'bg-amber-500')} />
                                         <span className="text-sm font-medium text-gray-400">{cat.label}</span>
                                     </div>
-                                    <span className="text-sm font-bold text-white">{cat.value}</span>
+                                    <span className="text-sm font-bold text-white">{cat.value}%</span>
                                 </div>
                             ))}
                         </div>
@@ -183,80 +252,212 @@ export default function RestaurantAnalysisPage() {
                         <div className="bg-[#161b22] border border-gray-800 rounded-xl p-8 shadow-sm relative group overflow-hidden">
                             <Star className="absolute top-[-20px] right-[-20px] w-32 h-32 text-gray-800/10 group-hover:text-amber-500/5 transition-all duration-500" />
                             <div className="flex items-center gap-4 mb-8">
-                                <h4 className="text-blue-500 italic font-black text-xl flex items-center gap-3">
+                                <h4 className="text-blue-500  font-bold text-xl flex items-center gap-3">
                                     <Star className="w-5 h-5 fill-blue-500" /> Stars
                                 </h4>
                                 <span className="bg-blue-500/10 text-blue-500 text-[9px] font-bold px-3 py-1 rounded uppercase tracking-widest">High Profit • High Popularity</span>
                             </div>
                             <div className="space-y-4">
-                                <div className="flex justify-between items-center p-4 bg-[#0d1117] rounded-lg border border-gray-800">
-                                    <span className="text-sm font-bold text-white">Wagyu Burger</span>
-                                    <span className="text-xs font-bold text-green-500">₹12.40 Margin</span>
-                                </div>
-                                <div className="flex justify-between items-center p-4 bg-[#0d1117] rounded-lg border border-gray-800">
-                                    <span className="text-sm font-bold text-white">Truffle Pizza</span>
-                                    <span className="text-xs font-bold text-green-500">₹10.80 Margin</span>
-                                </div>
+                                {matrix.stars.map((item: any) => (
+                                    <div key={item.id} className="flex justify-between items-center p-4 bg-[#0d1117] rounded-lg border border-gray-800 group/item">
+                                        <div>
+                                            <p className="text-sm font-bold text-white">{item.name}</p>
+                                            <p className="text-[10px] text-gray-600 font-mono italic">Vol: {item.units} units</p>
+                                        </div>
+                                        <div className="text-right">
+                                            {editingId === item.id ? (
+                                                <div className="flex items-center gap-2">
+                                                    <input 
+                                                        type="number"
+                                                        value={editingValue}
+                                                        onChange={(e) => setEditingValue(e.target.value)}
+                                                        className="w-20 bg-[#161b22] border border-blue-500 rounded px-2 py-1 text-xs text-white focus:outline-none"
+                                                        autoFocus
+                                                    />
+                                                    <button onClick={() => handleUpdateMargin(item.id, parseFloat(editingValue))} className="p-1 hover:bg-green-500/20 rounded text-green-500">
+                                                        <Check className="w-4 h-4" />
+                                                    </button>
+                                                    <button onClick={() => setEditingId(null)} className="p-1 hover:bg-red-500/20 rounded text-red-500">
+                                                        <X className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <p className="text-xs font-bold text-green-500">{formatCurrency(item.margin)} Margin</p>
+                                                    <button 
+                                                        onClick={() => {
+                                                            setEditingId(item.id)
+                                                            setEditingValue(item.margin.toString())
+                                                        }}
+                                                        className="opacity-0 group-hover/item:opacity-100 text-[9px] font-black text-blue-600 uppercase tracking-widest hover:underline transition-opacity"
+                                                    >
+                                                        Adjust
+                                                    </button>
+                                                </>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                                {matrix.stars.length === 0 && <p className="text-xs text-gray-600 italic">No items in this quadrant yet.</p>}
                             </div>
                         </div>
 
                         {/* Plowhorses */}
                         <div className="bg-[#161b22] border border-gray-800 rounded-xl p-8 shadow-sm group">
                             <div className="flex items-center gap-4 mb-8">
-                                <h4 className="text-gray-400 italic font-black text-xl flex items-center gap-3">
+                                <h4 className="text-gray-400  font-bold text-xl flex items-center gap-3">
                                     <Clock className="w-5 h-5" /> Plowhorses
                                 </h4>
                                 <span className="bg-gray-800 text-gray-500 text-[9px] font-bold px-3 py-1 rounded uppercase tracking-widest">Low Profit • High Popularity</span>
                             </div>
                             <div className="space-y-4">
-                                <div className="flex justify-between items-center p-4 bg-[#0d1117] rounded-lg border border-gray-800">
-                                    <span className="text-sm font-bold text-white">Caesar Salad</span>
-                                    <span className="text-xs font-bold text-amber-500">₹3.20 Margin</span>
-                                </div>
-                                <div className="flex justify-between items-center p-4 bg-[#0d1117] rounded-lg border border-gray-800">
-                                    <span className="text-sm font-bold text-white">House Fries</span>
-                                    <span className="text-xs font-bold text-amber-500">₹1.50 Margin</span>
-                                </div>
+                                {matrix.plowhorses.map((item: any) => (
+                                    <div key={item.id} className="flex justify-between items-center p-4 bg-[#0d1117] rounded-lg border border-gray-800 group/item">
+                                        <div>
+                                            <p className="text-sm font-bold text-white">{item.name}</p>
+                                            <p className="text-[10px] text-gray-600 font-mono italic">Vol: {item.units} units</p>
+                                        </div>
+                                        <div className="text-right">
+                                            {editingId === item.id ? (
+                                                <div className="flex items-center gap-2">
+                                                    <input 
+                                                        type="number"
+                                                        value={editingValue}
+                                                        onChange={(e) => setEditingValue(e.target.value)}
+                                                        className="w-20 bg-[#161b22] border border-blue-500 rounded px-2 py-1 text-xs text-white focus:outline-none"
+                                                        autoFocus
+                                                    />
+                                                    <button onClick={() => handleUpdateMargin(item.id, parseFloat(editingValue))} className="p-1 hover:bg-green-500/20 rounded text-green-500">
+                                                        <Check className="w-4 h-4" />
+                                                    </button>
+                                                    <button onClick={() => setEditingId(null)} className="p-1 hover:bg-red-500/20 rounded text-red-500">
+                                                        <X className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <p className="text-xs font-bold text-amber-500">{formatCurrency(item.margin)} Margin</p>
+                                                    <button 
+                                                        onClick={() => {
+                                                            setEditingId(item.id)
+                                                            setEditingValue(item.margin.toString())
+                                                        }}
+                                                        className="opacity-0 group-hover/item:opacity-100 text-[9px] font-black text-blue-600 uppercase tracking-widest hover:underline transition-opacity"
+                                                    >
+                                                        Adjust
+                                                    </button>
+                                                </>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                                {matrix.plowhorses.length === 0 && <p className="text-xs text-gray-600 italic">No items in this quadrant yet.</p>}
                             </div>
                         </div>
 
                         {/* Puzzles */}
                         <div className="bg-[#161b22] border border-gray-800 rounded-xl p-8 shadow-sm group">
                             <div className="flex items-center gap-4 mb-8">
-                                <h4 className="text-gray-400 italic font-black text-xl flex items-center gap-3">
+                                <h4 className="text-gray-400  font-bold text-xl flex items-center gap-3">
                                     <Search className="w-5 h-5" /> Puzzles
                                 </h4>
                                 <span className="bg-gray-800 text-gray-500 text-[9px] font-bold px-3 py-1 rounded uppercase tracking-widest">High Profit • Low Popularity</span>
                             </div>
                             <div className="space-y-4">
-                                <div className="flex justify-between items-center p-4 bg-[#0d1117] rounded-lg border border-gray-800">
-                                    <span className="text-sm font-bold text-white">Aged Cognac Flight</span>
-                                    <span className="text-xs font-bold text-blue-500">₹45.00 Margin</span>
-                                </div>
-                                <div className="flex justify-between items-center p-4 bg-[#0d1117] rounded-lg border border-gray-800">
-                                    <span className="text-sm font-bold text-white">Caviar Tasters</span>
-                                    <span className="text-xs font-bold text-blue-500">₹38.00 Margin</span>
-                                </div>
+                                {matrix.puzzles.map((item: any) => (
+                                    <div key={item.id} className="flex justify-between items-center p-4 bg-[#0d1117] rounded-lg border border-gray-800 group/item">
+                                        <div>
+                                            <p className="text-sm font-bold text-white">{item.name}</p>
+                                            <p className="text-[10px] text-gray-600 font-mono italic">Vol: {item.units} units</p>
+                                        </div>
+                                        <div className="text-right">
+                                            {editingId === item.id ? (
+                                                <div className="flex items-center gap-2">
+                                                    <input 
+                                                        type="number"
+                                                        value={editingValue}
+                                                        onChange={(e) => setEditingValue(e.target.value)}
+                                                        className="w-20 bg-[#161b22] border border-blue-500 rounded px-2 py-1 text-xs text-white focus:outline-none"
+                                                        autoFocus
+                                                    />
+                                                    <button onClick={() => handleUpdateMargin(item.id, parseFloat(editingValue))} className="p-1 hover:bg-green-500/20 rounded text-green-500">
+                                                        <Check className="w-4 h-4" />
+                                                    </button>
+                                                    <button onClick={() => setEditingId(null)} className="p-1 hover:bg-red-500/20 rounded text-red-500">
+                                                        <X className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <p className="text-xs font-bold text-blue-500">{formatCurrency(item.margin)} Margin</p>
+                                                    <button 
+                                                        onClick={() => {
+                                                            setEditingId(item.id)
+                                                            setEditingValue(item.margin.toString())
+                                                        }}
+                                                        className="opacity-0 group-hover/item:opacity-100 text-[9px] font-black text-blue-600 uppercase tracking-widest hover:underline transition-opacity"
+                                                    >
+                                                        Adjust
+                                                    </button>
+                                                </>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                                {matrix.puzzles.length === 0 && <p className="text-xs text-gray-600 italic">No items in this quadrant yet.</p>}
                             </div>
                         </div>
 
                         {/* Dogs */}
                         <div className="bg-[#161b22] border border-gray-800 rounded-xl p-8 shadow-sm group border-red-900/10">
                             <div className="flex items-center gap-4 mb-8">
-                                <h4 className="text-red-500 italic font-black text-xl flex items-center gap-3">
+                                <h4 className="text-red-500  font-bold text-xl flex items-center gap-3">
                                     <AlertCircle className="w-5 h-5" /> Dogs
                                 </h4>
                                 <span className="bg-red-500/10 text-red-500 text-[9px] font-bold px-3 py-1 rounded uppercase tracking-widest">Low Profit • Low Popularity</span>
                             </div>
                             <div className="space-y-4">
-                                <div className="flex justify-between items-center p-4 bg-[#0d1117] rounded-lg border border-gray-800">
-                                    <span className="text-sm font-bold text-white">Tofu Skewers</span>
-                                    <span className="text-xs font-bold text-red-500">₹2.10 Margin</span>
-                                </div>
-                                <div className="flex justify-between items-center p-4 bg-[#0d1117] rounded-lg border border-gray-800">
-                                    <span className="text-sm font-bold text-white">Iced Herbal Tea</span>
-                                    <span className="text-xs font-bold text-red-500">₹1.20 Margin</span>
-                                </div>
+                                {matrix.dogs.map((item: any) => (
+                                    <div key={item.id} className="flex justify-between items-center p-4 bg-[#0d1117] rounded-lg border border-gray-800 group/item">
+                                        <div>
+                                            <p className="text-sm font-bold text-white">{item.name}</p>
+                                            <p className="text-[10px] text-gray-600 font-mono italic">Vol: {item.units} units</p>
+                                        </div>
+                                        <div className="text-right">
+                                            {editingId === item.id ? (
+                                                <div className="flex items-center gap-2">
+                                                    <input 
+                                                        type="number"
+                                                        value={editingValue}
+                                                        onChange={(e) => setEditingValue(e.target.value)}
+                                                        className="w-20 bg-[#161b22] border border-blue-500 rounded px-2 py-1 text-xs text-white focus:outline-none"
+                                                        autoFocus
+                                                    />
+                                                    <button onClick={() => handleUpdateMargin(item.id, parseFloat(editingValue))} className="p-1 hover:bg-green-500/20 rounded text-green-500">
+                                                        <Check className="w-4 h-4" />
+                                                    </button>
+                                                    <button onClick={() => setEditingId(null)} className="p-1 hover:bg-red-500/20 rounded text-red-500">
+                                                        <X className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <p className="text-xs font-bold text-red-500">{formatCurrency(item.margin)} Margin</p>
+                                                    <button 
+                                                        onClick={() => {
+                                                            setEditingId(item.id)
+                                                            setEditingValue(item.margin.toString())
+                                                        }}
+                                                        className="opacity-0 group-hover/item:opacity-100 text-[9px] font-black text-blue-600 uppercase tracking-widest hover:underline transition-opacity"
+                                                    >
+                                                        Adjust
+                                                    </button>
+                                                </>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                                {matrix.dogs.length === 0 && <p className="text-xs text-gray-600 italic">No items in this quadrant yet.</p>}
                             </div>
                         </div>
                     </div>

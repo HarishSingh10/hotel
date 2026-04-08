@@ -5,7 +5,7 @@ import useSWR from 'swr'
 import { formatCurrency } from '@/lib/utils'
 import { Loader2 } from 'lucide-react'
 import {
-    Users, TrendingUp, DollarSign, Award, Download,
+    Users, TrendingUp, IndianRupee, Award, Download,
     Calendar, Filter, Search, ChevronDown, User,
     Mail, Phone, Clock, ArrowRight, MoreHorizontal,
     ShieldCheck, CreditCard, Star, PieChart
@@ -21,10 +21,14 @@ export default function LoyaltyAnalysisPage() {
     const router = useRouter()
     const [timeRange, setTimeRange] = useState('Last 12 Months')
 
-    const { data: loyaltyData, error, isLoading } = useSWR(
+    const { data: loyaltyData, error, isLoading, mutate } = useSWR(
         ['/api/admin/analytics/loyalty', session?.user?.role],
         ([url]) => fetch(buildContextUrl(url)).then(res => res.json())
     )
+
+    const handleExportReport = () => {
+        window.print()
+    }
 
     useEffect(() => {
         if (session && !['SUPER_ADMIN', 'HOTEL_ADMIN', 'MANAGER', 'RECEPTIONIST'].includes(session.user.role)) {
@@ -51,8 +55,28 @@ export default function LoyaltyAnalysisPage() {
     const { stats, topGuests, chartData } = loyaltyData
 
     return (
-        <div className="min-h-screen bg-[#0d1117] text-gray-300 font-sans p-8">
+        <div className="min-h-screen bg-[#0d1117] text-gray-300 font-sans p-8 print:p-0 print:bg-white print:text-black">
+            <style jsx global>{`
+                @media print {
+                    body { background: white !important; color: black !important; }
+                    .bg-[#161b22] { background: #f9fafb !important; border: 1px solid #e5e7eb !important; }
+                    .bg-[#0d1117] { background: #f0f2f5 !important; }
+                    .text-white { color: black !important; }
+                    .text-gray-300 { color: #374151 !important; }
+                    .border-gray-800 { border-color: #e5e7eb !important; }
+                    button, .no-print { display: none !important; }
+                    .print-header { display: block !important; }
+                    .shadow-sm, .shadow-lg { shadow: none !important; }
+                }
+            `}</style>
+
             <div className="max-w-[1600px] mx-auto space-y-10">
+                
+                {/* Print Only Header */}
+                <div className="hidden print:block mb-10 border-b-4 border-black pb-6 text-center">
+                    <h1 className="text-4xl font-black uppercase tracking-tighter">ZENBOURG LOYALTY REPORT</h1>
+                    <p className="text-sm font-bold mt-2 uppercase tracking-[0.2em]">{new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} • {timeRange}</p>
+                </div>
 
                 {/* ── HEADER ── */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
@@ -64,7 +88,10 @@ export default function LoyaltyAnalysisPage() {
                         <button className="flex items-center gap-2 px-4 py-2.5 bg-[#161b22] border border-gray-800 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors">
                             <Calendar className="w-4 h-4 text-gray-500" /> {timeRange}
                         </button>
-                        <button className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold rounded-lg shadow-sm transition-all active:scale-[0.98]">
+                        <button 
+                            onClick={handleExportReport}
+                            className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold rounded-lg shadow-sm transition-all active:scale-[0.98] print:hidden"
+                        >
                             <Download className="w-4 h-4" /> Export Report
                         </button>
                     </div>
@@ -74,7 +101,7 @@ export default function LoyaltyAnalysisPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     {[
                         { label: 'Repeat Guest %', value: `${stats.repeatRate}%`, trend: `${stats.repeatGuestCount} total`, icon: Users, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-                        { label: 'Loyalty Revenue', value: formatCurrency(stats.loyaltyRevenue), trend: `${stats.loyaltyRevenuePercent}% of total`, icon: DollarSign, color: 'text-green-500', bg: 'bg-green-500/10' },
+                        { label: 'Loyalty Revenue', value: formatCurrency(stats.loyaltyRevenue), trend: `${stats.loyaltyRevenuePercent}% of total`, icon: IndianRupee, color: 'text-green-500', bg: 'bg-green-500/10' },
                         { label: 'Avg. Lifetime Value', value: formatCurrency(stats.avgLTV), trend: '+5.2% per guest', icon: CreditCard, color: 'text-purple-500', bg: 'bg-purple-500/10' },
                         { label: 'Total Guests', value: stats.totalGuests.toLocaleString(), trend: 'Active profiles', icon: Award, color: 'text-amber-500', bg: 'bg-amber-500/10' },
                     ].map((stat, i) => (
@@ -86,7 +113,7 @@ export default function LoyaltyAnalysisPage() {
                                 <span className="text-[10px] font-bold text-green-500 uppercase tracking-widest">{stat.trend}</span>
                             </div>
                             <p className="text-[11px] font-bold text-gray-600 uppercase tracking-[0.2em] mb-1">{stat.label}</p>
-                            <p className="text-3xl font-bold text-white tracking-tight italic leading-none">{stat.value}</p>
+                            <p className="text-3xl font-bold text-white tracking-tight  leading-none">{stat.value}</p>
                         </div>
                     ))}
                 </div>
@@ -103,21 +130,29 @@ export default function LoyaltyAnalysisPage() {
                             </div>
                         </div>
                         <div className="h-64 flex items-end justify-between gap-4 px-2">
-                            {['Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map((month, i) => (
-                                <div key={i} className="flex-1 flex flex-col items-center gap-3 group">
-                                    <div className="w-full flex flex-col-reverse gap-1.5 h-48">
-                                        <div
-                                            className="w-full bg-blue-600/40 rounded-t-sm group-hover:bg-blue-600/60 transition-all"
-                                            style={{ height: `${Math.random() * 40 + 20}%` }}
-                                        />
-                                        <div
-                                            className="w-full bg-[#233648]/40 rounded-t-sm group-hover:bg-[#233648]/60 transition-all"
-                                            style={{ height: `${Math.random() * 30 + 10}%` }}
-                                        />
+                            {chartData.map((d: any, i: number) => {
+                                const max = Math.max(...chartData.map((x: any) => x.repeat + x.firstTime))
+                                const repeatHeight = (d.repeat / max) * 100
+                                const firstTimeHeight = (d.firstTime / max) * 100
+                                
+                                return (
+                                    <div key={i} className="flex-1 flex flex-col items-center gap-3 group px-1">
+                                        <div className="w-full flex flex-col-reverse gap-1.5 h-48">
+                                            <div
+                                                className="w-full bg-blue-600/40 rounded-t-sm group-hover:bg-blue-600/60 transition-all cursor-pointer relative"
+                                                style={{ height: `${repeatHeight}%` }}
+                                                title={`Repeat: ${d.repeat}`}
+                                            />
+                                            <div
+                                                className="w-full bg-[#233648]/40 rounded-t-sm group-hover:bg-[#233648]/60 transition-all cursor-pointer relative"
+                                                style={{ height: `${firstTimeHeight}%` }}
+                                                title={`First-time: ${d.firstTime}`}
+                                            />
+                                        </div>
+                                        <span className="text-[10px] font-bold text-gray-600 uppercase whitespace-nowrap">{d.month}</span>
                                     </div>
-                                    <span className="text-[10px] font-bold text-gray-600 uppercase">{month}</span>
-                                </div>
-                            ))}
+                                )
+                            })}
                         </div>
                         <div className="flex items-center gap-8 mt-10 ml-2">
                             <div className="flex items-center gap-3">
@@ -143,8 +178,8 @@ export default function LoyaltyAnalysisPage() {
                                 <div className="absolute inset-[-14px] rounded-full border-[14px] border-[#233648]" style={{ clipPath: 'polygon(50% 50%, 0 0, 100% 0, 100% 36%)' }} />
 
                                 <div className="text-center">
-                                    <p className="text-3xl font-black text-white leading-none">64%</p>
-                                    <p className="text-[9px] font-black text-blue-500 uppercase tracking-[0.2em] mt-1">Direct</p>
+                                    <p className="text-3xl font-bold text-white leading-none">64%</p>
+                                    <p className="text-[9px] font-bold text-blue-500 uppercase tracking-[0.2em] mt-1">Direct</p>
                                 </div>
                             </div>
                         </div>
@@ -219,7 +254,7 @@ export default function LoyaltyAnalysisPage() {
                                         </td>
                                         <td className="px-8 py-6 whitespace-nowrap">
                                             <div className={cn(
-                                                "w-fit px-3 py-1 rounded-md text-[9px] font-black uppercase tracking-[0.3em] border",
+                                                "w-fit px-3 py-1 rounded-md text-[9px] font-bold uppercase tracking-[0.3em] border",
                                                 guest.bg, guest.border, guest.color
                                             )}>
                                                 {guest.tier}

@@ -4,8 +4,9 @@ import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import Image from 'next/image'
+import Avatar from '@/components/common/Avatar'
 import {
-    ArrowLeft, ArrowRight, Save, Calendar, User, UserPlus, Bed, DollarSign,
+    ArrowLeft, ArrowRight, Save, Calendar, User, UserPlus, Bed, IndianRupee,
     Search, Plus, X, Check, ChevronRight, MapPin,
     Smartphone, Mail, Star, Loader2, Info, Building2,
     CheckCircle2, AlertCircle, Clock, Undo2, Edit2
@@ -21,6 +22,13 @@ const STEPS = [
     { id: 'payment', label: 'PAYMENT' },
     { id: 'confirm', label: 'CONFIRMATION' }
 ]
+
+const toLocalDateStr = (date: Date) => {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+}
 
 export default function NewBookingPage() {
     const router = useRouter()
@@ -40,17 +48,17 @@ export default function NewBookingPage() {
 
     // Selection state
     const [selectedGuest, setSelectedGuest] = useState<any>(null)
-    const [selectedRoom, setSelectedRoom] = useState<any>(null)
+    const [selectedRooms, setSelectedRooms] = useState<any[]>([])
     const [searchQuery, setSearchQuery] = useState('')
 
     // State for New Guest Modal
     const [showNewGuestModal, setShowNewGuestModal] = useState(false)
-    const [newGuestData, setNewGuestData] = useState({ name: '', email: '', phone: '' })
+    const [newGuestData, setNewGuestData] = useState({ name: '', email: '', phone: '', address: '', dateOfBirth: '' })
 
     // Booking Details
     const [bookingDetails, setBookingDetails] = useState({
-        checkIn: new Date().toISOString().split('T')[0],
-        checkOut: new Date(Date.now() + 4 * 86400000).toISOString().split('T')[0],
+        checkIn: toLocalDateStr(new Date()),
+        checkOut: toLocalDateStr(new Date(Date.now() + 86400000)), // Default 1 night
         guests: 2,
         kids: 0,
         source: 'DIRECT',
@@ -67,9 +75,9 @@ export default function NewBookingPage() {
     const [currentMonth, setCurrentMonth] = useState(new Date())
 
     const handleDateClick = (date: Date) => {
-        const dateStr = date.toISOString().split('T')[0]
-        const checkIn = new Date(bookingDetails.checkIn)
-        const checkOut = new Date(bookingDetails.checkOut)
+        const dateStr = toLocalDateStr(date)
+        const checkIn = bookingDetails.checkIn
+        const checkOut = bookingDetails.checkOut
 
         // If no check-in or if we already have both, start over with check-in
         if (dateStr < bookingDetails.checkIn || (bookingDetails.checkIn && bookingDetails.checkOut)) {
@@ -87,8 +95,14 @@ export default function NewBookingPage() {
             rooms = rooms.filter(r => r.type === roomTypeFilter)
         }
 
+        // Apply Occupancy Filter
+        if (occupancyFilter !== 'All' && occupancyFilter) {
+            const adults = parseInt(occupancyFilter.split(' ')[0]) || 0
+            rooms = rooms.filter(r => r.maxOccupancy >= adults)
+        }
+
         return rooms
-    }, [allRooms, roomTypeFilter])
+    }, [allRooms, roomTypeFilter, occupancyFilter])
 
     const getDaysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate()
     const getFirstDayOfMonth = (year: number, month: number) => new Date(year, month, 1).getDay()
@@ -122,7 +136,7 @@ export default function NewBookingPage() {
                     {daysArray.map((day, i) => {
                         if (day === null) return <div key={`empty-${i}`} className="h-10" />
                         const currentDayDate = new Date(year, month, day)
-                        const dateStr = currentDayDate.toISOString().split('T')[0]
+                        const dateStr = toLocalDateStr(currentDayDate)
                         const isCheckIn = dateStr === bookingDetails.checkIn
                         const isCheckOut = dateStr === bookingDetails.checkOut
                         const isInRange = dateStr > bookingDetails.checkIn && dateStr < bookingDetails.checkOut
@@ -147,23 +161,49 @@ export default function NewBookingPage() {
     }
 
     // --- FETCH RESOURCES ---
+    // Fetch Rooms when dates change
     useEffect(() => {
-        const load = async () => {
+        const loadRooms = async () => {
+            if (!bookingDetails.checkIn || !bookingDetails.checkOut) return
             setFetching(true)
             try {
-                const [gRes, rRes] = await Promise.all([
-                    fetch(buildContextUrl('/api/admin/guests')),
-                    fetch(buildContextUrl('/api/admin/rooms', { status: 'AVAILABLE' }))
-                ])
-                if (gRes.ok) setAllGuests(await gRes.json())
-                if (rRes.ok) setAllRooms(await rRes.json())
+                const queryParams = new URLSearchParams()
+                if (bookingDetails.checkIn) queryParams.append('start', bookingDetails.checkIn)
+                if (bookingDetails.checkOut) queryParams.append('end', bookingDetails.checkOut)
+                if (roomTypeFilter !== 'All Rooms') queryParams.append('type', roomTypeFilter.toUpperCase())
+                queryParams.append('status', 'AVAILABLE')
+
+                const rRes = await fetch(buildContextUrl(`/api/admin/rooms?${queryParams.toString()}`))
+                if (rRes.ok) {
+                    const data = await rRes.json()
+                    // Filter out duplicates if any remain in DB
+                    const uniqueRooms = data.reduce((acc: any[], current: any) => {
+                        const x = acc.find(item => item.roomNumber === current.roomNumber);
+                        if (!x) return acc.concat([current]);
+                        return acc;
+                    }, []);
+                    setAllRooms(uniqueRooms)
+                }
             } catch (err) {
-                toast.error("Failed to sync cloud resources")
+                console.error(err)
             } finally {
                 setFetching(false)
             }
         }
-        load()
+        loadRooms()
+    }, [bookingDetails.checkIn, bookingDetails.checkOut])
+
+    // Fetch Guests once
+    useEffect(() => {
+        const loadGuests = async () => {
+            try {
+                const gRes = await fetch(buildContextUrl('/api/admin/guests'))
+                if (gRes.ok) setAllGuests(await gRes.json())
+            } catch (err) {
+                toast.error("Failed to sync guest registry")
+            }
+        }
+        loadGuests()
     }, [])
 
     // --- COMPUTED ---
@@ -186,9 +226,9 @@ export default function NewBookingPage() {
     }, [bookingDetails.checkIn, bookingDetails.checkOut])
 
     const subtotal = useMemo(() => {
-        if (!selectedRoom || stayDuration <= 0) return 800
-        return selectedRoom.basePrice * stayDuration
-    }, [selectedRoom, stayDuration])
+        if (selectedRooms.length === 0 || stayDuration <= 0) return 0
+        return selectedRooms.reduce((acc, room) => acc + (room.basePrice * stayDuration), 0)
+    }, [selectedRooms, stayDuration])
 
     const taxAmount = Math.round(subtotal * 0.1)
     const serviceFee = Math.round(subtotal * 0.05)
@@ -209,7 +249,7 @@ export default function NewBookingPage() {
             setAllGuests([guest, ...allGuests])
             setSelectedGuest(guest)
             setShowNewGuestModal(false)
-            setNewGuestData({ name: '', email: '', phone: '' })
+            setNewGuestData({ name: '', email: '', phone: '', address: '', dateOfBirth: '' })
             toast.success("Guest Registry Updated")
         } catch (err) {
             toast.error("Cloud registry error")
@@ -219,28 +259,32 @@ export default function NewBookingPage() {
     }
 
     const handleFinalSubmit = async () => {
-        if (!selectedGuest || !selectedRoom || stayDuration <= 0) {
+        if (!selectedGuest || selectedRooms.length === 0 || stayDuration <= 0) {
             toast.error("Incomplete reservation data")
             return
         }
         setLoading(true)
         try {
-            const res = await fetch(buildContextUrl('/api/admin/bookings'), {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    guestId: selectedGuest.id,
-                    roomId: selectedRoom.id,
-                    checkIn: bookingDetails.checkIn,
-                    checkOut: bookingDetails.checkOut,
-                    numberOfGuests: bookingDetails.guests,
-                    totalAmount: grandTotal,
-                    source: bookingDetails.source,
-                    notes: bookingDetails.notes,
-                    specialRequests: bookingDetails.specialRequests
+            // Create multiple bookings if needed
+            const results = await Promise.all(selectedRooms.map(room => 
+                fetch(buildContextUrl('/api/admin/bookings'), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        guestId: selectedGuest.id,
+                        roomId: room.id,
+                        checkIn: bookingDetails.checkIn,
+                        checkOut: bookingDetails.checkOut,
+                        numberOfGuests: bookingDetails.guests,
+                        totalAmount: (room.basePrice * stayDuration) * 1.15, // Including rough tax/fees
+                        source: bookingDetails.source,
+                        notes: bookingDetails.notes,
+                        specialRequests: bookingDetails.specialRequests
+                    })
                 })
-            })
-            if (!res.ok) throw new Error()
+            ))
+            
+            if (results.some(r => !r.ok)) throw new Error()
             toast.success("Reservation Secured Successfully!")
             router.push('/admin/bookings')
             router.refresh()
@@ -320,15 +364,7 @@ export default function NewBookingPage() {
                                     )}
                                 >
                                     <div className="flex items-center gap-5">
-                                        <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-white/10 shadow-lg">
-                                            <Image
-                                                src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${guest.name}`}
-                                                alt=""
-                                                fill
-                                                className="object-cover"
-                                                unoptimized
-                                            />
-                                        </div>
+                                        <Avatar name={guest.name} size="lg" className="border-2 border-white/10" />
                                         <div>
                                             <div className="flex items-center gap-3 mb-1">
                                                 <h4 className="text-base font-bold text-white tracking-tight">{guest.name}</h4>
@@ -369,15 +405,7 @@ export default function NewBookingPage() {
                 <div className="overflow-hidden bg-white/[0.03] border border-white/10 shadow-2xl relative rounded-[2.5rem]">
                     <div className="h-32 bg-[#4A9EFF]" />
                     <div className="relative -mt-12 px-8 pb-10 text-left">
-                        <div className="inline-block relative w-20 h-16 rounded-full overflow-hidden border-[6px] border-[#101922] shadow-2xl bg-[#101922]">
-                            <Image
-                                src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedGuest?.name || 'guest'}`}
-                                alt=""
-                                fill
-                                className="object-cover"
-                                unoptimized
-                            />
-                        </div>
+                        <Avatar name={selectedGuest?.name} size="xl" className="border-[6px] border-[#101922] bg-[#101922] shadow-2xl" />
 
                         <div className="mt-8 space-y-1">
                             {selectedGuest ? (
@@ -452,41 +480,64 @@ export default function NewBookingPage() {
                             <h2 className="text-xl font-bold text-white tracking-tight">Create New Guest</h2>
                             <button onClick={() => setShowNewGuestModal(false)} className="p-2 hover:bg-white/10 rounded-full text-gray-500 hover:text-white transition-all"><X className="w-6 h-6" /></button>
                         </div>
-                        <form onSubmit={handleCreateGuest} className="space-y-6">
-                            <div className="space-y-2">
-                                <label className="text-xs font-bold text-gray-600 uppercase tracking-widest ml-1">Full Name</label>
-                                <input
-                                    autoFocus
-                                    className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-[#4A9EFF] shadow-inner"
-                                    placeholder="e.g. Jane Smith"
-                                    value={newGuestData.name}
-                                    onChange={e => setNewGuestData({ ...newGuestData, name: e.target.value })}
-                                />
+                        <form onSubmit={handleCreateGuest} className="space-y-5">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-1.5 text-left">
+                                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.15em] ml-1">Full Name</label>
+                                    <input
+                                        autoFocus
+                                        className="w-full bg-black/40 border border-white/10 rounded-2xl px-5 py-3.5 text-white font-semibold outline-none focus:border-[#4A9EFF] shadow-inner transition-all"
+                                        placeholder="e.g. Jane Smith"
+                                        value={newGuestData.name}
+                                        onChange={e => setNewGuestData({ ...newGuestData, name: e.target.value })}
+                                    />
+                                </div>
+                                <div className="space-y-1.5 text-left">
+                                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.15em] ml-1">Phone Number</label>
+                                    <input
+                                        className="w-full bg-black/40 border border-white/10 rounded-2xl px-5 py-3.5 text-white font-semibold outline-none focus:border-[#4A9EFF] shadow-inner transition-all"
+                                        placeholder="+1 (555) 000-0000"
+                                        value={newGuestData.phone}
+                                        onChange={e => setNewGuestData({ ...newGuestData, phone: e.target.value })}
+                                    />
+                                </div>
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-xs font-bold text-gray-600 uppercase tracking-widest ml-1">E-mail Address</label>
-                                <input
-                                    className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-[#4A9EFF] shadow-inner"
-                                    placeholder="jane@example.com"
-                                    value={newGuestData.email}
-                                    onChange={e => setNewGuestData({ ...newGuestData, email: e.target.value })}
-                                />
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-1.5 text-left">
+                                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.15em] ml-1">E-mail Address</label>
+                                    <input
+                                        className="w-full bg-black/40 border border-white/10 rounded-2xl px-5 py-3.5 text-white font-semibold outline-none focus:border-[#4A9EFF] shadow-inner transition-all"
+                                        placeholder="jane@example.com"
+                                        value={newGuestData.email}
+                                        onChange={e => setNewGuestData({ ...newGuestData, email: e.target.value })}
+                                    />
+                                </div>
+                                <div className="space-y-1.5 text-left">
+                                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.15em] ml-1">Date of Birth</label>
+                                    <input
+                                        type="date"
+                                        style={{ colorScheme: 'dark' }}
+                                        className="w-full bg-black/40 border border-white/10 rounded-2xl px-5 py-3.5 text-white font-semibold outline-none focus:border-[#4A9EFF] shadow-inner transition-all"
+                                        value={newGuestData.dateOfBirth}
+                                        onChange={e => setNewGuestData({ ...newGuestData, dateOfBirth: e.target.value })}
+                                    />
+                                </div>
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-xs font-bold text-gray-600 uppercase tracking-widest ml-1">Phone Number</label>
+                            <div className="space-y-1.5 text-left pb-4">
+                                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.15em] ml-1">Street Address</label>
                                 <input
-                                    className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-[#4A9EFF] shadow-inner"
-                                    placeholder="+1 (555) 000-0000"
-                                    value={newGuestData.phone}
-                                    onChange={e => setNewGuestData({ ...newGuestData, phone: e.target.value })}
+                                    className="w-full bg-black/40 border border-white/10 rounded-2xl px-5 py-3.5 text-white font-semibold outline-none focus:border-[#4A9EFF] shadow-inner transition-all"
+                                    placeholder="e.g. 123 Luxury Ave, NY"
+                                    value={newGuestData.address}
+                                    onChange={e => setNewGuestData({ ...newGuestData, address: e.target.value })}
                                 />
                             </div>
                             <button
                                 type="submit"
-                                className="w-full py-6 bg-[#4A9EFF] hover:bg-[#3A8EEF] rounded-2xl text-white font-bold text-lg shadow-xl shadow-[#4A9EFF]/20 transition-all flex items-center justify-center gap-3 active:scale-95"
+                                className="w-full py-5 bg-[#4A9EFF] hover:bg-[#3A8EEF] rounded-2xl text-white font-bold text-sm uppercase tracking-[0.1em] shadow-xl shadow-[#4A9EFF]/20 transition-all flex items-center justify-center gap-3 active:scale-95"
                                 disabled={loading}
                             >
-                                {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : <>Register Guest <ArrowRight className="w-6 h-6 stroke-[3]" /></>}
+                                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Register Guest Profile <ArrowRight className="w-5 h-5 stroke-[2.5]" /></>}
                             </button>
                         </form>
                     </div>
@@ -520,13 +571,15 @@ export default function NewBookingPage() {
                             <select
                                 value={occupancyFilter}
                                 onChange={(e) => setOccupancyFilter(e.target.value)}
-                                className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-4 pl-12 pr-10 text-white font-bold outline-none focus:border-[#4A9EFF] appearance-none cursor-pointer text-sm shadow-inner"
+                                className="w-full bg-[#0a0a0a] border border-white/10 rounded-2xl py-4 pl-12 pr-10 text-white font-bold outline-none focus:border-[#4A9EFF] appearance-none cursor-pointer text-sm shadow-2xl transition-all hover:border-white/20"
                             >
-                                <option className="bg-[#101922]">2 Adults, 0 Kids</option>
-                                <option className="bg-[#101922]">1 Adult, 0 Kids</option>
-                                <option className="bg-[#101922]">3 Adults, 0 Kids</option>
-                                <option className="bg-[#101922]">4 Adults, 0 Kids</option>
+                                <option value="All" className="bg-[#101922]">Any Occupancy</option>
+                                <option value="1 Adult, 0 Kids" className="bg-[#101922]">1 Adult</option>
+                                <option value="2 Adults, 0 Kids" className="bg-[#101922]">2 Adults</option>
+                                <option value="3 Adults, 0 Kids" className="bg-[#101922]">3 Adults</option>
+                                <option value="4 Adults, 0 Kids" className="bg-[#101922]">4 Adults</option>
                             </select>
+                            <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600 pointer-events-none rotate-90" />
                         </div>
                     </div>
                     <div className="space-y-2">
@@ -536,87 +589,113 @@ export default function NewBookingPage() {
                             <select
                                 value={roomTypeFilter}
                                 onChange={(e) => setRoomTypeFilter(e.target.value)}
-                                className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-4 pl-12 pr-10 text-white font-bold outline-none focus:border-[#4A9EFF] appearance-none cursor-pointer text-sm shadow-inner"
+                                className="w-full bg-[#0a0a0a] border border-white/10 rounded-2xl py-4 pl-12 pr-10 text-white font-bold outline-none focus:border-[#4A9EFF] appearance-none cursor-pointer text-sm shadow-2xl transition-all hover:border-white/20"
                             >
-                                <option className="bg-[#101922]">All Rooms</option>
-                                <option className="bg-[#101922]">Deluxe Suite</option>
-                                <option className="bg-[#101922]">King Royal</option>
-                                <option className="bg-[#101922]">Standard Twin</option>
-                                <option className="bg-[#101922]">Junior Suite</option>
+                                <option value="All Rooms" className="bg-[#101922]">All Types</option>
+                                <option value="Deluxe Suite" className="bg-[#101922]">Deluxe Suite</option>
+                                <option value="King Royal" className="bg-[#101922]">King Royal</option>
+                                <option value="Standard Twin" className="bg-[#101922]">Standard Twin</option>
+                                <option value="Junior Suite" className="bg-[#101922]">Junior Suite</option>
                             </select>
+                            <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600 pointer-events-none rotate-90" />
                         </div>
                     </div>
                     <div className="space-y-2">
                         <label className="text-[10px] font-bold text-gray-600 uppercase tracking-widest ml-1">Attributes</label>
                         <div className="relative">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-700" />
-                            <select className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-4 pl-12 pr-10 text-white font-bold outline-none focus:border-[#4A9EFF] appearance-none cursor-pointer text-sm shadow-inner">
+                            <select className="w-full bg-[#0a0a0a] border border-white/10 rounded-2xl py-4 pl-12 pr-10 text-white font-bold outline-none focus:border-[#4A9EFF] appearance-none cursor-pointer text-sm shadow-2xl transition-all hover:border-white/20">
                                 <option className="bg-[#101922]">Any Attribute</option>
                             </select>
+                            <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600 pointer-events-none rotate-90" />
                         </div>
                     </div>
                     <div className="flex items-end">
                         <button
                             onClick={() => {
                                 setRoomTypeFilter('All Rooms')
-                                setOccupancyFilter('2 Adults, 0 Kids')
-                                setBookingDetails({
-                                    ...bookingDetails,
-                                    checkIn: new Date().toISOString().split('T')[0],
-                                    checkOut: new Date(Date.now() + 4 * 86400000).toISOString().split('T')[0]
-                                })
+                                setOccupancyFilter('All')
+                                setSelectedRooms([])
                             }}
-                            className="w-full h-11 bg-white/[0.03] border border-white/10 rounded-xl text-gray-600 font-bold hover:bg-white/[0.06] transition-all uppercase text-[10px] tracking-widest"
+                            className="w-full h-12 bg-[#4A9EFF]/10 border border-[#4A9EFF]/30 rounded-2xl text-[#4A9EFF] font-bold hover:bg-[#4A9EFF]/20 transition-all uppercase text-[10px] tracking-widest shadow-xl active:scale-95"
                         >
                             Reset Filters
                         </button>
                     </div>
-                </div>
-
-                <div className="space-y-6 pt-6">
-                    <h3 className="text-xl font-bold text-white tracking-tight">Available Rooms ({filteredRooms.length})</h3>
-                    <div className="grid grid-cols-2 gap-8">
-                        {filteredRooms.map((room) => (
-                            <div
-                                key={room.id}
-                                onClick={() => setSelectedRoom(room)}
-                                className={cn(
-                                    "bg-white/[0.03] rounded-[2.5rem] border transition-all overflow-hidden flex flex-col group cursor-pointer",
-                                    selectedRoom?.id === room.id ? "border-[#4A9EFF] shadow-2xl shadow-[#4A9EFF]/20 ring-1 ring-[#4A9EFF]/50" : "border-white/5 hover:border-white/20"
-                                )}
-                            >
-                                <div className="aspect-[16/10] relative">
-                                    <Image src={`https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800&q=80`} alt="" fill className="object-cover group-hover:scale-110 transition-transform duration-1000" unoptimized />
-                                    <div className="absolute top-6 right-6 flex gap-2">
-                                        <span className="bg-[#1db954] text-white text-[9px] font-bold uppercase px-4 py-1.5 rounded-xl shadow-lg border border-white/20">CLEAN</span>
-                                    </div>
-                                    <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/80 to-transparent" />
-                                    <div className="absolute bottom-6 left-8 text-white">
-                                        <p className="text-xl font-bold tracking-tight">Room {room.roomNumber}</p>
-                                        <p className="text-[10px] font-bold text-gray-300 uppercase tracking-widest">{room.type}</p>
-                                    </div>
-                                </div>
-                                <div className="p-8 flex flex-col flex-1">
-                                    <div className="flex gap-4 mb-6">
-                                        <span className="text-[10px] font-bold text-gray-600 uppercase border border-white/10 px-3 py-1.5 rounded-xl">Sea View</span>
-                                        <span className="text-[10px] font-bold text-gray-600 uppercase border border-white/10 px-3 py-1.5 rounded-xl">Floor {room.floor || 4}</span>
-                                    </div>
-                                    <div className="flex gap-4 mt-auto pt-6 border-t border-white/5">
-                                        <div className="flex-1">
-                                            <p className="text-[9px] font-bold text-gray-600 uppercase tracking-widest leading-none mb-1">Nightly Rate</p>
-                                            <p className="text-xl font-bold text-white tracking-tight">₹{room.basePrice}<span className="text-[10px] font-bold text-gray-600 ml-1">/NIGHT</span></p>
-                                        </div>
-                                        <div className={cn(
-                                            "w-12 h-12 rounded-2xl flex items-center justify-center transition-all",
-                                            selectedRoom?.id === room.id ? "bg-[#4A9EFF] shadow-lg shadow-[#4A9EFF]/40" : "bg-white/[0.05] border border-white/10 text-gray-600"
-                                        )}>
-                                            <Check className={cn("w-6 h-6 stroke-[4]", selectedRoom?.id === room.id ? "text-white" : "opacity-0")} />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
+                </div>                <div className="space-y-6 pt-6">
+                    <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-bold text-white tracking-tight">Available Rooms ({filteredRooms.length})</h3>
+                        <div className="flex items-center gap-2 bg-white/[0.03] border border-white/10 px-3 py-1.5 rounded-lg">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#1db954] animate-pulse" />
+                            <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Live Availability</span>
+                        </div>
                     </div>
+                    
+                    {fetching ? (
+                        <div className="grid grid-cols-2 gap-6 opacity-50 grayscale transition-all duration-500">
+                             {[1,2,3,4].map(i => (
+                                <div key={i} className="aspect-[16/10] bg-white/[0.03] rounded-2xl animate-pulse border border-white/5" />
+                             ))}
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-2 gap-6">
+                            {filteredRooms.map((room) => {
+                                const isSelected = selectedRooms.some(r => r.id === room.id)
+                                return (
+                                    <div
+                                        key={room.id}
+                                        onClick={() => {
+                                            if (isSelected) {
+                                                setSelectedRooms(selectedRooms.filter(r => r.id !== room.id))
+                                            } else {
+                                                setSelectedRooms([...selectedRooms, room])
+                                            }
+                                        }}
+                                        className={cn(
+                                            "bg-[#0D151C] rounded-2xl border transition-all overflow-hidden flex flex-col group cursor-pointer relative",
+                                            isSelected ? "border-[#4A9EFF] shadow-[0_0_20px_rgba(74,158,255,0.1)] ring-1 ring-[#4A9EFF]/20" : "border-white/5 hover:border-white/10"
+                                        )}
+                                    >
+                                        <div className="aspect-[16/9] relative">
+                                            <Image 
+                                                src={room.type.includes('Suite') 
+                                                    ? "https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800&q=80" 
+                                                    : "https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=800&q=80"
+                                                } 
+                                                alt="" fill className="object-cover group-hover:scale-105 transition-transform duration-700" unoptimized 
+                                            />
+                                            <div className="absolute top-4 right-4 flex gap-2">
+                                                <span className="bg-[#1db954] text-white text-[8px] font-bold uppercase px-3 py-1 rounded-lg shadow-lg border border-white/10 backdrop-blur-md">CLEAN</span>
+                                            </div>
+                                            <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/20 to-transparent" />
+                                            <div className="absolute bottom-4 left-6 text-white text-left">
+                                                <p className="text-base font-bold tracking-tight">Room {room.roomNumber}</p>
+                                                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{room.type}</p>
+                                            </div>
+                                        </div>
+                                        <div className="p-5 pb-6 flex flex-col flex-1 backdrop-blur-3xl bg-white/[0.01]">
+                                            <div className="flex gap-2 mb-4">
+                                                <span className="text-[8px] font-bold text-gray-500 uppercase border border-white/5 bg-white/[0.02] px-2 py-1 rounded-md">Sea View</span>
+                                                <span className="text-[8px] font-bold text-gray-500 uppercase border border-white/5 bg-white/[0.02] px-2 py-1 rounded-md">Floor {room.floor || 1}</span>
+                                            </div>
+                                            <div className="flex gap-4 mt-auto pt-4 border-t border-white/5">
+                                                <div className="flex-1 text-left">
+                                                    <p className="text-[8px] font-bold text-gray-600 uppercase tracking-widest leading-none mb-1">Nightly Rate</p>
+                                                    <p className="text-base font-bold text-white tracking-tight">₹{room.basePrice.toLocaleString()}<span className="text-[9px] font-bold text-gray-600 ml-1">/NT</span></p>
+                                                </div>
+                                                <div className={cn(
+                                                    "w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300",
+                                                    isSelected ? "bg-[#4A9EFF] shadow-[0_0_15px_rgba(74,158,255,0.3)]" : "bg-white/[0.02] border border-white/10 text-gray-800"
+                                                )}>
+                                                    <Check className={cn("w-5 h-5 stroke-[4] transition-all", isSelected ? "text-white scale-100" : "opacity-0 scale-50")} />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )
+                            })}
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -650,7 +729,11 @@ export default function NewBookingPage() {
                                 <div className="flex items-center justify-between p-4 bg-black/20 rounded-2xl border border-white/5">
                                     <div>
                                         <p className="text-[9px] text-gray-600 font-bold uppercase tracking-widest">Check-in</p>
-                                        <p className="text-sm text-white font-bold">{new Date(bookingDetails.checkIn).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                                        <p className="text-sm text-white font-bold">{
+                                            bookingDetails.checkIn ?
+                                            new Date(bookingDetails.checkIn + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) :
+                                            'Not Selected'
+                                        }</p>
                                     </div>
                                     <div className="w-10 h-10 rounded-xl bg-[#4A9EFF]/10 flex items-center justify-center border border-[#4A9EFF]/20">
                                         <Clock className="w-5 h-5 text-[#4A9EFF]" />
@@ -664,20 +747,38 @@ export default function NewBookingPage() {
                         </div>
 
                         <div className="space-y-4 pt-4 border-t border-white/5">
-                            <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest ml-1">ROOM SELECTION</p>
-                            {selectedRoom ? (
-                                <div className="p-5 bg-black/30 rounded-2xl border border-white/10 flex items-center gap-5 relative group overflow-hidden shadow-inner">
-                                    <div className="w-14 h-14 relative rounded-2xl overflow-hidden border border-white/10 shrink-0">
-                                        <Image src={`https://images.unsplash.com/photo-1590490360182-c33d57733427?w=200&q=80`} alt="" fill className="object-cover" unoptimized />
-                                    </div>
-                                    <div className="flex-1">
-                                        <p className="text-white font-bold tracking-tight leading-none text-lg mb-1">Room {selectedRoom.roomNumber}</p>
-                                        <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">{selectedRoom.type}</p>
-                                    </div>
-                                    <div className="text-right">
-                                        <p className="text-white font-bold text-lg tracking-tight">₹{subtotal}.00</p>
-                                        <p className="text-[#4A9EFF] text-[10px] font-bold">₹{selectedRoom.basePrice} × {stayDuration}</p>
-                                    </div>
+                            <div className="flex items-center justify-between ml-1">
+                                <p className="text-[9px] font-bold text-gray-600 uppercase tracking-widest">SELECTED ROOMS ({selectedRooms.length})</p>
+                                <Plus className="w-3.5 h-3.5 text-[#4A9EFF]" />
+                            </div>
+                            {selectedRooms.length > 0 ? (
+                                <div className="space-y-3">
+                                    {selectedRooms.map(room => (
+                                        <div key={room.id} className="p-4 bg-black/30 rounded-xl border border-white/5 flex items-center gap-4 relative group overflow-hidden shadow-inner">
+                                            <div className="w-12 h-10 relative rounded-lg overflow-hidden border border-white/5 shrink-0">
+                                                <Image src={`https://images.unsplash.com/photo-1590490360182-c33d57733427?w=200&q=80`} alt="" fill className="object-cover" unoptimized />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-white font-bold tracking-tight leading-none text-sm mb-1 truncate">Room {room.roomNumber}</p>
+                                                <p className="text-slate-600 text-[8px] font-bold uppercase tracking-widest">{room.type}</p>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-white font-bold text-sm tracking-tight">₹{(room.basePrice * stayDuration).toLocaleString()}</p>
+                                                <button 
+                                                    onClick={() => setSelectedRooms(selectedRooms.filter(r => r.id !== room.id))}
+                                                    className="text-[8px] text-rose-500 font-bold uppercase hover:underline"
+                                                >
+                                                    Remove
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    <button 
+                                        onClick={() => setCurrentStep(1)}
+                                        className="w-full py-3 border border-dashed border-white/10 rounded-xl text-[9px] font-bold text-gray-600 uppercase tracking-[0.2em] hover:text-white hover:border-[#4A9EFF]/30 transition-all bg-white/[0.01]"
+                                    >
+                                        + Add Another Room
+                                    </button>
                                 </div>
                             ) : (
                                 <button className="w-full flex items-center justify-center gap-3 py-6 border-2 border-dashed border-white/5 rounded-2xl text-gray-700 font-bold text-[13px] hover:text-gray-500 hover:border-white/10 transition-all uppercase tracking-widest bg-white/[0.01]">
@@ -711,11 +812,11 @@ export default function NewBookingPage() {
                             <span className="text-2xl font-bold text-[#4A9EFF] tracking-tight leading-none">₹{grandTotal}.00</span>
                         </div>
                         <button
-                            className="w-full h-16 bg-[#4A9EFF] hover:bg-[#3A8EEF] rounded-2xl text-white font-bold text-lg flex items-center justify-center gap-3 transition-all shadow-xl shadow-[#4A9EFF]/20 mt-8 active:scale-95"
+                            className="w-full h-14 bg-[#4A9EFF] hover:bg-[#3A8EEF] rounded-xl text-white font-bold text-base flex items-center justify-center gap-3 transition-all shadow-xl shadow-[#4A9EFF]/20 mt-6 active:scale-95"
                             onClick={() => setCurrentStep(2)}
-                            disabled={!selectedRoom}
+                            disabled={selectedRooms.length === 0}
                         >
-                            Review & Finalize <ArrowRight className="w-6 h-6 stroke-[2.5px]" />
+                            Review & Finalize <ArrowRight className="w-5 h-5 stroke-[2.5px]" />
                         </button>
                     </div>
                 </div>
@@ -806,19 +907,22 @@ export default function NewBookingPage() {
                                 </div>
                             </div>
 
-                            <div className="bg-black/40 rounded-[2.5rem] p-8 border border-white/10 flex items-center gap-8 relative group overflow-hidden shadow-inner ring-1 ring-white/5">
-                                <div className="w-56 h-36 relative rounded-3xl overflow-hidden shadow-2xl ring-2 ring-white/5">
-                                    <Image src={`https://images.unsplash.com/photo-1590490360182-c33d57733427?w=600&q=80`} alt="" fill className="object-cover group-hover:scale-110 transition-transform duration-1000" unoptimized />
-                                </div>
-                                <div className="flex-1 space-y-4">
-                                    <h4 className="text-xl font-bold text-white leading-none tracking-tight">{selectedRoom?.type || 'Select a Room'}</h4>
-                                    <p className="text-gray-500 font-bold text-lg leading-relaxed flex items-center gap-2 underline underline-offset-4 decoration-[#4A9EFF]/20">Room Selection ID: #{selectedRoom?.roomNumber || 'N/A'}</p>
-                                    <div className="flex flex-wrap gap-4">
-                                        <span className="text-[10px] font-bold text-gray-500 uppercase bg-white/[0.04] px-4 py-2 rounded-xl border border-white/5">Ocean View</span>
-                                        <span className="text-[10px] font-bold text-gray-500 uppercase bg-white/[0.04] px-4 py-2 rounded-xl border border-white/5">High Floor</span>
-                                        <span className="text-[10px] font-bold text-emerald-500 uppercase bg-emerald-500/5 px-4 py-2 rounded-xl border border-emerald-500/20">Verified Clear</span>
+                            <div className="flex-1 space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                                {selectedRooms.map((room, idx) => (
+                                    <div key={room.id} className="bg-black/40 rounded-xl p-5 border border-white/10 flex items-center gap-6 group relative shadow-inner">
+                                        <div className="w-32 h-20 relative rounded-lg overflow-hidden border border-white/10 shrink-0">
+                                            <Image src={`https://images.unsplash.com/photo-1590490360182-c33d57733427?w=600&q=80`} alt="" fill className="object-cover group-hover:scale-110 transition-transform duration-1000" unoptimized />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <h4 className="text-base font-bold text-white tracking-tight mb-1">Room {room.roomNumber}</h4>
+                                            <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">{room.type}</p>
+                                        </div>
+                                        <div className="text-right pl-6 border-l border-white/5">
+                                            <p className="text-white font-bold text-base tracking-tight">₹{(room.basePrice * stayDuration).toLocaleString()}</p>
+                                            <p className="text-gray-600 text-[8px] font-bold uppercase tracking-tight">₹{room.basePrice} × {stayDuration} NY</p>
+                                        </div>
                                     </div>
-                                </div>
+                                ))}
                             </div>
                         </div>
                     </div>
@@ -838,26 +942,32 @@ export default function NewBookingPage() {
                     <div className="space-y-8">
                         <div className="space-y-3">
                             <label className="text-[11px] font-bold text-gray-600 uppercase tracking-widest ml-2">Booking Source</label>
-                            <select
-                                value={bookingDetails.source}
-                                onChange={e => setBookingDetails({ ...bookingDetails, source: e.target.value })}
-                                className="w-full bg-black/40 border border-white/10 rounded-[1.5rem] px-6 py-5 text-white font-bold outline-none focus:border-[#4A9EFF] transition-all appearance-none cursor-pointer text-base shadow-inner"
-                            >
-                                <option value="WALK_IN">Hotel Walk-in</option>
-                                <option value="DIRECT">Direct Call Reservation</option>
-                                <option value="BOOKING_COM">Booking.com Official</option>
-                            </select>
+                            <div className="relative">
+                                <select
+                                    value={bookingDetails.source}
+                                    onChange={e => setBookingDetails({ ...bookingDetails, source: e.target.value })}
+                                    className="w-full bg-[#0a0a0a] border border-white/10 rounded-[1.5rem] px-6 py-5 text-white font-bold outline-none focus:border-[#4A9EFF] transition-all appearance-none cursor-pointer text-base shadow-2xl hover:border-white/20"
+                                >
+                                    <option value="WALK_IN" className="bg-[#101922]">Hotel Walk-in</option>
+                                    <option value="DIRECT" className="bg-[#101922]">Direct Call Reservation</option>
+                                    <option value="BOOKING_COM" className="bg-[#101922]">Booking.com Official</option>
+                                </select>
+                                <ChevronRight className="absolute right-6 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-600 pointer-events-none rotate-90" />
+                            </div>
                         </div>
                         <div className="space-y-3">
                             <label className="text-[11px] font-bold text-gray-600 uppercase tracking-widest ml-2">Reservation Status</label>
-                            <select
-                                value={bookingDetails.status}
-                                onChange={e => setBookingDetails({ ...bookingDetails, status: e.target.value })}
-                                className="w-full bg-black/40 border border-white/10 rounded-[1.5rem] px-6 py-5 text-white font-bold outline-none focus:border-[#4A9EFF] transition-all appearance-none cursor-pointer text-base shadow-inner"
-                            >
-                                <option value="RESERVED">Confirmed Reservation</option>
-                                <option value="PENDING">Draft / Tentative</option>
-                            </select>
+                            <div className="relative">
+                                <select
+                                    value={bookingDetails.status}
+                                    onChange={e => setBookingDetails({ ...bookingDetails, status: e.target.value })}
+                                    className="w-full bg-[#0a0a0a] border border-white/10 rounded-[1.5rem] px-6 py-5 text-white font-bold outline-none focus:border-[#4A9EFF] transition-all appearance-none cursor-pointer text-base shadow-2xl hover:border-white/20"
+                                >
+                                    <option value="RESERVED" className="bg-[#101922]">Confirmed Reservation</option>
+                                    <option value="PENDING" className="bg-[#101922]">Draft / Tentative</option>
+                                </select>
+                                <ChevronRight className="absolute right-6 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-600 pointer-events-none rotate-90" />
+                            </div>
                         </div>
                         <div className="space-y-3">
                             <label className="text-[11px] font-bold text-gray-600 uppercase tracking-widest ml-2">Staff Remarks</label>
@@ -874,10 +984,10 @@ export default function NewBookingPage() {
                         <div className="flex flex-col gap-3">
                             <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest ml-1">TOTAL AMOUNT SECURED</p>
                             <div className="flex items-baseline gap-2">
-                                <span className="text-xl font-bold text-white tracking-tight leading-none">₹{grandTotal}.00</span>
-                                <span className="text-base font-bold text-gray-600">INR</span>
+                                <span className="text-2xl font-bold text-white tracking-tight leading-none">₹{grandTotal.toLocaleString()}.00</span>
+                                <span className="text-sm font-bold text-slate-600">INR</span>
                             </div>
-                            <p className="text-xs text-emerald-500 font-bold flex items-center gap-2"><CheckCircle2 className="w-4 h-4" /> All taxes & service fees included</p>
+                            <p className="text-[11px] text-emerald-500 font-bold flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5" /> All taxes & service fees included</p>
                         </div>
 
                         <button
@@ -887,13 +997,6 @@ export default function NewBookingPage() {
                         >
                             {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : <>Secured Booking <ArrowRight className="w-6 h-6 stroke-[2.5px] group-hover/submit:translate-x-1 transition-transform" /></>}
                         </button>
-                    </div>
-
-                    <div className="p-6 bg-[#4A9EFF]/5 border border-[#4A9EFF]/20 rounded-3xl flex items-start gap-5 shadow-inner">
-                        <Info className="w-6 h-6 text-[#4A9EFF] shrink-0 mt-0.5" />
-                        <p className="text-xs text-gray-400 font-bold leading-relaxed">
-                            By confirming, an official cloud reservation receipt will be dispatched to <span className="text-[#4A9EFF] underline decoration-[#4A9EFF]/40">{selectedGuest?.email || 'the guest'}</span> instantly.
-                        </p>
                     </div>
                 </div>
             </div>

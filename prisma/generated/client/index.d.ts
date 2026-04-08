@@ -94,6 +94,11 @@ export type MenuItem = $Result.DefaultSelection<Prisma.$MenuItemPayload>
  */
 export type SpaService = $Result.DefaultSelection<Prisma.$SpaServicePayload>
 /**
+ * Model LostItem
+ * 
+ */
+export type LostItem = $Result.DefaultSelection<Prisma.$LostItemPayload>
+/**
  * Model RolePermission
  * 
  */
@@ -773,6 +778,16 @@ export class PrismaClient<
   get spaService(): Prisma.SpaServiceDelegate<ExtArgs>;
 
   /**
+   * `prisma.lostItem`: Exposes CRUD operations for the **LostItem** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more LostItems
+    * const lostItems = await prisma.lostItem.findMany()
+    * ```
+    */
+  get lostItem(): Prisma.LostItemDelegate<ExtArgs>;
+
+  /**
    * `prisma.rolePermission`: Exposes CRUD operations for the **RolePermission** model.
     * Example usage:
     * ```ts
@@ -1358,6 +1373,7 @@ export namespace Prisma {
     Amenity: 'Amenity',
     MenuItem: 'MenuItem',
     SpaService: 'SpaService',
+    LostItem: 'LostItem',
     RolePermission: 'RolePermission',
     SystemSetting: 'SystemSetting',
     NotificationTemplate: 'NotificationTemplate',
@@ -1386,7 +1402,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "user" | "guest" | "favorite" | "property" | "room" | "booking" | "serviceRequest" | "staff" | "attendance" | "leaveRequest" | "payroll" | "rating" | "performanceScore" | "amenity" | "menuItem" | "spaService" | "rolePermission" | "systemSetting" | "notificationTemplate" | "serviceConfig" | "serviceStep" | "campaign" | "systemNode" | "systemAlert" | "inAppNotification" | "message" | "supportTicket" | "ticketMessage" | "planDefinition"
+      modelProps: "user" | "guest" | "favorite" | "property" | "room" | "booking" | "serviceRequest" | "staff" | "attendance" | "leaveRequest" | "payroll" | "rating" | "performanceScore" | "amenity" | "menuItem" | "spaService" | "lostItem" | "rolePermission" | "systemSetting" | "notificationTemplate" | "serviceConfig" | "serviceStep" | "campaign" | "systemNode" | "systemAlert" | "inAppNotification" | "message" | "supportTicket" | "ticketMessage" | "planDefinition"
       txIsolationLevel: never
     }
     model: {
@@ -2574,6 +2590,80 @@ export namespace Prisma {
           }
         }
       }
+      LostItem: {
+        payload: Prisma.$LostItemPayload<ExtArgs>
+        fields: Prisma.LostItemFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.LostItemFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LostItemPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.LostItemFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LostItemPayload>
+          }
+          findFirst: {
+            args: Prisma.LostItemFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LostItemPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.LostItemFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LostItemPayload>
+          }
+          findMany: {
+            args: Prisma.LostItemFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LostItemPayload>[]
+          }
+          create: {
+            args: Prisma.LostItemCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LostItemPayload>
+          }
+          createMany: {
+            args: Prisma.LostItemCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.LostItemDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LostItemPayload>
+          }
+          update: {
+            args: Prisma.LostItemUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LostItemPayload>
+          }
+          deleteMany: {
+            args: Prisma.LostItemDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.LostItemUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.LostItemUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LostItemPayload>
+          }
+          aggregate: {
+            args: Prisma.LostItemAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateLostItem>
+          }
+          groupBy: {
+            args: Prisma.LostItemGroupByArgs<ExtArgs>
+            result: $Utils.Optional<LostItemGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.LostItemFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.LostItemAggregateRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          count: {
+            args: Prisma.LostItemCountArgs<ExtArgs>
+            result: $Utils.Optional<LostItemCountAggregateOutputType> | number
+          }
+        }
+      }
       RolePermission: {
         payload: Prisma.$RolePermissionPayload<ExtArgs>
         fields: Prisma.RolePermissionFieldRefs
@@ -3720,6 +3810,7 @@ export namespace Prisma {
     supportTickets: number
     ratings: number
     favorites: number
+    lostItems: number
   }
 
   export type GuestCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3728,6 +3819,7 @@ export namespace Prisma {
     supportTickets?: boolean | GuestCountOutputTypeCountSupportTicketsArgs
     ratings?: boolean | GuestCountOutputTypeCountRatingsArgs
     favorites?: boolean | GuestCountOutputTypeCountFavoritesArgs
+    lostItems?: boolean | GuestCountOutputTypeCountLostItemsArgs
   }
 
   // Custom InputTypes
@@ -3776,6 +3868,13 @@ export namespace Prisma {
     where?: FavoriteWhereInput
   }
 
+  /**
+   * GuestCountOutputType without action
+   */
+  export type GuestCountOutputTypeCountLostItemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LostItemWhereInput
+  }
+
 
   /**
    * Count Type PropertyCountOutputType
@@ -3797,6 +3896,7 @@ export namespace Prisma {
     systemNodes: number
     systemAlerts: number
     supportTickets: number
+    lostItems: number
   }
 
   export type PropertyCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3815,6 +3915,7 @@ export namespace Prisma {
     systemNodes?: boolean | PropertyCountOutputTypeCountSystemNodesArgs
     systemAlerts?: boolean | PropertyCountOutputTypeCountSystemAlertsArgs
     supportTickets?: boolean | PropertyCountOutputTypeCountSupportTicketsArgs
+    lostItems?: boolean | PropertyCountOutputTypeCountLostItemsArgs
   }
 
   // Custom InputTypes
@@ -3933,6 +4034,13 @@ export namespace Prisma {
     where?: SupportTicketWhereInput
   }
 
+  /**
+   * PropertyCountOutputType without action
+   */
+  export type PropertyCountOutputTypeCountLostItemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LostItemWhereInput
+  }
+
 
   /**
    * Count Type RoomCountOutputType
@@ -3942,12 +4050,14 @@ export namespace Prisma {
     bookings: number
     serviceRequests: number
     favorites: number
+    lostItems: number
   }
 
   export type RoomCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     bookings?: boolean | RoomCountOutputTypeCountBookingsArgs
     serviceRequests?: boolean | RoomCountOutputTypeCountServiceRequestsArgs
     favorites?: boolean | RoomCountOutputTypeCountFavoritesArgs
+    lostItems?: boolean | RoomCountOutputTypeCountLostItemsArgs
   }
 
   // Custom InputTypes
@@ -3980,6 +4090,44 @@ export namespace Prisma {
    */
   export type RoomCountOutputTypeCountFavoritesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: FavoriteWhereInput
+  }
+
+  /**
+   * RoomCountOutputType without action
+   */
+  export type RoomCountOutputTypeCountLostItemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LostItemWhereInput
+  }
+
+
+  /**
+   * Count Type BookingCountOutputType
+   */
+
+  export type BookingCountOutputType = {
+    lostItems: number
+  }
+
+  export type BookingCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    lostItems?: boolean | BookingCountOutputTypeCountLostItemsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * BookingCountOutputType without action
+   */
+  export type BookingCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BookingCountOutputType
+     */
+    select?: BookingCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * BookingCountOutputType without action
+   */
+  export type BookingCountOutputTypeCountLostItemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LostItemWhereInput
   }
 
 
@@ -4033,6 +4181,7 @@ export namespace Prisma {
     serviceRequests: number
     payrolls: number
     performanceScores: number
+    lostItems: number
   }
 
   export type StaffCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4041,6 +4190,7 @@ export namespace Prisma {
     serviceRequests?: boolean | StaffCountOutputTypeCountServiceRequestsArgs
     payrolls?: boolean | StaffCountOutputTypeCountPayrollsArgs
     performanceScores?: boolean | StaffCountOutputTypeCountPerformanceScoresArgs
+    lostItems?: boolean | StaffCountOutputTypeCountLostItemsArgs
   }
 
   // Custom InputTypes
@@ -4087,6 +4237,13 @@ export namespace Prisma {
    */
   export type StaffCountOutputTypeCountPerformanceScoresArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: PerformanceScoreWhereInput
+  }
+
+  /**
+   * StaffCountOutputType without action
+   */
+  export type StaffCountOutputTypeCountLostItemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LostItemWhereInput
   }
 
 
@@ -4174,6 +4331,7 @@ export namespace Prisma {
     password: string | null
     role: $Enums.UserRole | null
     status: $Enums.UserStatus | null
+    dndEnabled: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
     workplaceId: string | null
@@ -4187,6 +4345,7 @@ export namespace Prisma {
     password: string | null
     role: $Enums.UserRole | null
     status: $Enums.UserStatus | null
+    dndEnabled: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
     workplaceId: string | null
@@ -4200,6 +4359,7 @@ export namespace Prisma {
     password: number
     role: number
     status: number
+    dndEnabled: number
     createdAt: number
     updatedAt: number
     workplaceId: number
@@ -4216,6 +4376,7 @@ export namespace Prisma {
     password?: true
     role?: true
     status?: true
+    dndEnabled?: true
     createdAt?: true
     updatedAt?: true
     workplaceId?: true
@@ -4229,6 +4390,7 @@ export namespace Prisma {
     password?: true
     role?: true
     status?: true
+    dndEnabled?: true
     createdAt?: true
     updatedAt?: true
     workplaceId?: true
@@ -4242,6 +4404,7 @@ export namespace Prisma {
     password?: true
     role?: true
     status?: true
+    dndEnabled?: true
     createdAt?: true
     updatedAt?: true
     workplaceId?: true
@@ -4329,6 +4492,7 @@ export namespace Prisma {
     password: string
     role: $Enums.UserRole
     status: $Enums.UserStatus
+    dndEnabled: boolean
     createdAt: Date
     updatedAt: Date
     workplaceId: string | null
@@ -4360,6 +4524,7 @@ export namespace Prisma {
     password?: boolean
     role?: boolean
     status?: boolean
+    dndEnabled?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     workplaceId?: boolean
@@ -4379,6 +4544,7 @@ export namespace Prisma {
     password?: boolean
     role?: boolean
     status?: boolean
+    dndEnabled?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     workplaceId?: boolean
@@ -4407,6 +4573,7 @@ export namespace Prisma {
       password: string
       role: $Enums.UserRole
       status: $Enums.UserStatus
+      dndEnabled: boolean
       createdAt: Date
       updatedAt: Date
       workplaceId: string | null
@@ -4813,6 +4980,7 @@ export namespace Prisma {
     readonly password: FieldRef<"User", 'String'>
     readonly role: FieldRef<"User", 'UserRole'>
     readonly status: FieldRef<"User", 'UserStatus'>
+    readonly dndEnabled: FieldRef<"User", 'Boolean'>
     readonly createdAt: FieldRef<"User", 'DateTime'>
     readonly updatedAt: FieldRef<"User", 'DateTime'>
     readonly workplaceId: FieldRef<"User", 'String'>
@@ -5227,6 +5395,7 @@ export namespace Prisma {
     idDocumentFront: string | null
     idDocumentBack: string | null
     address: string | null
+    dateOfBirth: Date | null
     checkInStatus: $Enums.CheckInStatus | null
     checkInCompletedAt: Date | null
     language: string | null
@@ -5244,6 +5413,7 @@ export namespace Prisma {
     idDocumentFront: string | null
     idDocumentBack: string | null
     address: string | null
+    dateOfBirth: Date | null
     checkInStatus: $Enums.CheckInStatus | null
     checkInCompletedAt: Date | null
     language: string | null
@@ -5261,6 +5431,7 @@ export namespace Prisma {
     idDocumentFront: number
     idDocumentBack: number
     address: number
+    dateOfBirth: number
     checkInStatus: number
     checkInCompletedAt: number
     language: number
@@ -5280,6 +5451,7 @@ export namespace Prisma {
     idDocumentFront?: true
     idDocumentBack?: true
     address?: true
+    dateOfBirth?: true
     checkInStatus?: true
     checkInCompletedAt?: true
     language?: true
@@ -5297,6 +5469,7 @@ export namespace Prisma {
     idDocumentFront?: true
     idDocumentBack?: true
     address?: true
+    dateOfBirth?: true
     checkInStatus?: true
     checkInCompletedAt?: true
     language?: true
@@ -5314,6 +5487,7 @@ export namespace Prisma {
     idDocumentFront?: true
     idDocumentBack?: true
     address?: true
+    dateOfBirth?: true
     checkInStatus?: true
     checkInCompletedAt?: true
     language?: true
@@ -5404,6 +5578,7 @@ export namespace Prisma {
     idDocumentFront: string | null
     idDocumentBack: string | null
     address: string | null
+    dateOfBirth: Date | null
     checkInStatus: $Enums.CheckInStatus
     checkInCompletedAt: Date | null
     language: string
@@ -5438,6 +5613,7 @@ export namespace Prisma {
     idDocumentFront?: boolean
     idDocumentBack?: boolean
     address?: boolean
+    dateOfBirth?: boolean
     checkInStatus?: boolean
     checkInCompletedAt?: boolean
     language?: boolean
@@ -5448,6 +5624,7 @@ export namespace Prisma {
     supportTickets?: boolean | Guest$supportTicketsArgs<ExtArgs>
     ratings?: boolean | Guest$ratingsArgs<ExtArgs>
     favorites?: boolean | Guest$favoritesArgs<ExtArgs>
+    lostItems?: boolean | Guest$lostItemsArgs<ExtArgs>
     _count?: boolean | GuestCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["guest"]>
 
@@ -5462,6 +5639,7 @@ export namespace Prisma {
     idDocumentFront?: boolean
     idDocumentBack?: boolean
     address?: boolean
+    dateOfBirth?: boolean
     checkInStatus?: boolean
     checkInCompletedAt?: boolean
     language?: boolean
@@ -5475,6 +5653,7 @@ export namespace Prisma {
     supportTickets?: boolean | Guest$supportTicketsArgs<ExtArgs>
     ratings?: boolean | Guest$ratingsArgs<ExtArgs>
     favorites?: boolean | Guest$favoritesArgs<ExtArgs>
+    lostItems?: boolean | Guest$lostItemsArgs<ExtArgs>
     _count?: boolean | GuestCountOutputTypeDefaultArgs<ExtArgs>
   }
 
@@ -5486,6 +5665,7 @@ export namespace Prisma {
       supportTickets: Prisma.$SupportTicketPayload<ExtArgs>[]
       ratings: Prisma.$RatingPayload<ExtArgs>[]
       favorites: Prisma.$FavoritePayload<ExtArgs>[]
+      lostItems: Prisma.$LostItemPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -5497,6 +5677,7 @@ export namespace Prisma {
       idDocumentFront: string | null
       idDocumentBack: string | null
       address: string | null
+      dateOfBirth: Date | null
       checkInStatus: $Enums.CheckInStatus
       checkInCompletedAt: Date | null
       language: string
@@ -5870,6 +6051,7 @@ export namespace Prisma {
     supportTickets<T extends Guest$supportTicketsArgs<ExtArgs> = {}>(args?: Subset<T, Guest$supportTicketsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SupportTicketPayload<ExtArgs>, T, "findMany"> | Null>
     ratings<T extends Guest$ratingsArgs<ExtArgs> = {}>(args?: Subset<T, Guest$ratingsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RatingPayload<ExtArgs>, T, "findMany"> | Null>
     favorites<T extends Guest$favoritesArgs<ExtArgs> = {}>(args?: Subset<T, Guest$favoritesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FavoritePayload<ExtArgs>, T, "findMany"> | Null>
+    lostItems<T extends Guest$lostItemsArgs<ExtArgs> = {}>(args?: Subset<T, Guest$lostItemsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LostItemPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -5908,6 +6090,7 @@ export namespace Prisma {
     readonly idDocumentFront: FieldRef<"Guest", 'String'>
     readonly idDocumentBack: FieldRef<"Guest", 'String'>
     readonly address: FieldRef<"Guest", 'String'>
+    readonly dateOfBirth: FieldRef<"Guest", 'DateTime'>
     readonly checkInStatus: FieldRef<"Guest", 'CheckInStatus'>
     readonly checkInCompletedAt: FieldRef<"Guest", 'DateTime'>
     readonly language: FieldRef<"Guest", 'String'>
@@ -6336,6 +6519,26 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: FavoriteScalarFieldEnum | FavoriteScalarFieldEnum[]
+  }
+
+  /**
+   * Guest.lostItems
+   */
+  export type Guest$lostItemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LostItem
+     */
+    select?: LostItemSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LostItemInclude<ExtArgs> | null
+    where?: LostItemWhereInput
+    orderBy?: LostItemOrderByWithRelationInput | LostItemOrderByWithRelationInput[]
+    cursor?: LostItemWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: LostItemScalarFieldEnum | LostItemScalarFieldEnum[]
   }
 
   /**
@@ -7281,8 +7484,22 @@ export namespace Prisma {
 
   export type AggregateProperty = {
     _count: PropertyCountAggregateOutputType | null
+    _avg: PropertyAvgAggregateOutputType | null
+    _sum: PropertySumAggregateOutputType | null
     _min: PropertyMinAggregateOutputType | null
     _max: PropertyMaxAggregateOutputType | null
+  }
+
+  export type PropertyAvgAggregateOutputType = {
+    latitude: number | null
+    longitude: number | null
+    ranking: number | null
+  }
+
+  export type PropertySumAggregateOutputType = {
+    latitude: number | null
+    longitude: number | null
+    ranking: number | null
   }
 
   export type PropertyMinAggregateOutputType = {
@@ -7299,6 +7516,9 @@ export namespace Prisma {
     cancellationPolicy: string | null
     plan: $Enums.SubscriptionPlan | null
     planExpiresAt: Date | null
+    latitude: number | null
+    longitude: number | null
+    ranking: number | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -7317,6 +7537,9 @@ export namespace Prisma {
     cancellationPolicy: string | null
     plan: $Enums.SubscriptionPlan | null
     planExpiresAt: Date | null
+    latitude: number | null
+    longitude: number | null
+    ranking: number | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -7337,6 +7560,9 @@ export namespace Prisma {
     plan: number
     features: number
     planExpiresAt: number
+    latitude: number
+    longitude: number
+    ranking: number
     policies: number
     createdAt: number
     updatedAt: number
@@ -7344,6 +7570,18 @@ export namespace Prisma {
     _all: number
   }
 
+
+  export type PropertyAvgAggregateInputType = {
+    latitude?: true
+    longitude?: true
+    ranking?: true
+  }
+
+  export type PropertySumAggregateInputType = {
+    latitude?: true
+    longitude?: true
+    ranking?: true
+  }
 
   export type PropertyMinAggregateInputType = {
     id?: true
@@ -7359,6 +7597,9 @@ export namespace Prisma {
     cancellationPolicy?: true
     plan?: true
     planExpiresAt?: true
+    latitude?: true
+    longitude?: true
+    ranking?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -7377,6 +7618,9 @@ export namespace Prisma {
     cancellationPolicy?: true
     plan?: true
     planExpiresAt?: true
+    latitude?: true
+    longitude?: true
+    ranking?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -7397,6 +7641,9 @@ export namespace Prisma {
     plan?: true
     features?: true
     planExpiresAt?: true
+    latitude?: true
+    longitude?: true
+    ranking?: true
     policies?: true
     createdAt?: true
     updatedAt?: true
@@ -7442,6 +7689,18 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
+     * Select which fields to average
+    **/
+    _avg?: PropertyAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: PropertySumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: PropertyMinAggregateInputType
@@ -7472,6 +7731,8 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: PropertyCountAggregateInputType | true
+    _avg?: PropertyAvgAggregateInputType
+    _sum?: PropertySumAggregateInputType
     _min?: PropertyMinAggregateInputType
     _max?: PropertyMaxAggregateInputType
   }
@@ -7492,11 +7753,16 @@ export namespace Prisma {
     plan: $Enums.SubscriptionPlan
     features: string[]
     planExpiresAt: Date | null
+    latitude: number | null
+    longitude: number | null
+    ranking: number
     policies: JsonValue | null
     createdAt: Date
     updatedAt: Date
     ownerIds: string[]
     _count: PropertyCountAggregateOutputType | null
+    _avg: PropertyAvgAggregateOutputType | null
+    _sum: PropertySumAggregateOutputType | null
     _min: PropertyMinAggregateOutputType | null
     _max: PropertyMaxAggregateOutputType | null
   }
@@ -7531,6 +7797,9 @@ export namespace Prisma {
     plan?: boolean
     features?: boolean
     planExpiresAt?: boolean
+    latitude?: boolean
+    longitude?: boolean
+    ranking?: boolean
     policies?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -7550,6 +7819,7 @@ export namespace Prisma {
     systemNodes?: boolean | Property$systemNodesArgs<ExtArgs>
     systemAlerts?: boolean | Property$systemAlertsArgs<ExtArgs>
     supportTickets?: boolean | Property$supportTicketsArgs<ExtArgs>
+    lostItems?: boolean | Property$lostItemsArgs<ExtArgs>
     _count?: boolean | PropertyCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["property"]>
 
@@ -7570,6 +7840,9 @@ export namespace Prisma {
     plan?: boolean
     features?: boolean
     planExpiresAt?: boolean
+    latitude?: boolean
+    longitude?: boolean
+    ranking?: boolean
     policies?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -7592,6 +7865,7 @@ export namespace Prisma {
     systemNodes?: boolean | Property$systemNodesArgs<ExtArgs>
     systemAlerts?: boolean | Property$systemAlertsArgs<ExtArgs>
     supportTickets?: boolean | Property$supportTicketsArgs<ExtArgs>
+    lostItems?: boolean | Property$lostItemsArgs<ExtArgs>
     _count?: boolean | PropertyCountOutputTypeDefaultArgs<ExtArgs>
   }
 
@@ -7613,6 +7887,7 @@ export namespace Prisma {
       systemNodes: Prisma.$SystemNodePayload<ExtArgs>[]
       systemAlerts: Prisma.$SystemAlertPayload<ExtArgs>[]
       supportTickets: Prisma.$SupportTicketPayload<ExtArgs>[]
+      lostItems: Prisma.$LostItemPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -7630,6 +7905,9 @@ export namespace Prisma {
       plan: $Enums.SubscriptionPlan
       features: string[]
       planExpiresAt: Date | null
+      latitude: number | null
+      longitude: number | null
+      ranking: number
       policies: Prisma.JsonValue | null
       createdAt: Date
       updatedAt: Date
@@ -8012,6 +8290,7 @@ export namespace Prisma {
     systemNodes<T extends Property$systemNodesArgs<ExtArgs> = {}>(args?: Subset<T, Property$systemNodesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SystemNodePayload<ExtArgs>, T, "findMany"> | Null>
     systemAlerts<T extends Property$systemAlertsArgs<ExtArgs> = {}>(args?: Subset<T, Property$systemAlertsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SystemAlertPayload<ExtArgs>, T, "findMany"> | Null>
     supportTickets<T extends Property$supportTicketsArgs<ExtArgs> = {}>(args?: Subset<T, Property$supportTicketsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SupportTicketPayload<ExtArgs>, T, "findMany"> | Null>
+    lostItems<T extends Property$lostItemsArgs<ExtArgs> = {}>(args?: Subset<T, Property$lostItemsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LostItemPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -8056,6 +8335,9 @@ export namespace Prisma {
     readonly plan: FieldRef<"Property", 'SubscriptionPlan'>
     readonly features: FieldRef<"Property", 'String[]'>
     readonly planExpiresAt: FieldRef<"Property", 'DateTime'>
+    readonly latitude: FieldRef<"Property", 'Float'>
+    readonly longitude: FieldRef<"Property", 'Float'>
+    readonly ranking: FieldRef<"Property", 'Int'>
     readonly policies: FieldRef<"Property", 'Json'>
     readonly createdAt: FieldRef<"Property", 'DateTime'>
     readonly updatedAt: FieldRef<"Property", 'DateTime'>
@@ -8686,6 +8968,26 @@ export namespace Prisma {
   }
 
   /**
+   * Property.lostItems
+   */
+  export type Property$lostItemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LostItem
+     */
+    select?: LostItemSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LostItemInclude<ExtArgs> | null
+    where?: LostItemWhereInput
+    orderBy?: LostItemOrderByWithRelationInput | LostItemOrderByWithRelationInput[]
+    cursor?: LostItemWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: LostItemScalarFieldEnum | LostItemScalarFieldEnum[]
+  }
+
+  /**
    * Property without action
    */
   export type PropertyDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -8974,6 +9276,7 @@ export namespace Prisma {
     bookings?: boolean | Room$bookingsArgs<ExtArgs>
     serviceRequests?: boolean | Room$serviceRequestsArgs<ExtArgs>
     favorites?: boolean | Room$favoritesArgs<ExtArgs>
+    lostItems?: boolean | Room$lostItemsArgs<ExtArgs>
     _count?: boolean | RoomCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["room"]>
 
@@ -9000,6 +9303,7 @@ export namespace Prisma {
     bookings?: boolean | Room$bookingsArgs<ExtArgs>
     serviceRequests?: boolean | Room$serviceRequestsArgs<ExtArgs>
     favorites?: boolean | Room$favoritesArgs<ExtArgs>
+    lostItems?: boolean | Room$lostItemsArgs<ExtArgs>
     _count?: boolean | RoomCountOutputTypeDefaultArgs<ExtArgs>
   }
 
@@ -9010,6 +9314,7 @@ export namespace Prisma {
       bookings: Prisma.$BookingPayload<ExtArgs>[]
       serviceRequests: Prisma.$ServiceRequestPayload<ExtArgs>[]
       favorites: Prisma.$FavoritePayload<ExtArgs>[]
+      lostItems: Prisma.$LostItemPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -9393,6 +9698,7 @@ export namespace Prisma {
     bookings<T extends Room$bookingsArgs<ExtArgs> = {}>(args?: Subset<T, Room$bookingsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BookingPayload<ExtArgs>, T, "findMany"> | Null>
     serviceRequests<T extends Room$serviceRequestsArgs<ExtArgs> = {}>(args?: Subset<T, Room$serviceRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ServiceRequestPayload<ExtArgs>, T, "findMany"> | Null>
     favorites<T extends Room$favoritesArgs<ExtArgs> = {}>(args?: Subset<T, Room$favoritesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FavoritePayload<ExtArgs>, T, "findMany"> | Null>
+    lostItems<T extends Room$lostItemsArgs<ExtArgs> = {}>(args?: Subset<T, Room$lostItemsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LostItemPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -9822,6 +10128,26 @@ export namespace Prisma {
   }
 
   /**
+   * Room.lostItems
+   */
+  export type Room$lostItemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LostItem
+     */
+    select?: LostItemSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LostItemInclude<ExtArgs> | null
+    where?: LostItemWhereInput
+    orderBy?: LostItemOrderByWithRelationInput | LostItemOrderByWithRelationInput[]
+    cursor?: LostItemWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: LostItemScalarFieldEnum | LostItemScalarFieldEnum[]
+  }
+
+  /**
    * Room without action
    */
   export type RoomDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -9866,6 +10192,8 @@ export namespace Prisma {
     roomId: string | null
     checkIn: Date | null
     checkOut: Date | null
+    actualCheckIn: Date | null
+    actualCheckOut: Date | null
     numberOfGuests: number | null
     status: $Enums.BookingStatus | null
     source: $Enums.BookingSource | null
@@ -9885,6 +10213,8 @@ export namespace Prisma {
     roomId: string | null
     checkIn: Date | null
     checkOut: Date | null
+    actualCheckIn: Date | null
+    actualCheckOut: Date | null
     numberOfGuests: number | null
     status: $Enums.BookingStatus | null
     source: $Enums.BookingSource | null
@@ -9904,6 +10234,8 @@ export namespace Prisma {
     roomId: number
     checkIn: number
     checkOut: number
+    actualCheckIn: number
+    actualCheckOut: number
     numberOfGuests: number
     status: number
     source: number
@@ -9937,6 +10269,8 @@ export namespace Prisma {
     roomId?: true
     checkIn?: true
     checkOut?: true
+    actualCheckIn?: true
+    actualCheckOut?: true
     numberOfGuests?: true
     status?: true
     source?: true
@@ -9956,6 +10290,8 @@ export namespace Prisma {
     roomId?: true
     checkIn?: true
     checkOut?: true
+    actualCheckIn?: true
+    actualCheckOut?: true
     numberOfGuests?: true
     status?: true
     source?: true
@@ -9975,6 +10311,8 @@ export namespace Prisma {
     roomId?: true
     checkIn?: true
     checkOut?: true
+    actualCheckIn?: true
+    actualCheckOut?: true
     numberOfGuests?: true
     status?: true
     source?: true
@@ -10081,6 +10419,8 @@ export namespace Prisma {
     roomId: string
     checkIn: Date
     checkOut: Date
+    actualCheckIn: Date | null
+    actualCheckOut: Date | null
     numberOfGuests: number
     status: $Enums.BookingStatus
     source: $Enums.BookingSource
@@ -10119,6 +10459,8 @@ export namespace Prisma {
     roomId?: boolean
     checkIn?: boolean
     checkOut?: boolean
+    actualCheckIn?: boolean
+    actualCheckOut?: boolean
     numberOfGuests?: boolean
     status?: boolean
     source?: boolean
@@ -10133,6 +10475,8 @@ export namespace Prisma {
     guest?: boolean | GuestDefaultArgs<ExtArgs>
     room?: boolean | RoomDefaultArgs<ExtArgs>
     property?: boolean | PropertyDefaultArgs<ExtArgs>
+    lostItems?: boolean | Booking$lostItemsArgs<ExtArgs>
+    _count?: boolean | BookingCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["booking"]>
 
 
@@ -10142,6 +10486,8 @@ export namespace Prisma {
     roomId?: boolean
     checkIn?: boolean
     checkOut?: boolean
+    actualCheckIn?: boolean
+    actualCheckOut?: boolean
     numberOfGuests?: boolean
     status?: boolean
     source?: boolean
@@ -10159,6 +10505,8 @@ export namespace Prisma {
     guest?: boolean | GuestDefaultArgs<ExtArgs>
     room?: boolean | RoomDefaultArgs<ExtArgs>
     property?: boolean | PropertyDefaultArgs<ExtArgs>
+    lostItems?: boolean | Booking$lostItemsArgs<ExtArgs>
+    _count?: boolean | BookingCountOutputTypeDefaultArgs<ExtArgs>
   }
 
   export type $BookingPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -10167,6 +10515,7 @@ export namespace Prisma {
       guest: Prisma.$GuestPayload<ExtArgs>
       room: Prisma.$RoomPayload<ExtArgs>
       property: Prisma.$PropertyPayload<ExtArgs>
+      lostItems: Prisma.$LostItemPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -10174,6 +10523,8 @@ export namespace Prisma {
       roomId: string
       checkIn: Date
       checkOut: Date
+      actualCheckIn: Date | null
+      actualCheckOut: Date | null
       numberOfGuests: number
       status: $Enums.BookingStatus
       source: $Enums.BookingSource
@@ -10551,6 +10902,7 @@ export namespace Prisma {
     guest<T extends GuestDefaultArgs<ExtArgs> = {}>(args?: Subset<T, GuestDefaultArgs<ExtArgs>>): Prisma__GuestClient<$Result.GetResult<Prisma.$GuestPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
     room<T extends RoomDefaultArgs<ExtArgs> = {}>(args?: Subset<T, RoomDefaultArgs<ExtArgs>>): Prisma__RoomClient<$Result.GetResult<Prisma.$RoomPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
     property<T extends PropertyDefaultArgs<ExtArgs> = {}>(args?: Subset<T, PropertyDefaultArgs<ExtArgs>>): Prisma__PropertyClient<$Result.GetResult<Prisma.$PropertyPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    lostItems<T extends Booking$lostItemsArgs<ExtArgs> = {}>(args?: Subset<T, Booking$lostItemsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LostItemPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -10585,6 +10937,8 @@ export namespace Prisma {
     readonly roomId: FieldRef<"Booking", 'String'>
     readonly checkIn: FieldRef<"Booking", 'DateTime'>
     readonly checkOut: FieldRef<"Booking", 'DateTime'>
+    readonly actualCheckIn: FieldRef<"Booking", 'DateTime'>
+    readonly actualCheckOut: FieldRef<"Booking", 'DateTime'>
     readonly numberOfGuests: FieldRef<"Booking", 'Int'>
     readonly status: FieldRef<"Booking", 'BookingStatus'>
     readonly source: FieldRef<"Booking", 'BookingSource'>
@@ -10919,6 +11273,26 @@ export namespace Prisma {
      * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
      */
     options?: InputJsonValue
+  }
+
+  /**
+   * Booking.lostItems
+   */
+  export type Booking$lostItemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LostItem
+     */
+    select?: LostItemSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LostItemInclude<ExtArgs> | null
+    where?: LostItemWhereInput
+    orderBy?: LostItemOrderByWithRelationInput | LostItemOrderByWithRelationInput[]
+    cursor?: LostItemWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: LostItemScalarFieldEnum | LostItemScalarFieldEnum[]
   }
 
   /**
@@ -12206,12 +12580,16 @@ export namespace Prisma {
     dateOfJoining: Date | null
     department: $Enums.Department | null
     designation: string | null
+    contractType: string | null
+    workShift: string | null
+    managerName: string | null
     baseSalary: number | null
     bankName: string | null
     accountNumber: string | null
     ifscCode: string | null
     emergencyContactName: string | null
     emergencyContactPhone: string | null
+    address: string | null
     profilePhoto: string | null
     annualLeaveBalance: number | null
     sickLeaveBalance: number | null
@@ -12229,12 +12607,16 @@ export namespace Prisma {
     dateOfJoining: Date | null
     department: $Enums.Department | null
     designation: string | null
+    contractType: string | null
+    workShift: string | null
+    managerName: string | null
     baseSalary: number | null
     bankName: string | null
     accountNumber: string | null
     ifscCode: string | null
     emergencyContactName: string | null
     emergencyContactPhone: string | null
+    address: string | null
     profilePhoto: string | null
     annualLeaveBalance: number | null
     sickLeaveBalance: number | null
@@ -12252,12 +12634,16 @@ export namespace Prisma {
     dateOfJoining: number
     department: number
     designation: number
+    contractType: number
+    workShift: number
+    managerName: number
     baseSalary: number
     bankName: number
     accountNumber: number
     ifscCode: number
     emergencyContactName: number
     emergencyContactPhone: number
+    address: number
     profilePhoto: number
     documents: number
     annualLeaveBalance: number
@@ -12292,12 +12678,16 @@ export namespace Prisma {
     dateOfJoining?: true
     department?: true
     designation?: true
+    contractType?: true
+    workShift?: true
+    managerName?: true
     baseSalary?: true
     bankName?: true
     accountNumber?: true
     ifscCode?: true
     emergencyContactName?: true
     emergencyContactPhone?: true
+    address?: true
     profilePhoto?: true
     annualLeaveBalance?: true
     sickLeaveBalance?: true
@@ -12315,12 +12705,16 @@ export namespace Prisma {
     dateOfJoining?: true
     department?: true
     designation?: true
+    contractType?: true
+    workShift?: true
+    managerName?: true
     baseSalary?: true
     bankName?: true
     accountNumber?: true
     ifscCode?: true
     emergencyContactName?: true
     emergencyContactPhone?: true
+    address?: true
     profilePhoto?: true
     annualLeaveBalance?: true
     sickLeaveBalance?: true
@@ -12338,12 +12732,16 @@ export namespace Prisma {
     dateOfJoining?: true
     department?: true
     designation?: true
+    contractType?: true
+    workShift?: true
+    managerName?: true
     baseSalary?: true
     bankName?: true
     accountNumber?: true
     ifscCode?: true
     emergencyContactName?: true
     emergencyContactPhone?: true
+    address?: true
     profilePhoto?: true
     documents?: true
     annualLeaveBalance?: true
@@ -12449,12 +12847,16 @@ export namespace Prisma {
     dateOfJoining: Date
     department: $Enums.Department
     designation: string
+    contractType: string | null
+    workShift: string | null
+    managerName: string | null
     baseSalary: number
     bankName: string | null
     accountNumber: string | null
     ifscCode: string | null
     emergencyContactName: string | null
     emergencyContactPhone: string | null
+    address: string | null
     profilePhoto: string | null
     documents: JsonValue | null
     annualLeaveBalance: number
@@ -12492,12 +12894,16 @@ export namespace Prisma {
     dateOfJoining?: boolean
     department?: boolean
     designation?: boolean
+    contractType?: boolean
+    workShift?: boolean
+    managerName?: boolean
     baseSalary?: boolean
     bankName?: boolean
     accountNumber?: boolean
     ifscCode?: boolean
     emergencyContactName?: boolean
     emergencyContactPhone?: boolean
+    address?: boolean
     profilePhoto?: boolean
     documents?: boolean
     annualLeaveBalance?: boolean
@@ -12512,6 +12918,7 @@ export namespace Prisma {
     serviceRequests?: boolean | Staff$serviceRequestsArgs<ExtArgs>
     payrolls?: boolean | Staff$payrollsArgs<ExtArgs>
     performanceScores?: boolean | Staff$performanceScoresArgs<ExtArgs>
+    lostItems?: boolean | Staff$lostItemsArgs<ExtArgs>
     _count?: boolean | StaffCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["staff"]>
 
@@ -12525,12 +12932,16 @@ export namespace Prisma {
     dateOfJoining?: boolean
     department?: boolean
     designation?: boolean
+    contractType?: boolean
+    workShift?: boolean
+    managerName?: boolean
     baseSalary?: boolean
     bankName?: boolean
     accountNumber?: boolean
     ifscCode?: boolean
     emergencyContactName?: boolean
     emergencyContactPhone?: boolean
+    address?: boolean
     profilePhoto?: boolean
     documents?: boolean
     annualLeaveBalance?: boolean
@@ -12548,6 +12959,7 @@ export namespace Prisma {
     serviceRequests?: boolean | Staff$serviceRequestsArgs<ExtArgs>
     payrolls?: boolean | Staff$payrollsArgs<ExtArgs>
     performanceScores?: boolean | Staff$performanceScoresArgs<ExtArgs>
+    lostItems?: boolean | Staff$lostItemsArgs<ExtArgs>
     _count?: boolean | StaffCountOutputTypeDefaultArgs<ExtArgs>
   }
 
@@ -12561,6 +12973,7 @@ export namespace Prisma {
       serviceRequests: Prisma.$ServiceRequestPayload<ExtArgs>[]
       payrolls: Prisma.$PayrollPayload<ExtArgs>[]
       performanceScores: Prisma.$PerformanceScorePayload<ExtArgs>[]
+      lostItems: Prisma.$LostItemPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -12571,12 +12984,16 @@ export namespace Prisma {
       dateOfJoining: Date
       department: $Enums.Department
       designation: string
+      contractType: string | null
+      workShift: string | null
+      managerName: string | null
       baseSalary: number
       bankName: string | null
       accountNumber: string | null
       ifscCode: string | null
       emergencyContactName: string | null
       emergencyContactPhone: string | null
+      address: string | null
       profilePhoto: string | null
       documents: Prisma.JsonValue | null
       annualLeaveBalance: number
@@ -12954,6 +13371,7 @@ export namespace Prisma {
     serviceRequests<T extends Staff$serviceRequestsArgs<ExtArgs> = {}>(args?: Subset<T, Staff$serviceRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ServiceRequestPayload<ExtArgs>, T, "findMany"> | Null>
     payrolls<T extends Staff$payrollsArgs<ExtArgs> = {}>(args?: Subset<T, Staff$payrollsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PayrollPayload<ExtArgs>, T, "findMany"> | Null>
     performanceScores<T extends Staff$performanceScoresArgs<ExtArgs> = {}>(args?: Subset<T, Staff$performanceScoresArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PerformanceScorePayload<ExtArgs>, T, "findMany"> | Null>
+    lostItems<T extends Staff$lostItemsArgs<ExtArgs> = {}>(args?: Subset<T, Staff$lostItemsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LostItemPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -12991,12 +13409,16 @@ export namespace Prisma {
     readonly dateOfJoining: FieldRef<"Staff", 'DateTime'>
     readonly department: FieldRef<"Staff", 'Department'>
     readonly designation: FieldRef<"Staff", 'String'>
+    readonly contractType: FieldRef<"Staff", 'String'>
+    readonly workShift: FieldRef<"Staff", 'String'>
+    readonly managerName: FieldRef<"Staff", 'String'>
     readonly baseSalary: FieldRef<"Staff", 'Float'>
     readonly bankName: FieldRef<"Staff", 'String'>
     readonly accountNumber: FieldRef<"Staff", 'String'>
     readonly ifscCode: FieldRef<"Staff", 'String'>
     readonly emergencyContactName: FieldRef<"Staff", 'String'>
     readonly emergencyContactPhone: FieldRef<"Staff", 'String'>
+    readonly address: FieldRef<"Staff", 'String'>
     readonly profilePhoto: FieldRef<"Staff", 'String'>
     readonly documents: FieldRef<"Staff", 'Json'>
     readonly annualLeaveBalance: FieldRef<"Staff", 'Int'>
@@ -13427,6 +13849,26 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: PerformanceScoreScalarFieldEnum | PerformanceScoreScalarFieldEnum[]
+  }
+
+  /**
+   * Staff.lostItems
+   */
+  export type Staff$lostItemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LostItem
+     */
+    select?: LostItemSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LostItemInclude<ExtArgs> | null
+    where?: LostItemWhereInput
+    orderBy?: LostItemOrderByWithRelationInput | LostItemOrderByWithRelationInput[]
+    cursor?: LostItemWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: LostItemScalarFieldEnum | LostItemScalarFieldEnum[]
   }
 
   /**
@@ -19694,11 +20136,13 @@ export namespace Prisma {
 
   export type MenuItemAvgAggregateOutputType = {
     price: number | null
+    margin: number | null
     prepTime: number | null
   }
 
   export type MenuItemSumAggregateOutputType = {
     price: number | null
+    margin: number | null
     prepTime: number | null
   }
 
@@ -19710,7 +20154,7 @@ export namespace Prisma {
     category: string | null
     cuisine: string | null
     price: number | null
-    image: string | null
+    margin: number | null
     isVeg: boolean | null
     isAvailable: boolean | null
     prepTime: number | null
@@ -19726,7 +20170,7 @@ export namespace Prisma {
     category: string | null
     cuisine: string | null
     price: number | null
-    image: string | null
+    margin: number | null
     isVeg: boolean | null
     isAvailable: boolean | null
     prepTime: number | null
@@ -19742,7 +20186,8 @@ export namespace Prisma {
     category: number
     cuisine: number
     price: number
-    image: number
+    margin: number
+    images: number
     isVeg: number
     isAvailable: number
     prepTime: number
@@ -19754,11 +20199,13 @@ export namespace Prisma {
 
   export type MenuItemAvgAggregateInputType = {
     price?: true
+    margin?: true
     prepTime?: true
   }
 
   export type MenuItemSumAggregateInputType = {
     price?: true
+    margin?: true
     prepTime?: true
   }
 
@@ -19770,7 +20217,7 @@ export namespace Prisma {
     category?: true
     cuisine?: true
     price?: true
-    image?: true
+    margin?: true
     isVeg?: true
     isAvailable?: true
     prepTime?: true
@@ -19786,7 +20233,7 @@ export namespace Prisma {
     category?: true
     cuisine?: true
     price?: true
-    image?: true
+    margin?: true
     isVeg?: true
     isAvailable?: true
     prepTime?: true
@@ -19802,7 +20249,8 @@ export namespace Prisma {
     category?: true
     cuisine?: true
     price?: true
-    image?: true
+    margin?: true
+    images?: true
     isVeg?: true
     isAvailable?: true
     prepTime?: true
@@ -19905,7 +20353,8 @@ export namespace Prisma {
     category: string
     cuisine: string | null
     price: number
-    image: string | null
+    margin: number
+    images: string[]
     isVeg: boolean
     isAvailable: boolean
     prepTime: number | null
@@ -19940,7 +20389,8 @@ export namespace Prisma {
     category?: boolean
     cuisine?: boolean
     price?: boolean
-    image?: boolean
+    margin?: boolean
+    images?: boolean
     isVeg?: boolean
     isAvailable?: boolean
     prepTime?: boolean
@@ -19958,7 +20408,8 @@ export namespace Prisma {
     category?: boolean
     cuisine?: boolean
     price?: boolean
-    image?: boolean
+    margin?: boolean
+    images?: boolean
     isVeg?: boolean
     isAvailable?: boolean
     prepTime?: boolean
@@ -19983,7 +20434,8 @@ export namespace Prisma {
       category: string
       cuisine: string | null
       price: number
-      image: string | null
+      margin: number
+      images: string[]
       isVeg: boolean
       isAvailable: boolean
       prepTime: number | null
@@ -20389,7 +20841,8 @@ export namespace Prisma {
     readonly category: FieldRef<"MenuItem", 'String'>
     readonly cuisine: FieldRef<"MenuItem", 'String'>
     readonly price: FieldRef<"MenuItem", 'Float'>
-    readonly image: FieldRef<"MenuItem", 'String'>
+    readonly margin: FieldRef<"MenuItem", 'Float'>
+    readonly images: FieldRef<"MenuItem", 'String[]'>
     readonly isVeg: FieldRef<"MenuItem", 'Boolean'>
     readonly isAvailable: FieldRef<"MenuItem", 'Boolean'>
     readonly prepTime: FieldRef<"MenuItem", 'Int'>
@@ -21754,6 +22207,1223 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: SpaServiceInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model LostItem
+   */
+
+  export type AggregateLostItem = {
+    _count: LostItemCountAggregateOutputType | null
+    _min: LostItemMinAggregateOutputType | null
+    _max: LostItemMaxAggregateOutputType | null
+  }
+
+  export type LostItemMinAggregateOutputType = {
+    id: string | null
+    propertyId: string | null
+    name: string | null
+    description: string | null
+    category: string | null
+    status: string | null
+    foundDate: Date | null
+    location: string | null
+    roomId: string | null
+    reportedById: string | null
+    guestId: string | null
+    bookingId: string | null
+    image: string | null
+    claimerName: string | null
+    claimerPhone: string | null
+    claimedAt: Date | null
+    claimNotes: string | null
+    whatsappSent: boolean | null
+    whatsappSentAt: Date | null
+    whatsappStatus: string | null
+    whatsappMessageId: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type LostItemMaxAggregateOutputType = {
+    id: string | null
+    propertyId: string | null
+    name: string | null
+    description: string | null
+    category: string | null
+    status: string | null
+    foundDate: Date | null
+    location: string | null
+    roomId: string | null
+    reportedById: string | null
+    guestId: string | null
+    bookingId: string | null
+    image: string | null
+    claimerName: string | null
+    claimerPhone: string | null
+    claimedAt: Date | null
+    claimNotes: string | null
+    whatsappSent: boolean | null
+    whatsappSentAt: Date | null
+    whatsappStatus: string | null
+    whatsappMessageId: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type LostItemCountAggregateOutputType = {
+    id: number
+    propertyId: number
+    name: number
+    description: number
+    category: number
+    status: number
+    foundDate: number
+    location: number
+    roomId: number
+    reportedById: number
+    guestId: number
+    bookingId: number
+    image: number
+    evidenceImages: number
+    caseNotes: number
+    claimerName: number
+    claimerPhone: number
+    claimedAt: number
+    claimNotes: number
+    whatsappSent: number
+    whatsappSentAt: number
+    whatsappStatus: number
+    whatsappMessageId: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type LostItemMinAggregateInputType = {
+    id?: true
+    propertyId?: true
+    name?: true
+    description?: true
+    category?: true
+    status?: true
+    foundDate?: true
+    location?: true
+    roomId?: true
+    reportedById?: true
+    guestId?: true
+    bookingId?: true
+    image?: true
+    claimerName?: true
+    claimerPhone?: true
+    claimedAt?: true
+    claimNotes?: true
+    whatsappSent?: true
+    whatsappSentAt?: true
+    whatsappStatus?: true
+    whatsappMessageId?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type LostItemMaxAggregateInputType = {
+    id?: true
+    propertyId?: true
+    name?: true
+    description?: true
+    category?: true
+    status?: true
+    foundDate?: true
+    location?: true
+    roomId?: true
+    reportedById?: true
+    guestId?: true
+    bookingId?: true
+    image?: true
+    claimerName?: true
+    claimerPhone?: true
+    claimedAt?: true
+    claimNotes?: true
+    whatsappSent?: true
+    whatsappSentAt?: true
+    whatsappStatus?: true
+    whatsappMessageId?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type LostItemCountAggregateInputType = {
+    id?: true
+    propertyId?: true
+    name?: true
+    description?: true
+    category?: true
+    status?: true
+    foundDate?: true
+    location?: true
+    roomId?: true
+    reportedById?: true
+    guestId?: true
+    bookingId?: true
+    image?: true
+    evidenceImages?: true
+    caseNotes?: true
+    claimerName?: true
+    claimerPhone?: true
+    claimedAt?: true
+    claimNotes?: true
+    whatsappSent?: true
+    whatsappSentAt?: true
+    whatsappStatus?: true
+    whatsappMessageId?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type LostItemAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which LostItem to aggregate.
+     */
+    where?: LostItemWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LostItems to fetch.
+     */
+    orderBy?: LostItemOrderByWithRelationInput | LostItemOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: LostItemWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LostItems from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LostItems.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned LostItems
+    **/
+    _count?: true | LostItemCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: LostItemMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: LostItemMaxAggregateInputType
+  }
+
+  export type GetLostItemAggregateType<T extends LostItemAggregateArgs> = {
+        [P in keyof T & keyof AggregateLostItem]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateLostItem[P]>
+      : GetScalarType<T[P], AggregateLostItem[P]>
+  }
+
+
+
+
+  export type LostItemGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LostItemWhereInput
+    orderBy?: LostItemOrderByWithAggregationInput | LostItemOrderByWithAggregationInput[]
+    by: LostItemScalarFieldEnum[] | LostItemScalarFieldEnum
+    having?: LostItemScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: LostItemCountAggregateInputType | true
+    _min?: LostItemMinAggregateInputType
+    _max?: LostItemMaxAggregateInputType
+  }
+
+  export type LostItemGroupByOutputType = {
+    id: string
+    propertyId: string
+    name: string
+    description: string | null
+    category: string
+    status: string
+    foundDate: Date
+    location: string | null
+    roomId: string | null
+    reportedById: string | null
+    guestId: string | null
+    bookingId: string | null
+    image: string | null
+    evidenceImages: string[]
+    caseNotes: JsonValue | null
+    claimerName: string | null
+    claimerPhone: string | null
+    claimedAt: Date | null
+    claimNotes: string | null
+    whatsappSent: boolean
+    whatsappSentAt: Date | null
+    whatsappStatus: string | null
+    whatsappMessageId: string | null
+    createdAt: Date
+    updatedAt: Date
+    _count: LostItemCountAggregateOutputType | null
+    _min: LostItemMinAggregateOutputType | null
+    _max: LostItemMaxAggregateOutputType | null
+  }
+
+  type GetLostItemGroupByPayload<T extends LostItemGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<LostItemGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof LostItemGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], LostItemGroupByOutputType[P]>
+            : GetScalarType<T[P], LostItemGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type LostItemSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    propertyId?: boolean
+    name?: boolean
+    description?: boolean
+    category?: boolean
+    status?: boolean
+    foundDate?: boolean
+    location?: boolean
+    roomId?: boolean
+    reportedById?: boolean
+    guestId?: boolean
+    bookingId?: boolean
+    image?: boolean
+    evidenceImages?: boolean
+    caseNotes?: boolean
+    claimerName?: boolean
+    claimerPhone?: boolean
+    claimedAt?: boolean
+    claimNotes?: boolean
+    whatsappSent?: boolean
+    whatsappSentAt?: boolean
+    whatsappStatus?: boolean
+    whatsappMessageId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    property?: boolean | PropertyDefaultArgs<ExtArgs>
+    room?: boolean | LostItem$roomArgs<ExtArgs>
+    reportedBy?: boolean | LostItem$reportedByArgs<ExtArgs>
+    guest?: boolean | LostItem$guestArgs<ExtArgs>
+    booking?: boolean | LostItem$bookingArgs<ExtArgs>
+  }, ExtArgs["result"]["lostItem"]>
+
+
+  export type LostItemSelectScalar = {
+    id?: boolean
+    propertyId?: boolean
+    name?: boolean
+    description?: boolean
+    category?: boolean
+    status?: boolean
+    foundDate?: boolean
+    location?: boolean
+    roomId?: boolean
+    reportedById?: boolean
+    guestId?: boolean
+    bookingId?: boolean
+    image?: boolean
+    evidenceImages?: boolean
+    caseNotes?: boolean
+    claimerName?: boolean
+    claimerPhone?: boolean
+    claimedAt?: boolean
+    claimNotes?: boolean
+    whatsappSent?: boolean
+    whatsappSentAt?: boolean
+    whatsappStatus?: boolean
+    whatsappMessageId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type LostItemInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    property?: boolean | PropertyDefaultArgs<ExtArgs>
+    room?: boolean | LostItem$roomArgs<ExtArgs>
+    reportedBy?: boolean | LostItem$reportedByArgs<ExtArgs>
+    guest?: boolean | LostItem$guestArgs<ExtArgs>
+    booking?: boolean | LostItem$bookingArgs<ExtArgs>
+  }
+
+  export type $LostItemPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "LostItem"
+    objects: {
+      property: Prisma.$PropertyPayload<ExtArgs>
+      room: Prisma.$RoomPayload<ExtArgs> | null
+      reportedBy: Prisma.$StaffPayload<ExtArgs> | null
+      guest: Prisma.$GuestPayload<ExtArgs> | null
+      booking: Prisma.$BookingPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      propertyId: string
+      name: string
+      description: string | null
+      category: string
+      status: string
+      foundDate: Date
+      location: string | null
+      roomId: string | null
+      reportedById: string | null
+      guestId: string | null
+      bookingId: string | null
+      image: string | null
+      evidenceImages: string[]
+      caseNotes: Prisma.JsonValue | null
+      claimerName: string | null
+      claimerPhone: string | null
+      claimedAt: Date | null
+      claimNotes: string | null
+      whatsappSent: boolean
+      whatsappSentAt: Date | null
+      whatsappStatus: string | null
+      whatsappMessageId: string | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["lostItem"]>
+    composites: {}
+  }
+
+  type LostItemGetPayload<S extends boolean | null | undefined | LostItemDefaultArgs> = $Result.GetResult<Prisma.$LostItemPayload, S>
+
+  type LostItemCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<LostItemFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: LostItemCountAggregateInputType | true
+    }
+
+  export interface LostItemDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['LostItem'], meta: { name: 'LostItem' } }
+    /**
+     * Find zero or one LostItem that matches the filter.
+     * @param {LostItemFindUniqueArgs} args - Arguments to find a LostItem
+     * @example
+     * // Get one LostItem
+     * const lostItem = await prisma.lostItem.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends LostItemFindUniqueArgs>(args: SelectSubset<T, LostItemFindUniqueArgs<ExtArgs>>): Prisma__LostItemClient<$Result.GetResult<Prisma.$LostItemPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one LostItem that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {LostItemFindUniqueOrThrowArgs} args - Arguments to find a LostItem
+     * @example
+     * // Get one LostItem
+     * const lostItem = await prisma.lostItem.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends LostItemFindUniqueOrThrowArgs>(args: SelectSubset<T, LostItemFindUniqueOrThrowArgs<ExtArgs>>): Prisma__LostItemClient<$Result.GetResult<Prisma.$LostItemPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first LostItem that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LostItemFindFirstArgs} args - Arguments to find a LostItem
+     * @example
+     * // Get one LostItem
+     * const lostItem = await prisma.lostItem.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends LostItemFindFirstArgs>(args?: SelectSubset<T, LostItemFindFirstArgs<ExtArgs>>): Prisma__LostItemClient<$Result.GetResult<Prisma.$LostItemPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first LostItem that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LostItemFindFirstOrThrowArgs} args - Arguments to find a LostItem
+     * @example
+     * // Get one LostItem
+     * const lostItem = await prisma.lostItem.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends LostItemFindFirstOrThrowArgs>(args?: SelectSubset<T, LostItemFindFirstOrThrowArgs<ExtArgs>>): Prisma__LostItemClient<$Result.GetResult<Prisma.$LostItemPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more LostItems that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LostItemFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all LostItems
+     * const lostItems = await prisma.lostItem.findMany()
+     * 
+     * // Get first 10 LostItems
+     * const lostItems = await prisma.lostItem.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const lostItemWithIdOnly = await prisma.lostItem.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends LostItemFindManyArgs>(args?: SelectSubset<T, LostItemFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LostItemPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a LostItem.
+     * @param {LostItemCreateArgs} args - Arguments to create a LostItem.
+     * @example
+     * // Create one LostItem
+     * const LostItem = await prisma.lostItem.create({
+     *   data: {
+     *     // ... data to create a LostItem
+     *   }
+     * })
+     * 
+     */
+    create<T extends LostItemCreateArgs>(args: SelectSubset<T, LostItemCreateArgs<ExtArgs>>): Prisma__LostItemClient<$Result.GetResult<Prisma.$LostItemPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many LostItems.
+     * @param {LostItemCreateManyArgs} args - Arguments to create many LostItems.
+     * @example
+     * // Create many LostItems
+     * const lostItem = await prisma.lostItem.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends LostItemCreateManyArgs>(args?: SelectSubset<T, LostItemCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a LostItem.
+     * @param {LostItemDeleteArgs} args - Arguments to delete one LostItem.
+     * @example
+     * // Delete one LostItem
+     * const LostItem = await prisma.lostItem.delete({
+     *   where: {
+     *     // ... filter to delete one LostItem
+     *   }
+     * })
+     * 
+     */
+    delete<T extends LostItemDeleteArgs>(args: SelectSubset<T, LostItemDeleteArgs<ExtArgs>>): Prisma__LostItemClient<$Result.GetResult<Prisma.$LostItemPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one LostItem.
+     * @param {LostItemUpdateArgs} args - Arguments to update one LostItem.
+     * @example
+     * // Update one LostItem
+     * const lostItem = await prisma.lostItem.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends LostItemUpdateArgs>(args: SelectSubset<T, LostItemUpdateArgs<ExtArgs>>): Prisma__LostItemClient<$Result.GetResult<Prisma.$LostItemPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more LostItems.
+     * @param {LostItemDeleteManyArgs} args - Arguments to filter LostItems to delete.
+     * @example
+     * // Delete a few LostItems
+     * const { count } = await prisma.lostItem.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends LostItemDeleteManyArgs>(args?: SelectSubset<T, LostItemDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more LostItems.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LostItemUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many LostItems
+     * const lostItem = await prisma.lostItem.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends LostItemUpdateManyArgs>(args: SelectSubset<T, LostItemUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one LostItem.
+     * @param {LostItemUpsertArgs} args - Arguments to update or create a LostItem.
+     * @example
+     * // Update or create a LostItem
+     * const lostItem = await prisma.lostItem.upsert({
+     *   create: {
+     *     // ... data to create a LostItem
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the LostItem we want to update
+     *   }
+     * })
+     */
+    upsert<T extends LostItemUpsertArgs>(args: SelectSubset<T, LostItemUpsertArgs<ExtArgs>>): Prisma__LostItemClient<$Result.GetResult<Prisma.$LostItemPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+    /**
+     * Find zero or more LostItems that matches the filter.
+     * @param {LostItemFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const lostItem = await prisma.lostItem.findRaw({
+     *   filter: { age: { $gt: 25 } } 
+     * })
+     */
+    findRaw(args?: LostItemFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a LostItem.
+     * @param {LostItemAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const lostItem = await prisma.lostItem.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: LostItemAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
+
+
+    /**
+     * Count the number of LostItems.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LostItemCountArgs} args - Arguments to filter LostItems to count.
+     * @example
+     * // Count the number of LostItems
+     * const count = await prisma.lostItem.count({
+     *   where: {
+     *     // ... the filter for the LostItems we want to count
+     *   }
+     * })
+    **/
+    count<T extends LostItemCountArgs>(
+      args?: Subset<T, LostItemCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], LostItemCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a LostItem.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LostItemAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends LostItemAggregateArgs>(args: Subset<T, LostItemAggregateArgs>): Prisma.PrismaPromise<GetLostItemAggregateType<T>>
+
+    /**
+     * Group by LostItem.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LostItemGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends LostItemGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: LostItemGroupByArgs['orderBy'] }
+        : { orderBy?: LostItemGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, LostItemGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetLostItemGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the LostItem model
+   */
+  readonly fields: LostItemFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for LostItem.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__LostItemClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    property<T extends PropertyDefaultArgs<ExtArgs> = {}>(args?: Subset<T, PropertyDefaultArgs<ExtArgs>>): Prisma__PropertyClient<$Result.GetResult<Prisma.$PropertyPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    room<T extends LostItem$roomArgs<ExtArgs> = {}>(args?: Subset<T, LostItem$roomArgs<ExtArgs>>): Prisma__RoomClient<$Result.GetResult<Prisma.$RoomPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    reportedBy<T extends LostItem$reportedByArgs<ExtArgs> = {}>(args?: Subset<T, LostItem$reportedByArgs<ExtArgs>>): Prisma__StaffClient<$Result.GetResult<Prisma.$StaffPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    guest<T extends LostItem$guestArgs<ExtArgs> = {}>(args?: Subset<T, LostItem$guestArgs<ExtArgs>>): Prisma__GuestClient<$Result.GetResult<Prisma.$GuestPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    booking<T extends LostItem$bookingArgs<ExtArgs> = {}>(args?: Subset<T, LostItem$bookingArgs<ExtArgs>>): Prisma__BookingClient<$Result.GetResult<Prisma.$BookingPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the LostItem model
+   */ 
+  interface LostItemFieldRefs {
+    readonly id: FieldRef<"LostItem", 'String'>
+    readonly propertyId: FieldRef<"LostItem", 'String'>
+    readonly name: FieldRef<"LostItem", 'String'>
+    readonly description: FieldRef<"LostItem", 'String'>
+    readonly category: FieldRef<"LostItem", 'String'>
+    readonly status: FieldRef<"LostItem", 'String'>
+    readonly foundDate: FieldRef<"LostItem", 'DateTime'>
+    readonly location: FieldRef<"LostItem", 'String'>
+    readonly roomId: FieldRef<"LostItem", 'String'>
+    readonly reportedById: FieldRef<"LostItem", 'String'>
+    readonly guestId: FieldRef<"LostItem", 'String'>
+    readonly bookingId: FieldRef<"LostItem", 'String'>
+    readonly image: FieldRef<"LostItem", 'String'>
+    readonly evidenceImages: FieldRef<"LostItem", 'String[]'>
+    readonly caseNotes: FieldRef<"LostItem", 'Json'>
+    readonly claimerName: FieldRef<"LostItem", 'String'>
+    readonly claimerPhone: FieldRef<"LostItem", 'String'>
+    readonly claimedAt: FieldRef<"LostItem", 'DateTime'>
+    readonly claimNotes: FieldRef<"LostItem", 'String'>
+    readonly whatsappSent: FieldRef<"LostItem", 'Boolean'>
+    readonly whatsappSentAt: FieldRef<"LostItem", 'DateTime'>
+    readonly whatsappStatus: FieldRef<"LostItem", 'String'>
+    readonly whatsappMessageId: FieldRef<"LostItem", 'String'>
+    readonly createdAt: FieldRef<"LostItem", 'DateTime'>
+    readonly updatedAt: FieldRef<"LostItem", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * LostItem findUnique
+   */
+  export type LostItemFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LostItem
+     */
+    select?: LostItemSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LostItemInclude<ExtArgs> | null
+    /**
+     * Filter, which LostItem to fetch.
+     */
+    where: LostItemWhereUniqueInput
+  }
+
+  /**
+   * LostItem findUniqueOrThrow
+   */
+  export type LostItemFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LostItem
+     */
+    select?: LostItemSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LostItemInclude<ExtArgs> | null
+    /**
+     * Filter, which LostItem to fetch.
+     */
+    where: LostItemWhereUniqueInput
+  }
+
+  /**
+   * LostItem findFirst
+   */
+  export type LostItemFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LostItem
+     */
+    select?: LostItemSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LostItemInclude<ExtArgs> | null
+    /**
+     * Filter, which LostItem to fetch.
+     */
+    where?: LostItemWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LostItems to fetch.
+     */
+    orderBy?: LostItemOrderByWithRelationInput | LostItemOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for LostItems.
+     */
+    cursor?: LostItemWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LostItems from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LostItems.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of LostItems.
+     */
+    distinct?: LostItemScalarFieldEnum | LostItemScalarFieldEnum[]
+  }
+
+  /**
+   * LostItem findFirstOrThrow
+   */
+  export type LostItemFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LostItem
+     */
+    select?: LostItemSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LostItemInclude<ExtArgs> | null
+    /**
+     * Filter, which LostItem to fetch.
+     */
+    where?: LostItemWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LostItems to fetch.
+     */
+    orderBy?: LostItemOrderByWithRelationInput | LostItemOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for LostItems.
+     */
+    cursor?: LostItemWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LostItems from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LostItems.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of LostItems.
+     */
+    distinct?: LostItemScalarFieldEnum | LostItemScalarFieldEnum[]
+  }
+
+  /**
+   * LostItem findMany
+   */
+  export type LostItemFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LostItem
+     */
+    select?: LostItemSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LostItemInclude<ExtArgs> | null
+    /**
+     * Filter, which LostItems to fetch.
+     */
+    where?: LostItemWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LostItems to fetch.
+     */
+    orderBy?: LostItemOrderByWithRelationInput | LostItemOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing LostItems.
+     */
+    cursor?: LostItemWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LostItems from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LostItems.
+     */
+    skip?: number
+    distinct?: LostItemScalarFieldEnum | LostItemScalarFieldEnum[]
+  }
+
+  /**
+   * LostItem create
+   */
+  export type LostItemCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LostItem
+     */
+    select?: LostItemSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LostItemInclude<ExtArgs> | null
+    /**
+     * The data needed to create a LostItem.
+     */
+    data: XOR<LostItemCreateInput, LostItemUncheckedCreateInput>
+  }
+
+  /**
+   * LostItem createMany
+   */
+  export type LostItemCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many LostItems.
+     */
+    data: LostItemCreateManyInput | LostItemCreateManyInput[]
+  }
+
+  /**
+   * LostItem update
+   */
+  export type LostItemUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LostItem
+     */
+    select?: LostItemSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LostItemInclude<ExtArgs> | null
+    /**
+     * The data needed to update a LostItem.
+     */
+    data: XOR<LostItemUpdateInput, LostItemUncheckedUpdateInput>
+    /**
+     * Choose, which LostItem to update.
+     */
+    where: LostItemWhereUniqueInput
+  }
+
+  /**
+   * LostItem updateMany
+   */
+  export type LostItemUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update LostItems.
+     */
+    data: XOR<LostItemUpdateManyMutationInput, LostItemUncheckedUpdateManyInput>
+    /**
+     * Filter which LostItems to update
+     */
+    where?: LostItemWhereInput
+  }
+
+  /**
+   * LostItem upsert
+   */
+  export type LostItemUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LostItem
+     */
+    select?: LostItemSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LostItemInclude<ExtArgs> | null
+    /**
+     * The filter to search for the LostItem to update in case it exists.
+     */
+    where: LostItemWhereUniqueInput
+    /**
+     * In case the LostItem found by the `where` argument doesn't exist, create a new LostItem with this data.
+     */
+    create: XOR<LostItemCreateInput, LostItemUncheckedCreateInput>
+    /**
+     * In case the LostItem was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<LostItemUpdateInput, LostItemUncheckedUpdateInput>
+  }
+
+  /**
+   * LostItem delete
+   */
+  export type LostItemDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LostItem
+     */
+    select?: LostItemSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LostItemInclude<ExtArgs> | null
+    /**
+     * Filter which LostItem to delete.
+     */
+    where: LostItemWhereUniqueInput
+  }
+
+  /**
+   * LostItem deleteMany
+   */
+  export type LostItemDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which LostItems to delete
+     */
+    where?: LostItemWhereInput
+  }
+
+  /**
+   * LostItem findRaw
+   */
+  export type LostItemFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * LostItem aggregateRaw
+   */
+  export type LostItemAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * LostItem.room
+   */
+  export type LostItem$roomArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Room
+     */
+    select?: RoomSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RoomInclude<ExtArgs> | null
+    where?: RoomWhereInput
+  }
+
+  /**
+   * LostItem.reportedBy
+   */
+  export type LostItem$reportedByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Staff
+     */
+    select?: StaffSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: StaffInclude<ExtArgs> | null
+    where?: StaffWhereInput
+  }
+
+  /**
+   * LostItem.guest
+   */
+  export type LostItem$guestArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Guest
+     */
+    select?: GuestSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GuestInclude<ExtArgs> | null
+    where?: GuestWhereInput
+  }
+
+  /**
+   * LostItem.booking
+   */
+  export type LostItem$bookingArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Booking
+     */
+    select?: BookingSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BookingInclude<ExtArgs> | null
+    where?: BookingWhereInput
+  }
+
+  /**
+   * LostItem without action
+   */
+  export type LostItemDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LostItem
+     */
+    select?: LostItemSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LostItemInclude<ExtArgs> | null
   }
 
 
@@ -34235,6 +35905,7 @@ export namespace Prisma {
     password: 'password',
     role: 'role',
     status: 'status',
+    dndEnabled: 'dndEnabled',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
     workplaceId: 'workplaceId',
@@ -34254,6 +35925,7 @@ export namespace Prisma {
     idDocumentFront: 'idDocumentFront',
     idDocumentBack: 'idDocumentBack',
     address: 'address',
+    dateOfBirth: 'dateOfBirth',
     checkInStatus: 'checkInStatus',
     checkInCompletedAt: 'checkInCompletedAt',
     language: 'language',
@@ -34290,6 +35962,9 @@ export namespace Prisma {
     plan: 'plan',
     features: 'features',
     planExpiresAt: 'planExpiresAt',
+    latitude: 'latitude',
+    longitude: 'longitude',
+    ranking: 'ranking',
     policies: 'policies',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
@@ -34325,6 +36000,8 @@ export namespace Prisma {
     roomId: 'roomId',
     checkIn: 'checkIn',
     checkOut: 'checkOut',
+    actualCheckIn: 'actualCheckIn',
+    actualCheckOut: 'actualCheckOut',
     numberOfGuests: 'numberOfGuests',
     status: 'status',
     source: 'source',
@@ -34376,12 +36053,16 @@ export namespace Prisma {
     dateOfJoining: 'dateOfJoining',
     department: 'department',
     designation: 'designation',
+    contractType: 'contractType',
+    workShift: 'workShift',
+    managerName: 'managerName',
     baseSalary: 'baseSalary',
     bankName: 'bankName',
     accountNumber: 'accountNumber',
     ifscCode: 'ifscCode',
     emergencyContactName: 'emergencyContactName',
     emergencyContactPhone: 'emergencyContactPhone',
+    address: 'address',
     profilePhoto: 'profilePhoto',
     documents: 'documents',
     annualLeaveBalance: 'annualLeaveBalance',
@@ -34507,7 +36188,8 @@ export namespace Prisma {
     category: 'category',
     cuisine: 'cuisine',
     price: 'price',
-    image: 'image',
+    margin: 'margin',
+    images: 'images',
     isVeg: 'isVeg',
     isAvailable: 'isAvailable',
     prepTime: 'prepTime',
@@ -34532,6 +36214,37 @@ export namespace Prisma {
   };
 
   export type SpaServiceScalarFieldEnum = (typeof SpaServiceScalarFieldEnum)[keyof typeof SpaServiceScalarFieldEnum]
+
+
+  export const LostItemScalarFieldEnum: {
+    id: 'id',
+    propertyId: 'propertyId',
+    name: 'name',
+    description: 'description',
+    category: 'category',
+    status: 'status',
+    foundDate: 'foundDate',
+    location: 'location',
+    roomId: 'roomId',
+    reportedById: 'reportedById',
+    guestId: 'guestId',
+    bookingId: 'bookingId',
+    image: 'image',
+    evidenceImages: 'evidenceImages',
+    caseNotes: 'caseNotes',
+    claimerName: 'claimerName',
+    claimerPhone: 'claimerPhone',
+    claimedAt: 'claimedAt',
+    claimNotes: 'claimNotes',
+    whatsappSent: 'whatsappSent',
+    whatsappSentAt: 'whatsappSentAt',
+    whatsappStatus: 'whatsappStatus',
+    whatsappMessageId: 'whatsappMessageId',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type LostItemScalarFieldEnum = (typeof LostItemScalarFieldEnum)[keyof typeof LostItemScalarFieldEnum]
 
 
   export const RolePermissionScalarFieldEnum: {
@@ -34774,6 +36487,13 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'Boolean'
+   */
+  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+  /**
    * Reference to a field of type 'DateTime'
    */
   export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
@@ -34816,9 +36536,16 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'Json'
+   * Reference to a field of type 'Float'
    */
-  export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
+  export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
+    
+
+
+  /**
+   * Reference to a field of type 'Float[]'
+   */
+  export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
     
 
 
@@ -34837,6 +36564,13 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'Json'
+   */
+  export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
+    
+
+
+  /**
    * Reference to a field of type 'RoomCategory'
    */
   export type EnumRoomCategoryFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RoomCategory'>
@@ -34847,20 +36581,6 @@ export namespace Prisma {
    * Reference to a field of type 'RoomCategory[]'
    */
   export type ListEnumRoomCategoryFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RoomCategory[]'>
-    
-
-
-  /**
-   * Reference to a field of type 'Float'
-   */
-  export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
-    
-
-
-  /**
-   * Reference to a field of type 'Float[]'
-   */
-  export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
     
 
 
@@ -35047,13 +36767,6 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'Boolean'
-   */
-  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
-    
-
-
-  /**
    * Reference to a field of type 'NotificationType'
    */
   export type EnumNotificationTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'NotificationType'>
@@ -35151,6 +36864,7 @@ export namespace Prisma {
     password?: StringFilter<"User"> | string
     role?: EnumUserRoleFilter<"User"> | $Enums.UserRole
     status?: EnumUserStatusFilter<"User"> | $Enums.UserStatus
+    dndEnabled?: BoolFilter<"User"> | boolean
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
     workplaceId?: StringNullableFilter<"User"> | string | null
@@ -35168,6 +36882,7 @@ export namespace Prisma {
     password?: SortOrder
     role?: SortOrder
     status?: SortOrder
+    dndEnabled?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     workplaceId?: SortOrder
@@ -35188,6 +36903,7 @@ export namespace Prisma {
     password?: StringFilter<"User"> | string
     role?: EnumUserRoleFilter<"User"> | $Enums.UserRole
     status?: EnumUserStatusFilter<"User"> | $Enums.UserStatus
+    dndEnabled?: BoolFilter<"User"> | boolean
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
     workplaceId?: StringNullableFilter<"User"> | string | null
@@ -35205,6 +36921,7 @@ export namespace Prisma {
     password?: SortOrder
     role?: SortOrder
     status?: SortOrder
+    dndEnabled?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     workplaceId?: SortOrder
@@ -35225,6 +36942,7 @@ export namespace Prisma {
     password?: StringWithAggregatesFilter<"User"> | string
     role?: EnumUserRoleWithAggregatesFilter<"User"> | $Enums.UserRole
     status?: EnumUserStatusWithAggregatesFilter<"User"> | $Enums.UserStatus
+    dndEnabled?: BoolWithAggregatesFilter<"User"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
     workplaceId?: StringNullableWithAggregatesFilter<"User"> | string | null
@@ -35244,6 +36962,7 @@ export namespace Prisma {
     idDocumentFront?: StringNullableFilter<"Guest"> | string | null
     idDocumentBack?: StringNullableFilter<"Guest"> | string | null
     address?: StringNullableFilter<"Guest"> | string | null
+    dateOfBirth?: DateTimeNullableFilter<"Guest"> | Date | string | null
     checkInStatus?: EnumCheckInStatusFilter<"Guest"> | $Enums.CheckInStatus
     checkInCompletedAt?: DateTimeNullableFilter<"Guest"> | Date | string | null
     language?: StringFilter<"Guest"> | string
@@ -35254,6 +36973,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketListRelationFilter
     ratings?: RatingListRelationFilter
     favorites?: FavoriteListRelationFilter
+    lostItems?: LostItemListRelationFilter
   }
 
   export type GuestOrderByWithRelationInput = {
@@ -35266,6 +36986,7 @@ export namespace Prisma {
     idDocumentFront?: SortOrder
     idDocumentBack?: SortOrder
     address?: SortOrder
+    dateOfBirth?: SortOrder
     checkInStatus?: SortOrder
     checkInCompletedAt?: SortOrder
     language?: SortOrder
@@ -35276,6 +36997,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketOrderByRelationAggregateInput
     ratings?: RatingOrderByRelationAggregateInput
     favorites?: FavoriteOrderByRelationAggregateInput
+    lostItems?: LostItemOrderByRelationAggregateInput
   }
 
   export type GuestWhereUniqueInput = Prisma.AtLeast<{
@@ -35291,6 +37013,7 @@ export namespace Prisma {
     idDocumentFront?: StringNullableFilter<"Guest"> | string | null
     idDocumentBack?: StringNullableFilter<"Guest"> | string | null
     address?: StringNullableFilter<"Guest"> | string | null
+    dateOfBirth?: DateTimeNullableFilter<"Guest"> | Date | string | null
     checkInStatus?: EnumCheckInStatusFilter<"Guest"> | $Enums.CheckInStatus
     checkInCompletedAt?: DateTimeNullableFilter<"Guest"> | Date | string | null
     language?: StringFilter<"Guest"> | string
@@ -35301,6 +37024,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketListRelationFilter
     ratings?: RatingListRelationFilter
     favorites?: FavoriteListRelationFilter
+    lostItems?: LostItemListRelationFilter
   }, "id" | "phone">
 
   export type GuestOrderByWithAggregationInput = {
@@ -35313,6 +37037,7 @@ export namespace Prisma {
     idDocumentFront?: SortOrder
     idDocumentBack?: SortOrder
     address?: SortOrder
+    dateOfBirth?: SortOrder
     checkInStatus?: SortOrder
     checkInCompletedAt?: SortOrder
     language?: SortOrder
@@ -35336,6 +37061,7 @@ export namespace Prisma {
     idDocumentFront?: StringNullableWithAggregatesFilter<"Guest"> | string | null
     idDocumentBack?: StringNullableWithAggregatesFilter<"Guest"> | string | null
     address?: StringNullableWithAggregatesFilter<"Guest"> | string | null
+    dateOfBirth?: DateTimeNullableWithAggregatesFilter<"Guest"> | Date | string | null
     checkInStatus?: EnumCheckInStatusWithAggregatesFilter<"Guest"> | $Enums.CheckInStatus
     checkInCompletedAt?: DateTimeNullableWithAggregatesFilter<"Guest"> | Date | string | null
     language?: StringWithAggregatesFilter<"Guest"> | string
@@ -35416,6 +37142,9 @@ export namespace Prisma {
     plan?: EnumSubscriptionPlanFilter<"Property"> | $Enums.SubscriptionPlan
     features?: StringNullableListFilter<"Property">
     planExpiresAt?: DateTimeNullableFilter<"Property"> | Date | string | null
+    latitude?: FloatNullableFilter<"Property"> | number | null
+    longitude?: FloatNullableFilter<"Property"> | number | null
+    ranking?: IntFilter<"Property"> | number
     policies?: JsonNullableFilter<"Property">
     createdAt?: DateTimeFilter<"Property"> | Date | string
     updatedAt?: DateTimeFilter<"Property"> | Date | string
@@ -35435,6 +37164,7 @@ export namespace Prisma {
     systemNodes?: SystemNodeListRelationFilter
     systemAlerts?: SystemAlertListRelationFilter
     supportTickets?: SupportTicketListRelationFilter
+    lostItems?: LostItemListRelationFilter
   }
 
   export type PropertyOrderByWithRelationInput = {
@@ -35453,6 +37183,9 @@ export namespace Prisma {
     plan?: SortOrder
     features?: SortOrder
     planExpiresAt?: SortOrder
+    latitude?: SortOrder
+    longitude?: SortOrder
+    ranking?: SortOrder
     policies?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -35472,6 +37205,7 @@ export namespace Prisma {
     systemNodes?: SystemNodeOrderByRelationAggregateInput
     systemAlerts?: SystemAlertOrderByRelationAggregateInput
     supportTickets?: SupportTicketOrderByRelationAggregateInput
+    lostItems?: LostItemOrderByRelationAggregateInput
   }
 
   export type PropertyWhereUniqueInput = Prisma.AtLeast<{
@@ -35493,6 +37227,9 @@ export namespace Prisma {
     plan?: EnumSubscriptionPlanFilter<"Property"> | $Enums.SubscriptionPlan
     features?: StringNullableListFilter<"Property">
     planExpiresAt?: DateTimeNullableFilter<"Property"> | Date | string | null
+    latitude?: FloatNullableFilter<"Property"> | number | null
+    longitude?: FloatNullableFilter<"Property"> | number | null
+    ranking?: IntFilter<"Property"> | number
     policies?: JsonNullableFilter<"Property">
     createdAt?: DateTimeFilter<"Property"> | Date | string
     updatedAt?: DateTimeFilter<"Property"> | Date | string
@@ -35512,6 +37249,7 @@ export namespace Prisma {
     systemNodes?: SystemNodeListRelationFilter
     systemAlerts?: SystemAlertListRelationFilter
     supportTickets?: SupportTicketListRelationFilter
+    lostItems?: LostItemListRelationFilter
   }, "id">
 
   export type PropertyOrderByWithAggregationInput = {
@@ -35530,13 +37268,18 @@ export namespace Prisma {
     plan?: SortOrder
     features?: SortOrder
     planExpiresAt?: SortOrder
+    latitude?: SortOrder
+    longitude?: SortOrder
+    ranking?: SortOrder
     policies?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     ownerIds?: SortOrder
     _count?: PropertyCountOrderByAggregateInput
+    _avg?: PropertyAvgOrderByAggregateInput
     _max?: PropertyMaxOrderByAggregateInput
     _min?: PropertyMinOrderByAggregateInput
+    _sum?: PropertySumOrderByAggregateInput
   }
 
   export type PropertyScalarWhereWithAggregatesInput = {
@@ -35558,6 +37301,9 @@ export namespace Prisma {
     plan?: EnumSubscriptionPlanWithAggregatesFilter<"Property"> | $Enums.SubscriptionPlan
     features?: StringNullableListFilter<"Property">
     planExpiresAt?: DateTimeNullableWithAggregatesFilter<"Property"> | Date | string | null
+    latitude?: FloatNullableWithAggregatesFilter<"Property"> | number | null
+    longitude?: FloatNullableWithAggregatesFilter<"Property"> | number | null
+    ranking?: IntWithAggregatesFilter<"Property"> | number
     policies?: JsonNullableWithAggregatesFilter<"Property">
     createdAt?: DateTimeWithAggregatesFilter<"Property"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Property"> | Date | string
@@ -35586,6 +37332,7 @@ export namespace Prisma {
     bookings?: BookingListRelationFilter
     serviceRequests?: ServiceRequestListRelationFilter
     favorites?: FavoriteListRelationFilter
+    lostItems?: LostItemListRelationFilter
   }
 
   export type RoomOrderByWithRelationInput = {
@@ -35607,6 +37354,7 @@ export namespace Prisma {
     bookings?: BookingOrderByRelationAggregateInput
     serviceRequests?: ServiceRequestOrderByRelationAggregateInput
     favorites?: FavoriteOrderByRelationAggregateInput
+    lostItems?: LostItemOrderByRelationAggregateInput
   }
 
   export type RoomWhereUniqueInput = Prisma.AtLeast<{
@@ -35632,6 +37380,7 @@ export namespace Prisma {
     bookings?: BookingListRelationFilter
     serviceRequests?: ServiceRequestListRelationFilter
     favorites?: FavoriteListRelationFilter
+    lostItems?: LostItemListRelationFilter
   }, "id" | "propertyId_roomNumber">
 
   export type RoomOrderByWithAggregationInput = {
@@ -35685,6 +37434,8 @@ export namespace Prisma {
     roomId?: StringFilter<"Booking"> | string
     checkIn?: DateTimeFilter<"Booking"> | Date | string
     checkOut?: DateTimeFilter<"Booking"> | Date | string
+    actualCheckIn?: DateTimeNullableFilter<"Booking"> | Date | string | null
+    actualCheckOut?: DateTimeNullableFilter<"Booking"> | Date | string | null
     numberOfGuests?: IntFilter<"Booking"> | number
     status?: EnumBookingStatusFilter<"Booking"> | $Enums.BookingStatus
     source?: EnumBookingSourceFilter<"Booking"> | $Enums.BookingSource
@@ -35699,6 +37450,7 @@ export namespace Prisma {
     guest?: XOR<GuestRelationFilter, GuestWhereInput>
     room?: XOR<RoomRelationFilter, RoomWhereInput>
     property?: XOR<PropertyRelationFilter, PropertyWhereInput>
+    lostItems?: LostItemListRelationFilter
   }
 
   export type BookingOrderByWithRelationInput = {
@@ -35707,6 +37459,8 @@ export namespace Prisma {
     roomId?: SortOrder
     checkIn?: SortOrder
     checkOut?: SortOrder
+    actualCheckIn?: SortOrder
+    actualCheckOut?: SortOrder
     numberOfGuests?: SortOrder
     status?: SortOrder
     source?: SortOrder
@@ -35721,6 +37475,7 @@ export namespace Prisma {
     guest?: GuestOrderByWithRelationInput
     room?: RoomOrderByWithRelationInput
     property?: PropertyOrderByWithRelationInput
+    lostItems?: LostItemOrderByRelationAggregateInput
   }
 
   export type BookingWhereUniqueInput = Prisma.AtLeast<{
@@ -35732,6 +37487,8 @@ export namespace Prisma {
     roomId?: StringFilter<"Booking"> | string
     checkIn?: DateTimeFilter<"Booking"> | Date | string
     checkOut?: DateTimeFilter<"Booking"> | Date | string
+    actualCheckIn?: DateTimeNullableFilter<"Booking"> | Date | string | null
+    actualCheckOut?: DateTimeNullableFilter<"Booking"> | Date | string | null
     numberOfGuests?: IntFilter<"Booking"> | number
     status?: EnumBookingStatusFilter<"Booking"> | $Enums.BookingStatus
     source?: EnumBookingSourceFilter<"Booking"> | $Enums.BookingSource
@@ -35746,6 +37503,7 @@ export namespace Prisma {
     guest?: XOR<GuestRelationFilter, GuestWhereInput>
     room?: XOR<RoomRelationFilter, RoomWhereInput>
     property?: XOR<PropertyRelationFilter, PropertyWhereInput>
+    lostItems?: LostItemListRelationFilter
   }, "id">
 
   export type BookingOrderByWithAggregationInput = {
@@ -35754,6 +37512,8 @@ export namespace Prisma {
     roomId?: SortOrder
     checkIn?: SortOrder
     checkOut?: SortOrder
+    actualCheckIn?: SortOrder
+    actualCheckOut?: SortOrder
     numberOfGuests?: SortOrder
     status?: SortOrder
     source?: SortOrder
@@ -35781,6 +37541,8 @@ export namespace Prisma {
     roomId?: StringWithAggregatesFilter<"Booking"> | string
     checkIn?: DateTimeWithAggregatesFilter<"Booking"> | Date | string
     checkOut?: DateTimeWithAggregatesFilter<"Booking"> | Date | string
+    actualCheckIn?: DateTimeNullableWithAggregatesFilter<"Booking"> | Date | string | null
+    actualCheckOut?: DateTimeNullableWithAggregatesFilter<"Booking"> | Date | string | null
     numberOfGuests?: IntWithAggregatesFilter<"Booking"> | number
     status?: EnumBookingStatusWithAggregatesFilter<"Booking"> | $Enums.BookingStatus
     source?: EnumBookingSourceWithAggregatesFilter<"Booking"> | $Enums.BookingSource
@@ -35953,12 +37715,16 @@ export namespace Prisma {
     dateOfJoining?: DateTimeFilter<"Staff"> | Date | string
     department?: EnumDepartmentFilter<"Staff"> | $Enums.Department
     designation?: StringFilter<"Staff"> | string
+    contractType?: StringNullableFilter<"Staff"> | string | null
+    workShift?: StringNullableFilter<"Staff"> | string | null
+    managerName?: StringNullableFilter<"Staff"> | string | null
     baseSalary?: FloatFilter<"Staff"> | number
     bankName?: StringNullableFilter<"Staff"> | string | null
     accountNumber?: StringNullableFilter<"Staff"> | string | null
     ifscCode?: StringNullableFilter<"Staff"> | string | null
     emergencyContactName?: StringNullableFilter<"Staff"> | string | null
     emergencyContactPhone?: StringNullableFilter<"Staff"> | string | null
+    address?: StringNullableFilter<"Staff"> | string | null
     profilePhoto?: StringNullableFilter<"Staff"> | string | null
     documents?: JsonNullableFilter<"Staff">
     annualLeaveBalance?: IntFilter<"Staff"> | number
@@ -35973,6 +37739,7 @@ export namespace Prisma {
     serviceRequests?: ServiceRequestListRelationFilter
     payrolls?: PayrollListRelationFilter
     performanceScores?: PerformanceScoreListRelationFilter
+    lostItems?: LostItemListRelationFilter
   }
 
   export type StaffOrderByWithRelationInput = {
@@ -35984,12 +37751,16 @@ export namespace Prisma {
     dateOfJoining?: SortOrder
     department?: SortOrder
     designation?: SortOrder
+    contractType?: SortOrder
+    workShift?: SortOrder
+    managerName?: SortOrder
     baseSalary?: SortOrder
     bankName?: SortOrder
     accountNumber?: SortOrder
     ifscCode?: SortOrder
     emergencyContactName?: SortOrder
     emergencyContactPhone?: SortOrder
+    address?: SortOrder
     profilePhoto?: SortOrder
     documents?: SortOrder
     annualLeaveBalance?: SortOrder
@@ -36004,6 +37775,7 @@ export namespace Prisma {
     serviceRequests?: ServiceRequestOrderByRelationAggregateInput
     payrolls?: PayrollOrderByRelationAggregateInput
     performanceScores?: PerformanceScoreOrderByRelationAggregateInput
+    lostItems?: LostItemOrderByRelationAggregateInput
   }
 
   export type StaffWhereUniqueInput = Prisma.AtLeast<{
@@ -36018,12 +37790,16 @@ export namespace Prisma {
     dateOfJoining?: DateTimeFilter<"Staff"> | Date | string
     department?: EnumDepartmentFilter<"Staff"> | $Enums.Department
     designation?: StringFilter<"Staff"> | string
+    contractType?: StringNullableFilter<"Staff"> | string | null
+    workShift?: StringNullableFilter<"Staff"> | string | null
+    managerName?: StringNullableFilter<"Staff"> | string | null
     baseSalary?: FloatFilter<"Staff"> | number
     bankName?: StringNullableFilter<"Staff"> | string | null
     accountNumber?: StringNullableFilter<"Staff"> | string | null
     ifscCode?: StringNullableFilter<"Staff"> | string | null
     emergencyContactName?: StringNullableFilter<"Staff"> | string | null
     emergencyContactPhone?: StringNullableFilter<"Staff"> | string | null
+    address?: StringNullableFilter<"Staff"> | string | null
     profilePhoto?: StringNullableFilter<"Staff"> | string | null
     documents?: JsonNullableFilter<"Staff">
     annualLeaveBalance?: IntFilter<"Staff"> | number
@@ -36038,6 +37814,7 @@ export namespace Prisma {
     serviceRequests?: ServiceRequestListRelationFilter
     payrolls?: PayrollListRelationFilter
     performanceScores?: PerformanceScoreListRelationFilter
+    lostItems?: LostItemListRelationFilter
   }, "id" | "userId" | "employeeId">
 
   export type StaffOrderByWithAggregationInput = {
@@ -36049,12 +37826,16 @@ export namespace Prisma {
     dateOfJoining?: SortOrder
     department?: SortOrder
     designation?: SortOrder
+    contractType?: SortOrder
+    workShift?: SortOrder
+    managerName?: SortOrder
     baseSalary?: SortOrder
     bankName?: SortOrder
     accountNumber?: SortOrder
     ifscCode?: SortOrder
     emergencyContactName?: SortOrder
     emergencyContactPhone?: SortOrder
+    address?: SortOrder
     profilePhoto?: SortOrder
     documents?: SortOrder
     annualLeaveBalance?: SortOrder
@@ -36081,12 +37862,16 @@ export namespace Prisma {
     dateOfJoining?: DateTimeWithAggregatesFilter<"Staff"> | Date | string
     department?: EnumDepartmentWithAggregatesFilter<"Staff"> | $Enums.Department
     designation?: StringWithAggregatesFilter<"Staff"> | string
+    contractType?: StringNullableWithAggregatesFilter<"Staff"> | string | null
+    workShift?: StringNullableWithAggregatesFilter<"Staff"> | string | null
+    managerName?: StringNullableWithAggregatesFilter<"Staff"> | string | null
     baseSalary?: FloatWithAggregatesFilter<"Staff"> | number
     bankName?: StringNullableWithAggregatesFilter<"Staff"> | string | null
     accountNumber?: StringNullableWithAggregatesFilter<"Staff"> | string | null
     ifscCode?: StringNullableWithAggregatesFilter<"Staff"> | string | null
     emergencyContactName?: StringNullableWithAggregatesFilter<"Staff"> | string | null
     emergencyContactPhone?: StringNullableWithAggregatesFilter<"Staff"> | string | null
+    address?: StringNullableWithAggregatesFilter<"Staff"> | string | null
     profilePhoto?: StringNullableWithAggregatesFilter<"Staff"> | string | null
     documents?: JsonNullableWithAggregatesFilter<"Staff">
     annualLeaveBalance?: IntWithAggregatesFilter<"Staff"> | number
@@ -36648,7 +38433,8 @@ export namespace Prisma {
     category?: StringFilter<"MenuItem"> | string
     cuisine?: StringNullableFilter<"MenuItem"> | string | null
     price?: FloatFilter<"MenuItem"> | number
-    image?: StringNullableFilter<"MenuItem"> | string | null
+    margin?: FloatFilter<"MenuItem"> | number
+    images?: StringNullableListFilter<"MenuItem">
     isVeg?: BoolFilter<"MenuItem"> | boolean
     isAvailable?: BoolFilter<"MenuItem"> | boolean
     prepTime?: IntNullableFilter<"MenuItem"> | number | null
@@ -36665,7 +38451,8 @@ export namespace Prisma {
     category?: SortOrder
     cuisine?: SortOrder
     price?: SortOrder
-    image?: SortOrder
+    margin?: SortOrder
+    images?: SortOrder
     isVeg?: SortOrder
     isAvailable?: SortOrder
     prepTime?: SortOrder
@@ -36685,7 +38472,8 @@ export namespace Prisma {
     category?: StringFilter<"MenuItem"> | string
     cuisine?: StringNullableFilter<"MenuItem"> | string | null
     price?: FloatFilter<"MenuItem"> | number
-    image?: StringNullableFilter<"MenuItem"> | string | null
+    margin?: FloatFilter<"MenuItem"> | number
+    images?: StringNullableListFilter<"MenuItem">
     isVeg?: BoolFilter<"MenuItem"> | boolean
     isAvailable?: BoolFilter<"MenuItem"> | boolean
     prepTime?: IntNullableFilter<"MenuItem"> | number | null
@@ -36702,7 +38490,8 @@ export namespace Prisma {
     category?: SortOrder
     cuisine?: SortOrder
     price?: SortOrder
-    image?: SortOrder
+    margin?: SortOrder
+    images?: SortOrder
     isVeg?: SortOrder
     isAvailable?: SortOrder
     prepTime?: SortOrder
@@ -36726,7 +38515,8 @@ export namespace Prisma {
     category?: StringWithAggregatesFilter<"MenuItem"> | string
     cuisine?: StringNullableWithAggregatesFilter<"MenuItem"> | string | null
     price?: FloatWithAggregatesFilter<"MenuItem"> | number
-    image?: StringNullableWithAggregatesFilter<"MenuItem"> | string | null
+    margin?: FloatWithAggregatesFilter<"MenuItem"> | number
+    images?: StringNullableListFilter<"MenuItem">
     isVeg?: BoolWithAggregatesFilter<"MenuItem"> | boolean
     isAvailable?: BoolWithAggregatesFilter<"MenuItem"> | boolean
     prepTime?: IntNullableWithAggregatesFilter<"MenuItem"> | number | null
@@ -36814,6 +38604,173 @@ export namespace Prisma {
     isAvailable?: BoolWithAggregatesFilter<"SpaService"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"SpaService"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"SpaService"> | Date | string
+  }
+
+  export type LostItemWhereInput = {
+    AND?: LostItemWhereInput | LostItemWhereInput[]
+    OR?: LostItemWhereInput[]
+    NOT?: LostItemWhereInput | LostItemWhereInput[]
+    id?: StringFilter<"LostItem"> | string
+    propertyId?: StringFilter<"LostItem"> | string
+    name?: StringFilter<"LostItem"> | string
+    description?: StringNullableFilter<"LostItem"> | string | null
+    category?: StringFilter<"LostItem"> | string
+    status?: StringFilter<"LostItem"> | string
+    foundDate?: DateTimeFilter<"LostItem"> | Date | string
+    location?: StringNullableFilter<"LostItem"> | string | null
+    roomId?: StringNullableFilter<"LostItem"> | string | null
+    reportedById?: StringNullableFilter<"LostItem"> | string | null
+    guestId?: StringNullableFilter<"LostItem"> | string | null
+    bookingId?: StringNullableFilter<"LostItem"> | string | null
+    image?: StringNullableFilter<"LostItem"> | string | null
+    evidenceImages?: StringNullableListFilter<"LostItem">
+    caseNotes?: JsonNullableFilter<"LostItem">
+    claimerName?: StringNullableFilter<"LostItem"> | string | null
+    claimerPhone?: StringNullableFilter<"LostItem"> | string | null
+    claimedAt?: DateTimeNullableFilter<"LostItem"> | Date | string | null
+    claimNotes?: StringNullableFilter<"LostItem"> | string | null
+    whatsappSent?: BoolFilter<"LostItem"> | boolean
+    whatsappSentAt?: DateTimeNullableFilter<"LostItem"> | Date | string | null
+    whatsappStatus?: StringNullableFilter<"LostItem"> | string | null
+    whatsappMessageId?: StringNullableFilter<"LostItem"> | string | null
+    createdAt?: DateTimeFilter<"LostItem"> | Date | string
+    updatedAt?: DateTimeFilter<"LostItem"> | Date | string
+    property?: XOR<PropertyRelationFilter, PropertyWhereInput>
+    room?: XOR<RoomNullableRelationFilter, RoomWhereInput> | null
+    reportedBy?: XOR<StaffNullableRelationFilter, StaffWhereInput> | null
+    guest?: XOR<GuestNullableRelationFilter, GuestWhereInput> | null
+    booking?: XOR<BookingNullableRelationFilter, BookingWhereInput> | null
+  }
+
+  export type LostItemOrderByWithRelationInput = {
+    id?: SortOrder
+    propertyId?: SortOrder
+    name?: SortOrder
+    description?: SortOrder
+    category?: SortOrder
+    status?: SortOrder
+    foundDate?: SortOrder
+    location?: SortOrder
+    roomId?: SortOrder
+    reportedById?: SortOrder
+    guestId?: SortOrder
+    bookingId?: SortOrder
+    image?: SortOrder
+    evidenceImages?: SortOrder
+    caseNotes?: SortOrder
+    claimerName?: SortOrder
+    claimerPhone?: SortOrder
+    claimedAt?: SortOrder
+    claimNotes?: SortOrder
+    whatsappSent?: SortOrder
+    whatsappSentAt?: SortOrder
+    whatsappStatus?: SortOrder
+    whatsappMessageId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    property?: PropertyOrderByWithRelationInput
+    room?: RoomOrderByWithRelationInput
+    reportedBy?: StaffOrderByWithRelationInput
+    guest?: GuestOrderByWithRelationInput
+    booking?: BookingOrderByWithRelationInput
+  }
+
+  export type LostItemWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: LostItemWhereInput | LostItemWhereInput[]
+    OR?: LostItemWhereInput[]
+    NOT?: LostItemWhereInput | LostItemWhereInput[]
+    propertyId?: StringFilter<"LostItem"> | string
+    name?: StringFilter<"LostItem"> | string
+    description?: StringNullableFilter<"LostItem"> | string | null
+    category?: StringFilter<"LostItem"> | string
+    status?: StringFilter<"LostItem"> | string
+    foundDate?: DateTimeFilter<"LostItem"> | Date | string
+    location?: StringNullableFilter<"LostItem"> | string | null
+    roomId?: StringNullableFilter<"LostItem"> | string | null
+    reportedById?: StringNullableFilter<"LostItem"> | string | null
+    guestId?: StringNullableFilter<"LostItem"> | string | null
+    bookingId?: StringNullableFilter<"LostItem"> | string | null
+    image?: StringNullableFilter<"LostItem"> | string | null
+    evidenceImages?: StringNullableListFilter<"LostItem">
+    caseNotes?: JsonNullableFilter<"LostItem">
+    claimerName?: StringNullableFilter<"LostItem"> | string | null
+    claimerPhone?: StringNullableFilter<"LostItem"> | string | null
+    claimedAt?: DateTimeNullableFilter<"LostItem"> | Date | string | null
+    claimNotes?: StringNullableFilter<"LostItem"> | string | null
+    whatsappSent?: BoolFilter<"LostItem"> | boolean
+    whatsappSentAt?: DateTimeNullableFilter<"LostItem"> | Date | string | null
+    whatsappStatus?: StringNullableFilter<"LostItem"> | string | null
+    whatsappMessageId?: StringNullableFilter<"LostItem"> | string | null
+    createdAt?: DateTimeFilter<"LostItem"> | Date | string
+    updatedAt?: DateTimeFilter<"LostItem"> | Date | string
+    property?: XOR<PropertyRelationFilter, PropertyWhereInput>
+    room?: XOR<RoomNullableRelationFilter, RoomWhereInput> | null
+    reportedBy?: XOR<StaffNullableRelationFilter, StaffWhereInput> | null
+    guest?: XOR<GuestNullableRelationFilter, GuestWhereInput> | null
+    booking?: XOR<BookingNullableRelationFilter, BookingWhereInput> | null
+  }, "id">
+
+  export type LostItemOrderByWithAggregationInput = {
+    id?: SortOrder
+    propertyId?: SortOrder
+    name?: SortOrder
+    description?: SortOrder
+    category?: SortOrder
+    status?: SortOrder
+    foundDate?: SortOrder
+    location?: SortOrder
+    roomId?: SortOrder
+    reportedById?: SortOrder
+    guestId?: SortOrder
+    bookingId?: SortOrder
+    image?: SortOrder
+    evidenceImages?: SortOrder
+    caseNotes?: SortOrder
+    claimerName?: SortOrder
+    claimerPhone?: SortOrder
+    claimedAt?: SortOrder
+    claimNotes?: SortOrder
+    whatsappSent?: SortOrder
+    whatsappSentAt?: SortOrder
+    whatsappStatus?: SortOrder
+    whatsappMessageId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: LostItemCountOrderByAggregateInput
+    _max?: LostItemMaxOrderByAggregateInput
+    _min?: LostItemMinOrderByAggregateInput
+  }
+
+  export type LostItemScalarWhereWithAggregatesInput = {
+    AND?: LostItemScalarWhereWithAggregatesInput | LostItemScalarWhereWithAggregatesInput[]
+    OR?: LostItemScalarWhereWithAggregatesInput[]
+    NOT?: LostItemScalarWhereWithAggregatesInput | LostItemScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"LostItem"> | string
+    propertyId?: StringWithAggregatesFilter<"LostItem"> | string
+    name?: StringWithAggregatesFilter<"LostItem"> | string
+    description?: StringNullableWithAggregatesFilter<"LostItem"> | string | null
+    category?: StringWithAggregatesFilter<"LostItem"> | string
+    status?: StringWithAggregatesFilter<"LostItem"> | string
+    foundDate?: DateTimeWithAggregatesFilter<"LostItem"> | Date | string
+    location?: StringNullableWithAggregatesFilter<"LostItem"> | string | null
+    roomId?: StringNullableWithAggregatesFilter<"LostItem"> | string | null
+    reportedById?: StringNullableWithAggregatesFilter<"LostItem"> | string | null
+    guestId?: StringNullableWithAggregatesFilter<"LostItem"> | string | null
+    bookingId?: StringNullableWithAggregatesFilter<"LostItem"> | string | null
+    image?: StringNullableWithAggregatesFilter<"LostItem"> | string | null
+    evidenceImages?: StringNullableListFilter<"LostItem">
+    caseNotes?: JsonNullableWithAggregatesFilter<"LostItem">
+    claimerName?: StringNullableWithAggregatesFilter<"LostItem"> | string | null
+    claimerPhone?: StringNullableWithAggregatesFilter<"LostItem"> | string | null
+    claimedAt?: DateTimeNullableWithAggregatesFilter<"LostItem"> | Date | string | null
+    claimNotes?: StringNullableWithAggregatesFilter<"LostItem"> | string | null
+    whatsappSent?: BoolWithAggregatesFilter<"LostItem"> | boolean
+    whatsappSentAt?: DateTimeNullableWithAggregatesFilter<"LostItem"> | Date | string | null
+    whatsappStatus?: StringNullableWithAggregatesFilter<"LostItem"> | string | null
+    whatsappMessageId?: StringNullableWithAggregatesFilter<"LostItem"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"LostItem"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"LostItem"> | Date | string
   }
 
   export type RolePermissionWhereInput = {
@@ -37711,6 +39668,7 @@ export namespace Prisma {
     password: string
     role: $Enums.UserRole
     status?: $Enums.UserStatus
+    dndEnabled?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     myWorkplace?: PropertyCreateNestedOneWithoutWorkerListInput
@@ -37726,6 +39684,7 @@ export namespace Prisma {
     password: string
     role: $Enums.UserRole
     status?: $Enums.UserStatus
+    dndEnabled?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     workplaceId?: string | null
@@ -37741,6 +39700,7 @@ export namespace Prisma {
     password?: StringFieldUpdateOperationsInput | string
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    dndEnabled?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     myWorkplace?: PropertyUpdateOneWithoutWorkerListNestedInput
@@ -37755,6 +39715,7 @@ export namespace Prisma {
     password?: StringFieldUpdateOperationsInput | string
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    dndEnabled?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     workplaceId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -37771,6 +39732,7 @@ export namespace Prisma {
     password: string
     role: $Enums.UserRole
     status?: $Enums.UserStatus
+    dndEnabled?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     workplaceId?: string | null
@@ -37784,6 +39746,7 @@ export namespace Prisma {
     password?: StringFieldUpdateOperationsInput | string
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    dndEnabled?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -37795,6 +39758,7 @@ export namespace Prisma {
     password?: StringFieldUpdateOperationsInput | string
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    dndEnabled?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     workplaceId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -37811,6 +39775,7 @@ export namespace Prisma {
     idDocumentFront?: string | null
     idDocumentBack?: string | null
     address?: string | null
+    dateOfBirth?: Date | string | null
     checkInStatus?: $Enums.CheckInStatus
     checkInCompletedAt?: Date | string | null
     language?: string
@@ -37821,6 +39786,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutGuestInput
     ratings?: RatingCreateNestedManyWithoutGuestInput
     favorites?: FavoriteCreateNestedManyWithoutGuestInput
+    lostItems?: LostItemCreateNestedManyWithoutGuestInput
   }
 
   export type GuestUncheckedCreateInput = {
@@ -37833,6 +39799,7 @@ export namespace Prisma {
     idDocumentFront?: string | null
     idDocumentBack?: string | null
     address?: string | null
+    dateOfBirth?: Date | string | null
     checkInStatus?: $Enums.CheckInStatus
     checkInCompletedAt?: Date | string | null
     language?: string
@@ -37843,6 +39810,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutGuestInput
     ratings?: RatingUncheckedCreateNestedManyWithoutGuestInput
     favorites?: FavoriteUncheckedCreateNestedManyWithoutGuestInput
+    lostItems?: LostItemUncheckedCreateNestedManyWithoutGuestInput
   }
 
   export type GuestUpdateInput = {
@@ -37854,6 +39822,7 @@ export namespace Prisma {
     idDocumentFront?: NullableStringFieldUpdateOperationsInput | string | null
     idDocumentBack?: NullableStringFieldUpdateOperationsInput | string | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
+    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     checkInStatus?: EnumCheckInStatusFieldUpdateOperationsInput | $Enums.CheckInStatus
     checkInCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     language?: StringFieldUpdateOperationsInput | string
@@ -37864,6 +39833,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutGuestNestedInput
     ratings?: RatingUpdateManyWithoutGuestNestedInput
     favorites?: FavoriteUpdateManyWithoutGuestNestedInput
+    lostItems?: LostItemUpdateManyWithoutGuestNestedInput
   }
 
   export type GuestUncheckedUpdateInput = {
@@ -37875,6 +39845,7 @@ export namespace Prisma {
     idDocumentFront?: NullableStringFieldUpdateOperationsInput | string | null
     idDocumentBack?: NullableStringFieldUpdateOperationsInput | string | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
+    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     checkInStatus?: EnumCheckInStatusFieldUpdateOperationsInput | $Enums.CheckInStatus
     checkInCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     language?: StringFieldUpdateOperationsInput | string
@@ -37885,6 +39856,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutGuestNestedInput
     ratings?: RatingUncheckedUpdateManyWithoutGuestNestedInput
     favorites?: FavoriteUncheckedUpdateManyWithoutGuestNestedInput
+    lostItems?: LostItemUncheckedUpdateManyWithoutGuestNestedInput
   }
 
   export type GuestCreateManyInput = {
@@ -37897,6 +39869,7 @@ export namespace Prisma {
     idDocumentFront?: string | null
     idDocumentBack?: string | null
     address?: string | null
+    dateOfBirth?: Date | string | null
     checkInStatus?: $Enums.CheckInStatus
     checkInCompletedAt?: Date | string | null
     language?: string
@@ -37913,6 +39886,7 @@ export namespace Prisma {
     idDocumentFront?: NullableStringFieldUpdateOperationsInput | string | null
     idDocumentBack?: NullableStringFieldUpdateOperationsInput | string | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
+    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     checkInStatus?: EnumCheckInStatusFieldUpdateOperationsInput | $Enums.CheckInStatus
     checkInCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     language?: StringFieldUpdateOperationsInput | string
@@ -37929,6 +39903,7 @@ export namespace Prisma {
     idDocumentFront?: NullableStringFieldUpdateOperationsInput | string | null
     idDocumentBack?: NullableStringFieldUpdateOperationsInput | string | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
+    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     checkInStatus?: EnumCheckInStatusFieldUpdateOperationsInput | $Enums.CheckInStatus
     checkInCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     language?: StringFieldUpdateOperationsInput | string
@@ -37995,6 +39970,9 @@ export namespace Prisma {
     plan?: $Enums.SubscriptionPlan
     features?: PropertyCreatefeaturesInput | string[]
     planExpiresAt?: Date | string | null
+    latitude?: number | null
+    longitude?: number | null
+    ranking?: number
     policies?: InputJsonValue | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -38013,6 +39991,7 @@ export namespace Prisma {
     systemNodes?: SystemNodeCreateNestedManyWithoutPropertyInput
     systemAlerts?: SystemAlertCreateNestedManyWithoutPropertyInput
     supportTickets?: SupportTicketCreateNestedManyWithoutPropertyInput
+    lostItems?: LostItemCreateNestedManyWithoutPropertyInput
   }
 
   export type PropertyUncheckedCreateInput = {
@@ -38031,6 +40010,9 @@ export namespace Prisma {
     plan?: $Enums.SubscriptionPlan
     features?: PropertyCreatefeaturesInput | string[]
     planExpiresAt?: Date | string | null
+    latitude?: number | null
+    longitude?: number | null
+    ranking?: number
     policies?: InputJsonValue | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -38050,6 +40032,7 @@ export namespace Prisma {
     systemNodes?: SystemNodeUncheckedCreateNestedManyWithoutPropertyInput
     systemAlerts?: SystemAlertUncheckedCreateNestedManyWithoutPropertyInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutPropertyInput
+    lostItems?: LostItemUncheckedCreateNestedManyWithoutPropertyInput
   }
 
   export type PropertyUpdateInput = {
@@ -38067,6 +40050,9 @@ export namespace Prisma {
     plan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
     features?: PropertyUpdatefeaturesInput | string[]
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    ranking?: IntFieldUpdateOperationsInput | number
     policies?: InputJsonValue | InputJsonValue | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -38085,6 +40071,7 @@ export namespace Prisma {
     systemNodes?: SystemNodeUpdateManyWithoutPropertyNestedInput
     systemAlerts?: SystemAlertUpdateManyWithoutPropertyNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutPropertyNestedInput
+    lostItems?: LostItemUpdateManyWithoutPropertyNestedInput
   }
 
   export type PropertyUncheckedUpdateInput = {
@@ -38102,6 +40089,9 @@ export namespace Prisma {
     plan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
     features?: PropertyUpdatefeaturesInput | string[]
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    ranking?: IntFieldUpdateOperationsInput | number
     policies?: InputJsonValue | InputJsonValue | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -38121,6 +40111,7 @@ export namespace Prisma {
     systemNodes?: SystemNodeUncheckedUpdateManyWithoutPropertyNestedInput
     systemAlerts?: SystemAlertUncheckedUpdateManyWithoutPropertyNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutPropertyNestedInput
+    lostItems?: LostItemUncheckedUpdateManyWithoutPropertyNestedInput
   }
 
   export type PropertyCreateManyInput = {
@@ -38139,6 +40130,9 @@ export namespace Prisma {
     plan?: $Enums.SubscriptionPlan
     features?: PropertyCreatefeaturesInput | string[]
     planExpiresAt?: Date | string | null
+    latitude?: number | null
+    longitude?: number | null
+    ranking?: number
     policies?: InputJsonValue | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -38160,6 +40154,9 @@ export namespace Prisma {
     plan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
     features?: PropertyUpdatefeaturesInput | string[]
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    ranking?: IntFieldUpdateOperationsInput | number
     policies?: InputJsonValue | InputJsonValue | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -38180,6 +40177,9 @@ export namespace Prisma {
     plan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
     features?: PropertyUpdatefeaturesInput | string[]
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    ranking?: IntFieldUpdateOperationsInput | number
     policies?: InputJsonValue | InputJsonValue | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -38204,6 +40204,7 @@ export namespace Prisma {
     bookings?: BookingCreateNestedManyWithoutRoomInput
     serviceRequests?: ServiceRequestCreateNestedManyWithoutRoomInput
     favorites?: FavoriteCreateNestedManyWithoutRoomInput
+    lostItems?: LostItemCreateNestedManyWithoutRoomInput
   }
 
   export type RoomUncheckedCreateInput = {
@@ -38224,6 +40225,7 @@ export namespace Prisma {
     bookings?: BookingUncheckedCreateNestedManyWithoutRoomInput
     serviceRequests?: ServiceRequestUncheckedCreateNestedManyWithoutRoomInput
     favorites?: FavoriteUncheckedCreateNestedManyWithoutRoomInput
+    lostItems?: LostItemUncheckedCreateNestedManyWithoutRoomInput
   }
 
   export type RoomUpdateInput = {
@@ -38243,6 +40245,7 @@ export namespace Prisma {
     bookings?: BookingUpdateManyWithoutRoomNestedInput
     serviceRequests?: ServiceRequestUpdateManyWithoutRoomNestedInput
     favorites?: FavoriteUpdateManyWithoutRoomNestedInput
+    lostItems?: LostItemUpdateManyWithoutRoomNestedInput
   }
 
   export type RoomUncheckedUpdateInput = {
@@ -38262,6 +40265,7 @@ export namespace Prisma {
     bookings?: BookingUncheckedUpdateManyWithoutRoomNestedInput
     serviceRequests?: ServiceRequestUncheckedUpdateManyWithoutRoomNestedInput
     favorites?: FavoriteUncheckedUpdateManyWithoutRoomNestedInput
+    lostItems?: LostItemUncheckedUpdateManyWithoutRoomNestedInput
   }
 
   export type RoomCreateManyInput = {
@@ -38316,6 +40320,8 @@ export namespace Prisma {
     id?: string
     checkIn: Date | string
     checkOut: Date | string
+    actualCheckIn?: Date | string | null
+    actualCheckOut?: Date | string | null
     numberOfGuests: number
     status?: $Enums.BookingStatus
     source?: $Enums.BookingSource
@@ -38329,6 +40335,7 @@ export namespace Prisma {
     guest: GuestCreateNestedOneWithoutBookingsInput
     room: RoomCreateNestedOneWithoutBookingsInput
     property: PropertyCreateNestedOneWithoutBookingsInput
+    lostItems?: LostItemCreateNestedManyWithoutBookingInput
   }
 
   export type BookingUncheckedCreateInput = {
@@ -38337,6 +40344,8 @@ export namespace Prisma {
     roomId: string
     checkIn: Date | string
     checkOut: Date | string
+    actualCheckIn?: Date | string | null
+    actualCheckOut?: Date | string | null
     numberOfGuests: number
     status?: $Enums.BookingStatus
     source?: $Enums.BookingSource
@@ -38348,11 +40357,14 @@ export namespace Prisma {
     propertyId: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    lostItems?: LostItemUncheckedCreateNestedManyWithoutBookingInput
   }
 
   export type BookingUpdateInput = {
     checkIn?: DateTimeFieldUpdateOperationsInput | Date | string
     checkOut?: DateTimeFieldUpdateOperationsInput | Date | string
+    actualCheckIn?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    actualCheckOut?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     numberOfGuests?: IntFieldUpdateOperationsInput | number
     status?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
     source?: EnumBookingSourceFieldUpdateOperationsInput | $Enums.BookingSource
@@ -38366,6 +40378,7 @@ export namespace Prisma {
     guest?: GuestUpdateOneRequiredWithoutBookingsNestedInput
     room?: RoomUpdateOneRequiredWithoutBookingsNestedInput
     property?: PropertyUpdateOneRequiredWithoutBookingsNestedInput
+    lostItems?: LostItemUpdateManyWithoutBookingNestedInput
   }
 
   export type BookingUncheckedUpdateInput = {
@@ -38373,6 +40386,8 @@ export namespace Prisma {
     roomId?: StringFieldUpdateOperationsInput | string
     checkIn?: DateTimeFieldUpdateOperationsInput | Date | string
     checkOut?: DateTimeFieldUpdateOperationsInput | Date | string
+    actualCheckIn?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    actualCheckOut?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     numberOfGuests?: IntFieldUpdateOperationsInput | number
     status?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
     source?: EnumBookingSourceFieldUpdateOperationsInput | $Enums.BookingSource
@@ -38384,6 +40399,7 @@ export namespace Prisma {
     propertyId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lostItems?: LostItemUncheckedUpdateManyWithoutBookingNestedInput
   }
 
   export type BookingCreateManyInput = {
@@ -38392,6 +40408,8 @@ export namespace Prisma {
     roomId: string
     checkIn: Date | string
     checkOut: Date | string
+    actualCheckIn?: Date | string | null
+    actualCheckOut?: Date | string | null
     numberOfGuests: number
     status?: $Enums.BookingStatus
     source?: $Enums.BookingSource
@@ -38408,6 +40426,8 @@ export namespace Prisma {
   export type BookingUpdateManyMutationInput = {
     checkIn?: DateTimeFieldUpdateOperationsInput | Date | string
     checkOut?: DateTimeFieldUpdateOperationsInput | Date | string
+    actualCheckIn?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    actualCheckOut?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     numberOfGuests?: IntFieldUpdateOperationsInput | number
     status?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
     source?: EnumBookingSourceFieldUpdateOperationsInput | $Enums.BookingSource
@@ -38425,6 +40445,8 @@ export namespace Prisma {
     roomId?: StringFieldUpdateOperationsInput | string
     checkIn?: DateTimeFieldUpdateOperationsInput | Date | string
     checkOut?: DateTimeFieldUpdateOperationsInput | Date | string
+    actualCheckIn?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    actualCheckOut?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     numberOfGuests?: IntFieldUpdateOperationsInput | number
     status?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
     source?: EnumBookingSourceFieldUpdateOperationsInput | $Enums.BookingSource
@@ -38606,12 +40628,16 @@ export namespace Prisma {
     dateOfJoining?: Date | string
     department: $Enums.Department
     designation: string
+    contractType?: string | null
+    workShift?: string | null
+    managerName?: string | null
     baseSalary: number
     bankName?: string | null
     accountNumber?: string | null
     ifscCode?: string | null
     emergencyContactName?: string | null
     emergencyContactPhone?: string | null
+    address?: string | null
     profilePhoto?: string | null
     documents?: InputJsonValue | null
     annualLeaveBalance?: number
@@ -38626,6 +40652,7 @@ export namespace Prisma {
     serviceRequests?: ServiceRequestCreateNestedManyWithoutAssignedToInput
     payrolls?: PayrollCreateNestedManyWithoutStaffInput
     performanceScores?: PerformanceScoreCreateNestedManyWithoutStaffInput
+    lostItems?: LostItemCreateNestedManyWithoutReportedByInput
   }
 
   export type StaffUncheckedCreateInput = {
@@ -38637,12 +40664,16 @@ export namespace Prisma {
     dateOfJoining?: Date | string
     department: $Enums.Department
     designation: string
+    contractType?: string | null
+    workShift?: string | null
+    managerName?: string | null
     baseSalary: number
     bankName?: string | null
     accountNumber?: string | null
     ifscCode?: string | null
     emergencyContactName?: string | null
     emergencyContactPhone?: string | null
+    address?: string | null
     profilePhoto?: string | null
     documents?: InputJsonValue | null
     annualLeaveBalance?: number
@@ -38655,6 +40686,7 @@ export namespace Prisma {
     serviceRequests?: ServiceRequestUncheckedCreateNestedManyWithoutAssignedToInput
     payrolls?: PayrollUncheckedCreateNestedManyWithoutStaffInput
     performanceScores?: PerformanceScoreUncheckedCreateNestedManyWithoutStaffInput
+    lostItems?: LostItemUncheckedCreateNestedManyWithoutReportedByInput
   }
 
   export type StaffUpdateInput = {
@@ -38663,12 +40695,16 @@ export namespace Prisma {
     dateOfJoining?: DateTimeFieldUpdateOperationsInput | Date | string
     department?: EnumDepartmentFieldUpdateOperationsInput | $Enums.Department
     designation?: StringFieldUpdateOperationsInput | string
+    contractType?: NullableStringFieldUpdateOperationsInput | string | null
+    workShift?: NullableStringFieldUpdateOperationsInput | string | null
+    managerName?: NullableStringFieldUpdateOperationsInput | string | null
     baseSalary?: FloatFieldUpdateOperationsInput | number
     bankName?: NullableStringFieldUpdateOperationsInput | string | null
     accountNumber?: NullableStringFieldUpdateOperationsInput | string | null
     ifscCode?: NullableStringFieldUpdateOperationsInput | string | null
     emergencyContactName?: NullableStringFieldUpdateOperationsInput | string | null
     emergencyContactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
     profilePhoto?: NullableStringFieldUpdateOperationsInput | string | null
     documents?: InputJsonValue | InputJsonValue | null
     annualLeaveBalance?: IntFieldUpdateOperationsInput | number
@@ -38683,6 +40719,7 @@ export namespace Prisma {
     serviceRequests?: ServiceRequestUpdateManyWithoutAssignedToNestedInput
     payrolls?: PayrollUpdateManyWithoutStaffNestedInput
     performanceScores?: PerformanceScoreUpdateManyWithoutStaffNestedInput
+    lostItems?: LostItemUpdateManyWithoutReportedByNestedInput
   }
 
   export type StaffUncheckedUpdateInput = {
@@ -38693,12 +40730,16 @@ export namespace Prisma {
     dateOfJoining?: DateTimeFieldUpdateOperationsInput | Date | string
     department?: EnumDepartmentFieldUpdateOperationsInput | $Enums.Department
     designation?: StringFieldUpdateOperationsInput | string
+    contractType?: NullableStringFieldUpdateOperationsInput | string | null
+    workShift?: NullableStringFieldUpdateOperationsInput | string | null
+    managerName?: NullableStringFieldUpdateOperationsInput | string | null
     baseSalary?: FloatFieldUpdateOperationsInput | number
     bankName?: NullableStringFieldUpdateOperationsInput | string | null
     accountNumber?: NullableStringFieldUpdateOperationsInput | string | null
     ifscCode?: NullableStringFieldUpdateOperationsInput | string | null
     emergencyContactName?: NullableStringFieldUpdateOperationsInput | string | null
     emergencyContactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
     profilePhoto?: NullableStringFieldUpdateOperationsInput | string | null
     documents?: InputJsonValue | InputJsonValue | null
     annualLeaveBalance?: IntFieldUpdateOperationsInput | number
@@ -38711,6 +40752,7 @@ export namespace Prisma {
     serviceRequests?: ServiceRequestUncheckedUpdateManyWithoutAssignedToNestedInput
     payrolls?: PayrollUncheckedUpdateManyWithoutStaffNestedInput
     performanceScores?: PerformanceScoreUncheckedUpdateManyWithoutStaffNestedInput
+    lostItems?: LostItemUncheckedUpdateManyWithoutReportedByNestedInput
   }
 
   export type StaffCreateManyInput = {
@@ -38722,12 +40764,16 @@ export namespace Prisma {
     dateOfJoining?: Date | string
     department: $Enums.Department
     designation: string
+    contractType?: string | null
+    workShift?: string | null
+    managerName?: string | null
     baseSalary: number
     bankName?: string | null
     accountNumber?: string | null
     ifscCode?: string | null
     emergencyContactName?: string | null
     emergencyContactPhone?: string | null
+    address?: string | null
     profilePhoto?: string | null
     documents?: InputJsonValue | null
     annualLeaveBalance?: number
@@ -38743,12 +40789,16 @@ export namespace Prisma {
     dateOfJoining?: DateTimeFieldUpdateOperationsInput | Date | string
     department?: EnumDepartmentFieldUpdateOperationsInput | $Enums.Department
     designation?: StringFieldUpdateOperationsInput | string
+    contractType?: NullableStringFieldUpdateOperationsInput | string | null
+    workShift?: NullableStringFieldUpdateOperationsInput | string | null
+    managerName?: NullableStringFieldUpdateOperationsInput | string | null
     baseSalary?: FloatFieldUpdateOperationsInput | number
     bankName?: NullableStringFieldUpdateOperationsInput | string | null
     accountNumber?: NullableStringFieldUpdateOperationsInput | string | null
     ifscCode?: NullableStringFieldUpdateOperationsInput | string | null
     emergencyContactName?: NullableStringFieldUpdateOperationsInput | string | null
     emergencyContactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
     profilePhoto?: NullableStringFieldUpdateOperationsInput | string | null
     documents?: InputJsonValue | InputJsonValue | null
     annualLeaveBalance?: IntFieldUpdateOperationsInput | number
@@ -38766,12 +40816,16 @@ export namespace Prisma {
     dateOfJoining?: DateTimeFieldUpdateOperationsInput | Date | string
     department?: EnumDepartmentFieldUpdateOperationsInput | $Enums.Department
     designation?: StringFieldUpdateOperationsInput | string
+    contractType?: NullableStringFieldUpdateOperationsInput | string | null
+    workShift?: NullableStringFieldUpdateOperationsInput | string | null
+    managerName?: NullableStringFieldUpdateOperationsInput | string | null
     baseSalary?: FloatFieldUpdateOperationsInput | number
     bankName?: NullableStringFieldUpdateOperationsInput | string | null
     accountNumber?: NullableStringFieldUpdateOperationsInput | string | null
     ifscCode?: NullableStringFieldUpdateOperationsInput | string | null
     emergencyContactName?: NullableStringFieldUpdateOperationsInput | string | null
     emergencyContactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
     profilePhoto?: NullableStringFieldUpdateOperationsInput | string | null
     documents?: InputJsonValue | InputJsonValue | null
     annualLeaveBalance?: IntFieldUpdateOperationsInput | number
@@ -39366,7 +41420,8 @@ export namespace Prisma {
     category: string
     cuisine?: string | null
     price: number
-    image?: string | null
+    margin?: number
+    images?: MenuItemCreateimagesInput | string[]
     isVeg?: boolean
     isAvailable?: boolean
     prepTime?: number | null
@@ -39383,7 +41438,8 @@ export namespace Prisma {
     category: string
     cuisine?: string | null
     price: number
-    image?: string | null
+    margin?: number
+    images?: MenuItemCreateimagesInput | string[]
     isVeg?: boolean
     isAvailable?: boolean
     prepTime?: number | null
@@ -39397,7 +41453,8 @@ export namespace Prisma {
     category?: StringFieldUpdateOperationsInput | string
     cuisine?: NullableStringFieldUpdateOperationsInput | string | null
     price?: FloatFieldUpdateOperationsInput | number
-    image?: NullableStringFieldUpdateOperationsInput | string | null
+    margin?: FloatFieldUpdateOperationsInput | number
+    images?: MenuItemUpdateimagesInput | string[]
     isVeg?: BoolFieldUpdateOperationsInput | boolean
     isAvailable?: BoolFieldUpdateOperationsInput | boolean
     prepTime?: NullableIntFieldUpdateOperationsInput | number | null
@@ -39413,7 +41470,8 @@ export namespace Prisma {
     category?: StringFieldUpdateOperationsInput | string
     cuisine?: NullableStringFieldUpdateOperationsInput | string | null
     price?: FloatFieldUpdateOperationsInput | number
-    image?: NullableStringFieldUpdateOperationsInput | string | null
+    margin?: FloatFieldUpdateOperationsInput | number
+    images?: MenuItemUpdateimagesInput | string[]
     isVeg?: BoolFieldUpdateOperationsInput | boolean
     isAvailable?: BoolFieldUpdateOperationsInput | boolean
     prepTime?: NullableIntFieldUpdateOperationsInput | number | null
@@ -39429,7 +41487,8 @@ export namespace Prisma {
     category: string
     cuisine?: string | null
     price: number
-    image?: string | null
+    margin?: number
+    images?: MenuItemCreateimagesInput | string[]
     isVeg?: boolean
     isAvailable?: boolean
     prepTime?: number | null
@@ -39443,7 +41502,8 @@ export namespace Prisma {
     category?: StringFieldUpdateOperationsInput | string
     cuisine?: NullableStringFieldUpdateOperationsInput | string | null
     price?: FloatFieldUpdateOperationsInput | number
-    image?: NullableStringFieldUpdateOperationsInput | string | null
+    margin?: FloatFieldUpdateOperationsInput | number
+    images?: MenuItemUpdateimagesInput | string[]
     isVeg?: BoolFieldUpdateOperationsInput | boolean
     isAvailable?: BoolFieldUpdateOperationsInput | boolean
     prepTime?: NullableIntFieldUpdateOperationsInput | number | null
@@ -39458,7 +41518,8 @@ export namespace Prisma {
     category?: StringFieldUpdateOperationsInput | string
     cuisine?: NullableStringFieldUpdateOperationsInput | string | null
     price?: FloatFieldUpdateOperationsInput | number
-    image?: NullableStringFieldUpdateOperationsInput | string | null
+    margin?: FloatFieldUpdateOperationsInput | number
+    images?: MenuItemUpdateimagesInput | string[]
     isVeg?: BoolFieldUpdateOperationsInput | boolean
     isAvailable?: BoolFieldUpdateOperationsInput | boolean
     prepTime?: NullableIntFieldUpdateOperationsInput | number | null
@@ -39548,6 +41609,193 @@ export namespace Prisma {
     price?: FloatFieldUpdateOperationsInput | number
     image?: NullableStringFieldUpdateOperationsInput | string | null
     isAvailable?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LostItemCreateInput = {
+    id?: string
+    name: string
+    description?: string | null
+    category: string
+    status?: string
+    foundDate?: Date | string
+    location?: string | null
+    image?: string | null
+    evidenceImages?: LostItemCreateevidenceImagesInput | string[]
+    caseNotes?: InputJsonValue | null
+    claimerName?: string | null
+    claimerPhone?: string | null
+    claimedAt?: Date | string | null
+    claimNotes?: string | null
+    whatsappSent?: boolean
+    whatsappSentAt?: Date | string | null
+    whatsappStatus?: string | null
+    whatsappMessageId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    property: PropertyCreateNestedOneWithoutLostItemsInput
+    room?: RoomCreateNestedOneWithoutLostItemsInput
+    reportedBy?: StaffCreateNestedOneWithoutLostItemsInput
+    guest?: GuestCreateNestedOneWithoutLostItemsInput
+    booking?: BookingCreateNestedOneWithoutLostItemsInput
+  }
+
+  export type LostItemUncheckedCreateInput = {
+    id?: string
+    propertyId: string
+    name: string
+    description?: string | null
+    category: string
+    status?: string
+    foundDate?: Date | string
+    location?: string | null
+    roomId?: string | null
+    reportedById?: string | null
+    guestId?: string | null
+    bookingId?: string | null
+    image?: string | null
+    evidenceImages?: LostItemCreateevidenceImagesInput | string[]
+    caseNotes?: InputJsonValue | null
+    claimerName?: string | null
+    claimerPhone?: string | null
+    claimedAt?: Date | string | null
+    claimNotes?: string | null
+    whatsappSent?: boolean
+    whatsappSentAt?: Date | string | null
+    whatsappStatus?: string | null
+    whatsappMessageId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type LostItemUpdateInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    foundDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    evidenceImages?: LostItemUpdateevidenceImagesInput | string[]
+    caseNotes?: InputJsonValue | InputJsonValue | null
+    claimerName?: NullableStringFieldUpdateOperationsInput | string | null
+    claimerPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    claimedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    claimNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappSent?: BoolFieldUpdateOperationsInput | boolean
+    whatsappSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    whatsappStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappMessageId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    property?: PropertyUpdateOneRequiredWithoutLostItemsNestedInput
+    room?: RoomUpdateOneWithoutLostItemsNestedInput
+    reportedBy?: StaffUpdateOneWithoutLostItemsNestedInput
+    guest?: GuestUpdateOneWithoutLostItemsNestedInput
+    booking?: BookingUpdateOneWithoutLostItemsNestedInput
+  }
+
+  export type LostItemUncheckedUpdateInput = {
+    propertyId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    foundDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    roomId?: NullableStringFieldUpdateOperationsInput | string | null
+    reportedById?: NullableStringFieldUpdateOperationsInput | string | null
+    guestId?: NullableStringFieldUpdateOperationsInput | string | null
+    bookingId?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    evidenceImages?: LostItemUpdateevidenceImagesInput | string[]
+    caseNotes?: InputJsonValue | InputJsonValue | null
+    claimerName?: NullableStringFieldUpdateOperationsInput | string | null
+    claimerPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    claimedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    claimNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappSent?: BoolFieldUpdateOperationsInput | boolean
+    whatsappSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    whatsappStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappMessageId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LostItemCreateManyInput = {
+    id?: string
+    propertyId: string
+    name: string
+    description?: string | null
+    category: string
+    status?: string
+    foundDate?: Date | string
+    location?: string | null
+    roomId?: string | null
+    reportedById?: string | null
+    guestId?: string | null
+    bookingId?: string | null
+    image?: string | null
+    evidenceImages?: LostItemCreateevidenceImagesInput | string[]
+    caseNotes?: InputJsonValue | null
+    claimerName?: string | null
+    claimerPhone?: string | null
+    claimedAt?: Date | string | null
+    claimNotes?: string | null
+    whatsappSent?: boolean
+    whatsappSentAt?: Date | string | null
+    whatsappStatus?: string | null
+    whatsappMessageId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type LostItemUpdateManyMutationInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    foundDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    evidenceImages?: LostItemUpdateevidenceImagesInput | string[]
+    caseNotes?: InputJsonValue | InputJsonValue | null
+    claimerName?: NullableStringFieldUpdateOperationsInput | string | null
+    claimerPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    claimedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    claimNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappSent?: BoolFieldUpdateOperationsInput | boolean
+    whatsappSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    whatsappStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappMessageId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LostItemUncheckedUpdateManyInput = {
+    propertyId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    foundDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    roomId?: NullableStringFieldUpdateOperationsInput | string | null
+    reportedById?: NullableStringFieldUpdateOperationsInput | string | null
+    guestId?: NullableStringFieldUpdateOperationsInput | string | null
+    bookingId?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    evidenceImages?: LostItemUpdateevidenceImagesInput | string[]
+    caseNotes?: InputJsonValue | InputJsonValue | null
+    claimerName?: NullableStringFieldUpdateOperationsInput | string | null
+    claimerPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    claimedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    claimNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappSent?: BoolFieldUpdateOperationsInput | boolean
+    whatsappSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    whatsappStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappMessageId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -40486,6 +42734,11 @@ export namespace Prisma {
     not?: NestedEnumUserStatusFilter<$PrismaModel> | $Enums.UserStatus
   }
 
+  export type BoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
   export type DateTimeFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
@@ -40549,6 +42802,7 @@ export namespace Prisma {
     password?: SortOrder
     role?: SortOrder
     status?: SortOrder
+    dndEnabled?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     workplaceId?: SortOrder
@@ -40563,6 +42817,7 @@ export namespace Prisma {
     password?: SortOrder
     role?: SortOrder
     status?: SortOrder
+    dndEnabled?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     workplaceId?: SortOrder
@@ -40576,6 +42831,7 @@ export namespace Prisma {
     password?: SortOrder
     role?: SortOrder
     status?: SortOrder
+    dndEnabled?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     workplaceId?: SortOrder
@@ -40619,6 +42875,14 @@ export namespace Prisma {
     _max?: NestedEnumUserStatusFilter<$PrismaModel>
   }
 
+  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
+  }
+
   export type DateTimeWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
@@ -40652,13 +42916,6 @@ export namespace Prisma {
     isSet?: boolean
   }
 
-  export type EnumCheckInStatusFilter<$PrismaModel = never> = {
-    equals?: $Enums.CheckInStatus | EnumCheckInStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.CheckInStatus[] | ListEnumCheckInStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.CheckInStatus[] | ListEnumCheckInStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumCheckInStatusFilter<$PrismaModel> | $Enums.CheckInStatus
-  }
-
   export type DateTimeNullableFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
@@ -40669,6 +42926,13 @@ export namespace Prisma {
     gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
     isSet?: boolean
+  }
+
+  export type EnumCheckInStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.CheckInStatus | EnumCheckInStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.CheckInStatus[] | ListEnumCheckInStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.CheckInStatus[] | ListEnumCheckInStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumCheckInStatusFilter<$PrismaModel> | $Enums.CheckInStatus
   }
 
   export type BookingListRelationFilter = {
@@ -40701,6 +42965,12 @@ export namespace Prisma {
     none?: FavoriteWhereInput
   }
 
+  export type LostItemListRelationFilter = {
+    every?: LostItemWhereInput
+    some?: LostItemWhereInput
+    none?: LostItemWhereInput
+  }
+
   export type BookingOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -40721,6 +42991,10 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
+  export type LostItemOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
   export type GuestCountOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
@@ -40731,6 +43005,7 @@ export namespace Prisma {
     idDocumentFront?: SortOrder
     idDocumentBack?: SortOrder
     address?: SortOrder
+    dateOfBirth?: SortOrder
     checkInStatus?: SortOrder
     checkInCompletedAt?: SortOrder
     language?: SortOrder
@@ -40748,6 +43023,7 @@ export namespace Prisma {
     idDocumentFront?: SortOrder
     idDocumentBack?: SortOrder
     address?: SortOrder
+    dateOfBirth?: SortOrder
     checkInStatus?: SortOrder
     checkInCompletedAt?: SortOrder
     language?: SortOrder
@@ -40765,21 +43041,12 @@ export namespace Prisma {
     idDocumentFront?: SortOrder
     idDocumentBack?: SortOrder
     address?: SortOrder
+    dateOfBirth?: SortOrder
     checkInStatus?: SortOrder
     checkInCompletedAt?: SortOrder
     language?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-  }
-
-  export type EnumCheckInStatusWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.CheckInStatus | EnumCheckInStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.CheckInStatus[] | ListEnumCheckInStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.CheckInStatus[] | ListEnumCheckInStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumCheckInStatusWithAggregatesFilter<$PrismaModel> | $Enums.CheckInStatus
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumCheckInStatusFilter<$PrismaModel>
-    _max?: NestedEnumCheckInStatusFilter<$PrismaModel>
   }
 
   export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -40795,6 +43062,16 @@ export namespace Prisma {
     _min?: NestedDateTimeNullableFilter<$PrismaModel>
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
     isSet?: boolean
+  }
+
+  export type EnumCheckInStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.CheckInStatus | EnumCheckInStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.CheckInStatus[] | ListEnumCheckInStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.CheckInStatus[] | ListEnumCheckInStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumCheckInStatusWithAggregatesFilter<$PrismaModel> | $Enums.CheckInStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumCheckInStatusFilter<$PrismaModel>
+    _max?: NestedEnumCheckInStatusFilter<$PrismaModel>
   }
 
   export type GuestRelationFilter = {
@@ -40838,6 +43115,29 @@ export namespace Prisma {
     in?: $Enums.SubscriptionPlan[] | ListEnumSubscriptionPlanFieldRefInput<$PrismaModel>
     notIn?: $Enums.SubscriptionPlan[] | ListEnumSubscriptionPlanFieldRefInput<$PrismaModel>
     not?: NestedEnumSubscriptionPlanFilter<$PrismaModel> | $Enums.SubscriptionPlan
+  }
+
+  export type FloatNullableFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+    isSet?: boolean
+  }
+
+  export type IntFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntFilter<$PrismaModel> | number
   }
   export type JsonNullableFilter<$PrismaModel = never> = 
     | PatchUndefined<
@@ -40978,10 +43278,19 @@ export namespace Prisma {
     plan?: SortOrder
     features?: SortOrder
     planExpiresAt?: SortOrder
+    latitude?: SortOrder
+    longitude?: SortOrder
+    ranking?: SortOrder
     policies?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     ownerIds?: SortOrder
+  }
+
+  export type PropertyAvgOrderByAggregateInput = {
+    latitude?: SortOrder
+    longitude?: SortOrder
+    ranking?: SortOrder
   }
 
   export type PropertyMaxOrderByAggregateInput = {
@@ -40998,6 +43307,9 @@ export namespace Prisma {
     cancellationPolicy?: SortOrder
     plan?: SortOrder
     planExpiresAt?: SortOrder
+    latitude?: SortOrder
+    longitude?: SortOrder
+    ranking?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -41016,8 +43328,17 @@ export namespace Prisma {
     cancellationPolicy?: SortOrder
     plan?: SortOrder
     planExpiresAt?: SortOrder
+    latitude?: SortOrder
+    longitude?: SortOrder
+    ranking?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+  }
+
+  export type PropertySumOrderByAggregateInput = {
+    latitude?: SortOrder
+    longitude?: SortOrder
+    ranking?: SortOrder
   }
 
   export type EnumSubscriptionPlanWithAggregatesFilter<$PrismaModel = never> = {
@@ -41028,6 +43349,39 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumSubscriptionPlanFilter<$PrismaModel>
     _max?: NestedEnumSubscriptionPlanFilter<$PrismaModel>
+  }
+
+  export type FloatNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedFloatNullableFilter<$PrismaModel>
+    _min?: NestedFloatNullableFilter<$PrismaModel>
+    _max?: NestedFloatNullableFilter<$PrismaModel>
+    isSet?: boolean
+  }
+
+  export type IntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedIntFilter<$PrismaModel>
+    _min?: NestedIntFilter<$PrismaModel>
+    _max?: NestedIntFilter<$PrismaModel>
   }
   export type JsonNullableWithAggregatesFilter<$PrismaModel = never> = 
     | PatchUndefined<
@@ -41043,17 +43397,6 @@ export namespace Prisma {
     _min?: NestedJsonNullableFilter<$PrismaModel>
     _max?: NestedJsonNullableFilter<$PrismaModel>
     isSet?: boolean
-  }
-
-  export type IntFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntFilter<$PrismaModel> | number
   }
 
   export type EnumRoomCategoryFilter<$PrismaModel = never> = {
@@ -41150,22 +43493,6 @@ export namespace Prisma {
     basePrice?: SortOrder
   }
 
-  export type IntWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
-    _count?: NestedIntFilter<$PrismaModel>
-    _avg?: NestedFloatFilter<$PrismaModel>
-    _sum?: NestedIntFilter<$PrismaModel>
-    _min?: NestedIntFilter<$PrismaModel>
-    _max?: NestedIntFilter<$PrismaModel>
-  }
-
   export type EnumRoomCategoryWithAggregatesFilter<$PrismaModel = never> = {
     equals?: $Enums.RoomCategory | EnumRoomCategoryFieldRefInput<$PrismaModel>
     in?: $Enums.RoomCategory[] | ListEnumRoomCategoryFieldRefInput<$PrismaModel>
@@ -41229,6 +43556,8 @@ export namespace Prisma {
     roomId?: SortOrder
     checkIn?: SortOrder
     checkOut?: SortOrder
+    actualCheckIn?: SortOrder
+    actualCheckOut?: SortOrder
     numberOfGuests?: SortOrder
     status?: SortOrder
     source?: SortOrder
@@ -41254,6 +43583,8 @@ export namespace Prisma {
     roomId?: SortOrder
     checkIn?: SortOrder
     checkOut?: SortOrder
+    actualCheckIn?: SortOrder
+    actualCheckOut?: SortOrder
     numberOfGuests?: SortOrder
     status?: SortOrder
     source?: SortOrder
@@ -41273,6 +43604,8 @@ export namespace Prisma {
     roomId?: SortOrder
     checkIn?: SortOrder
     checkOut?: SortOrder
+    actualCheckIn?: SortOrder
+    actualCheckOut?: SortOrder
     numberOfGuests?: SortOrder
     status?: SortOrder
     source?: SortOrder
@@ -41341,18 +43674,6 @@ export namespace Prisma {
     in?: $Enums.ServiceStatus[] | ListEnumServiceStatusFieldRefInput<$PrismaModel>
     notIn?: $Enums.ServiceStatus[] | ListEnumServiceStatusFieldRefInput<$PrismaModel>
     not?: NestedEnumServiceStatusFilter<$PrismaModel> | $Enums.ServiceStatus
-  }
-
-  export type FloatNullableFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
-    isSet?: boolean
   }
 
   export type EnumPaymentStatusNullableFilter<$PrismaModel = never> = {
@@ -41490,23 +43811,6 @@ export namespace Prisma {
     _max?: NestedEnumServiceStatusFilter<$PrismaModel>
   }
 
-  export type FloatNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatNullableWithAggregatesFilter<$PrismaModel> | number | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedFloatNullableFilter<$PrismaModel>
-    _sum?: NestedFloatNullableFilter<$PrismaModel>
-    _min?: NestedFloatNullableFilter<$PrismaModel>
-    _max?: NestedFloatNullableFilter<$PrismaModel>
-    isSet?: boolean
-  }
-
   export type EnumPaymentStatusNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: $Enums.PaymentStatus | EnumPaymentStatusFieldRefInput<$PrismaModel> | null
     in?: $Enums.PaymentStatus[] | ListEnumPaymentStatusFieldRefInput<$PrismaModel> | null
@@ -41579,12 +43883,16 @@ export namespace Prisma {
     dateOfJoining?: SortOrder
     department?: SortOrder
     designation?: SortOrder
+    contractType?: SortOrder
+    workShift?: SortOrder
+    managerName?: SortOrder
     baseSalary?: SortOrder
     bankName?: SortOrder
     accountNumber?: SortOrder
     ifscCode?: SortOrder
     emergencyContactName?: SortOrder
     emergencyContactPhone?: SortOrder
+    address?: SortOrder
     profilePhoto?: SortOrder
     documents?: SortOrder
     annualLeaveBalance?: SortOrder
@@ -41610,12 +43918,16 @@ export namespace Prisma {
     dateOfJoining?: SortOrder
     department?: SortOrder
     designation?: SortOrder
+    contractType?: SortOrder
+    workShift?: SortOrder
+    managerName?: SortOrder
     baseSalary?: SortOrder
     bankName?: SortOrder
     accountNumber?: SortOrder
     ifscCode?: SortOrder
     emergencyContactName?: SortOrder
     emergencyContactPhone?: SortOrder
+    address?: SortOrder
     profilePhoto?: SortOrder
     annualLeaveBalance?: SortOrder
     sickLeaveBalance?: SortOrder
@@ -41633,12 +43945,16 @@ export namespace Prisma {
     dateOfJoining?: SortOrder
     department?: SortOrder
     designation?: SortOrder
+    contractType?: SortOrder
+    workShift?: SortOrder
+    managerName?: SortOrder
     baseSalary?: SortOrder
     bankName?: SortOrder
     accountNumber?: SortOrder
     ifscCode?: SortOrder
     emergencyContactName?: SortOrder
     emergencyContactPhone?: SortOrder
+    address?: SortOrder
     profilePhoto?: SortOrder
     annualLeaveBalance?: SortOrder
     sickLeaveBalance?: SortOrder
@@ -42063,11 +44379,6 @@ export namespace Prisma {
     overallScore?: SortOrder
   }
 
-  export type BoolFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolFilter<$PrismaModel> | boolean
-  }
-
   export type AmenityCountOrderByAggregateInput = {
     id?: SortOrder
     propertyId?: SortOrder
@@ -42104,14 +44415,6 @@ export namespace Prisma {
     updatedAt?: SortOrder
   }
 
-  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedBoolFilter<$PrismaModel>
-    _max?: NestedBoolFilter<$PrismaModel>
-  }
-
   export type IntNullableFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel> | null
     in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
@@ -42132,7 +44435,8 @@ export namespace Prisma {
     category?: SortOrder
     cuisine?: SortOrder
     price?: SortOrder
-    image?: SortOrder
+    margin?: SortOrder
+    images?: SortOrder
     isVeg?: SortOrder
     isAvailable?: SortOrder
     prepTime?: SortOrder
@@ -42142,6 +44446,7 @@ export namespace Prisma {
 
   export type MenuItemAvgOrderByAggregateInput = {
     price?: SortOrder
+    margin?: SortOrder
     prepTime?: SortOrder
   }
 
@@ -42153,7 +44458,7 @@ export namespace Prisma {
     category?: SortOrder
     cuisine?: SortOrder
     price?: SortOrder
-    image?: SortOrder
+    margin?: SortOrder
     isVeg?: SortOrder
     isAvailable?: SortOrder
     prepTime?: SortOrder
@@ -42169,7 +44474,7 @@ export namespace Prisma {
     category?: SortOrder
     cuisine?: SortOrder
     price?: SortOrder
-    image?: SortOrder
+    margin?: SortOrder
     isVeg?: SortOrder
     isAvailable?: SortOrder
     prepTime?: SortOrder
@@ -42179,6 +44484,7 @@ export namespace Prisma {
 
   export type MenuItemSumOrderByAggregateInput = {
     price?: SortOrder
+    margin?: SortOrder
     prepTime?: SortOrder
   }
 
@@ -42246,6 +44552,91 @@ export namespace Prisma {
   export type SpaServiceSumOrderByAggregateInput = {
     duration?: SortOrder
     price?: SortOrder
+  }
+
+  export type BookingNullableRelationFilter = {
+    is?: BookingWhereInput | null
+    isNot?: BookingWhereInput | null
+  }
+
+  export type LostItemCountOrderByAggregateInput = {
+    id?: SortOrder
+    propertyId?: SortOrder
+    name?: SortOrder
+    description?: SortOrder
+    category?: SortOrder
+    status?: SortOrder
+    foundDate?: SortOrder
+    location?: SortOrder
+    roomId?: SortOrder
+    reportedById?: SortOrder
+    guestId?: SortOrder
+    bookingId?: SortOrder
+    image?: SortOrder
+    evidenceImages?: SortOrder
+    caseNotes?: SortOrder
+    claimerName?: SortOrder
+    claimerPhone?: SortOrder
+    claimedAt?: SortOrder
+    claimNotes?: SortOrder
+    whatsappSent?: SortOrder
+    whatsappSentAt?: SortOrder
+    whatsappStatus?: SortOrder
+    whatsappMessageId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type LostItemMaxOrderByAggregateInput = {
+    id?: SortOrder
+    propertyId?: SortOrder
+    name?: SortOrder
+    description?: SortOrder
+    category?: SortOrder
+    status?: SortOrder
+    foundDate?: SortOrder
+    location?: SortOrder
+    roomId?: SortOrder
+    reportedById?: SortOrder
+    guestId?: SortOrder
+    bookingId?: SortOrder
+    image?: SortOrder
+    claimerName?: SortOrder
+    claimerPhone?: SortOrder
+    claimedAt?: SortOrder
+    claimNotes?: SortOrder
+    whatsappSent?: SortOrder
+    whatsappSentAt?: SortOrder
+    whatsappStatus?: SortOrder
+    whatsappMessageId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type LostItemMinOrderByAggregateInput = {
+    id?: SortOrder
+    propertyId?: SortOrder
+    name?: SortOrder
+    description?: SortOrder
+    category?: SortOrder
+    status?: SortOrder
+    foundDate?: SortOrder
+    location?: SortOrder
+    roomId?: SortOrder
+    reportedById?: SortOrder
+    guestId?: SortOrder
+    bookingId?: SortOrder
+    image?: SortOrder
+    claimerName?: SortOrder
+    claimerPhone?: SortOrder
+    claimedAt?: SortOrder
+    claimNotes?: SortOrder
+    whatsappSent?: SortOrder
+    whatsappSentAt?: SortOrder
+    whatsappStatus?: SortOrder
+    whatsappMessageId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
   export type JsonFilter<$PrismaModel = never> = 
     | PatchUndefined<
@@ -42900,6 +45291,10 @@ export namespace Prisma {
     set?: $Enums.UserStatus
   }
 
+  export type BoolFieldUpdateOperationsInput = {
+    set?: boolean
+  }
+
   export type DateTimeFieldUpdateOperationsInput = {
     set?: Date | string
   }
@@ -43005,6 +45400,13 @@ export namespace Prisma {
     connect?: FavoriteWhereUniqueInput | FavoriteWhereUniqueInput[]
   }
 
+  export type LostItemCreateNestedManyWithoutGuestInput = {
+    create?: XOR<LostItemCreateWithoutGuestInput, LostItemUncheckedCreateWithoutGuestInput> | LostItemCreateWithoutGuestInput[] | LostItemUncheckedCreateWithoutGuestInput[]
+    connectOrCreate?: LostItemCreateOrConnectWithoutGuestInput | LostItemCreateOrConnectWithoutGuestInput[]
+    createMany?: LostItemCreateManyGuestInputEnvelope
+    connect?: LostItemWhereUniqueInput | LostItemWhereUniqueInput[]
+  }
+
   export type BookingUncheckedCreateNestedManyWithoutGuestInput = {
     create?: XOR<BookingCreateWithoutGuestInput, BookingUncheckedCreateWithoutGuestInput> | BookingCreateWithoutGuestInput[] | BookingUncheckedCreateWithoutGuestInput[]
     connectOrCreate?: BookingCreateOrConnectWithoutGuestInput | BookingCreateOrConnectWithoutGuestInput[]
@@ -43040,13 +45442,20 @@ export namespace Prisma {
     connect?: FavoriteWhereUniqueInput | FavoriteWhereUniqueInput[]
   }
 
-  export type EnumCheckInStatusFieldUpdateOperationsInput = {
-    set?: $Enums.CheckInStatus
+  export type LostItemUncheckedCreateNestedManyWithoutGuestInput = {
+    create?: XOR<LostItemCreateWithoutGuestInput, LostItemUncheckedCreateWithoutGuestInput> | LostItemCreateWithoutGuestInput[] | LostItemUncheckedCreateWithoutGuestInput[]
+    connectOrCreate?: LostItemCreateOrConnectWithoutGuestInput | LostItemCreateOrConnectWithoutGuestInput[]
+    createMany?: LostItemCreateManyGuestInputEnvelope
+    connect?: LostItemWhereUniqueInput | LostItemWhereUniqueInput[]
   }
 
   export type NullableDateTimeFieldUpdateOperationsInput = {
     set?: Date | string | null
     unset?: boolean
+  }
+
+  export type EnumCheckInStatusFieldUpdateOperationsInput = {
+    set?: $Enums.CheckInStatus
   }
 
   export type BookingUpdateManyWithoutGuestNestedInput = {
@@ -43119,6 +45528,20 @@ export namespace Prisma {
     deleteMany?: FavoriteScalarWhereInput | FavoriteScalarWhereInput[]
   }
 
+  export type LostItemUpdateManyWithoutGuestNestedInput = {
+    create?: XOR<LostItemCreateWithoutGuestInput, LostItemUncheckedCreateWithoutGuestInput> | LostItemCreateWithoutGuestInput[] | LostItemUncheckedCreateWithoutGuestInput[]
+    connectOrCreate?: LostItemCreateOrConnectWithoutGuestInput | LostItemCreateOrConnectWithoutGuestInput[]
+    upsert?: LostItemUpsertWithWhereUniqueWithoutGuestInput | LostItemUpsertWithWhereUniqueWithoutGuestInput[]
+    createMany?: LostItemCreateManyGuestInputEnvelope
+    set?: LostItemWhereUniqueInput | LostItemWhereUniqueInput[]
+    disconnect?: LostItemWhereUniqueInput | LostItemWhereUniqueInput[]
+    delete?: LostItemWhereUniqueInput | LostItemWhereUniqueInput[]
+    connect?: LostItemWhereUniqueInput | LostItemWhereUniqueInput[]
+    update?: LostItemUpdateWithWhereUniqueWithoutGuestInput | LostItemUpdateWithWhereUniqueWithoutGuestInput[]
+    updateMany?: LostItemUpdateManyWithWhereWithoutGuestInput | LostItemUpdateManyWithWhereWithoutGuestInput[]
+    deleteMany?: LostItemScalarWhereInput | LostItemScalarWhereInput[]
+  }
+
   export type BookingUncheckedUpdateManyWithoutGuestNestedInput = {
     create?: XOR<BookingCreateWithoutGuestInput, BookingUncheckedCreateWithoutGuestInput> | BookingCreateWithoutGuestInput[] | BookingUncheckedCreateWithoutGuestInput[]
     connectOrCreate?: BookingCreateOrConnectWithoutGuestInput | BookingCreateOrConnectWithoutGuestInput[]
@@ -43187,6 +45610,20 @@ export namespace Prisma {
     update?: FavoriteUpdateWithWhereUniqueWithoutGuestInput | FavoriteUpdateWithWhereUniqueWithoutGuestInput[]
     updateMany?: FavoriteUpdateManyWithWhereWithoutGuestInput | FavoriteUpdateManyWithWhereWithoutGuestInput[]
     deleteMany?: FavoriteScalarWhereInput | FavoriteScalarWhereInput[]
+  }
+
+  export type LostItemUncheckedUpdateManyWithoutGuestNestedInput = {
+    create?: XOR<LostItemCreateWithoutGuestInput, LostItemUncheckedCreateWithoutGuestInput> | LostItemCreateWithoutGuestInput[] | LostItemUncheckedCreateWithoutGuestInput[]
+    connectOrCreate?: LostItemCreateOrConnectWithoutGuestInput | LostItemCreateOrConnectWithoutGuestInput[]
+    upsert?: LostItemUpsertWithWhereUniqueWithoutGuestInput | LostItemUpsertWithWhereUniqueWithoutGuestInput[]
+    createMany?: LostItemCreateManyGuestInputEnvelope
+    set?: LostItemWhereUniqueInput | LostItemWhereUniqueInput[]
+    disconnect?: LostItemWhereUniqueInput | LostItemWhereUniqueInput[]
+    delete?: LostItemWhereUniqueInput | LostItemWhereUniqueInput[]
+    connect?: LostItemWhereUniqueInput | LostItemWhereUniqueInput[]
+    update?: LostItemUpdateWithWhereUniqueWithoutGuestInput | LostItemUpdateWithWhereUniqueWithoutGuestInput[]
+    updateMany?: LostItemUpdateManyWithWhereWithoutGuestInput | LostItemUpdateManyWithWhereWithoutGuestInput[]
+    deleteMany?: LostItemScalarWhereInput | LostItemScalarWhereInput[]
   }
 
   export type GuestCreateNestedOneWithoutFavoritesInput = {
@@ -43329,6 +45766,13 @@ export namespace Prisma {
     connect?: SupportTicketWhereUniqueInput | SupportTicketWhereUniqueInput[]
   }
 
+  export type LostItemCreateNestedManyWithoutPropertyInput = {
+    create?: XOR<LostItemCreateWithoutPropertyInput, LostItemUncheckedCreateWithoutPropertyInput> | LostItemCreateWithoutPropertyInput[] | LostItemUncheckedCreateWithoutPropertyInput[]
+    connectOrCreate?: LostItemCreateOrConnectWithoutPropertyInput | LostItemCreateOrConnectWithoutPropertyInput[]
+    createMany?: LostItemCreateManyPropertyInputEnvelope
+    connect?: LostItemWhereUniqueInput | LostItemWhereUniqueInput[]
+  }
+
   export type PropertyCreateownerIdsInput = {
     set: string[]
   }
@@ -43437,6 +45881,13 @@ export namespace Prisma {
     connect?: SupportTicketWhereUniqueInput | SupportTicketWhereUniqueInput[]
   }
 
+  export type LostItemUncheckedCreateNestedManyWithoutPropertyInput = {
+    create?: XOR<LostItemCreateWithoutPropertyInput, LostItemUncheckedCreateWithoutPropertyInput> | LostItemCreateWithoutPropertyInput[] | LostItemUncheckedCreateWithoutPropertyInput[]
+    connectOrCreate?: LostItemCreateOrConnectWithoutPropertyInput | LostItemCreateOrConnectWithoutPropertyInput[]
+    createMany?: LostItemCreateManyPropertyInputEnvelope
+    connect?: LostItemWhereUniqueInput | LostItemWhereUniqueInput[]
+  }
+
   export type PropertyUpdateimagesInput = {
     set?: string[]
     push?: string | string[]
@@ -43449,6 +45900,23 @@ export namespace Prisma {
   export type PropertyUpdatefeaturesInput = {
     set?: string[]
     push?: string | string[]
+  }
+
+  export type NullableFloatFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+    unset?: boolean
+  }
+
+  export type IntFieldUpdateOperationsInput = {
+    set?: number
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
   }
 
   export type UserUpdateManyWithoutOwnedPropertiesNestedInput = {
@@ -43658,6 +46126,20 @@ export namespace Prisma {
     update?: SupportTicketUpdateWithWhereUniqueWithoutPropertyInput | SupportTicketUpdateWithWhereUniqueWithoutPropertyInput[]
     updateMany?: SupportTicketUpdateManyWithWhereWithoutPropertyInput | SupportTicketUpdateManyWithWhereWithoutPropertyInput[]
     deleteMany?: SupportTicketScalarWhereInput | SupportTicketScalarWhereInput[]
+  }
+
+  export type LostItemUpdateManyWithoutPropertyNestedInput = {
+    create?: XOR<LostItemCreateWithoutPropertyInput, LostItemUncheckedCreateWithoutPropertyInput> | LostItemCreateWithoutPropertyInput[] | LostItemUncheckedCreateWithoutPropertyInput[]
+    connectOrCreate?: LostItemCreateOrConnectWithoutPropertyInput | LostItemCreateOrConnectWithoutPropertyInput[]
+    upsert?: LostItemUpsertWithWhereUniqueWithoutPropertyInput | LostItemUpsertWithWhereUniqueWithoutPropertyInput[]
+    createMany?: LostItemCreateManyPropertyInputEnvelope
+    set?: LostItemWhereUniqueInput | LostItemWhereUniqueInput[]
+    disconnect?: LostItemWhereUniqueInput | LostItemWhereUniqueInput[]
+    delete?: LostItemWhereUniqueInput | LostItemWhereUniqueInput[]
+    connect?: LostItemWhereUniqueInput | LostItemWhereUniqueInput[]
+    update?: LostItemUpdateWithWhereUniqueWithoutPropertyInput | LostItemUpdateWithWhereUniqueWithoutPropertyInput[]
+    updateMany?: LostItemUpdateManyWithWhereWithoutPropertyInput | LostItemUpdateManyWithWhereWithoutPropertyInput[]
+    deleteMany?: LostItemScalarWhereInput | LostItemScalarWhereInput[]
   }
 
   export type PropertyUpdateownerIdsInput = {
@@ -43874,6 +46356,20 @@ export namespace Prisma {
     deleteMany?: SupportTicketScalarWhereInput | SupportTicketScalarWhereInput[]
   }
 
+  export type LostItemUncheckedUpdateManyWithoutPropertyNestedInput = {
+    create?: XOR<LostItemCreateWithoutPropertyInput, LostItemUncheckedCreateWithoutPropertyInput> | LostItemCreateWithoutPropertyInput[] | LostItemUncheckedCreateWithoutPropertyInput[]
+    connectOrCreate?: LostItemCreateOrConnectWithoutPropertyInput | LostItemCreateOrConnectWithoutPropertyInput[]
+    upsert?: LostItemUpsertWithWhereUniqueWithoutPropertyInput | LostItemUpsertWithWhereUniqueWithoutPropertyInput[]
+    createMany?: LostItemCreateManyPropertyInputEnvelope
+    set?: LostItemWhereUniqueInput | LostItemWhereUniqueInput[]
+    disconnect?: LostItemWhereUniqueInput | LostItemWhereUniqueInput[]
+    delete?: LostItemWhereUniqueInput | LostItemWhereUniqueInput[]
+    connect?: LostItemWhereUniqueInput | LostItemWhereUniqueInput[]
+    update?: LostItemUpdateWithWhereUniqueWithoutPropertyInput | LostItemUpdateWithWhereUniqueWithoutPropertyInput[]
+    updateMany?: LostItemUpdateManyWithWhereWithoutPropertyInput | LostItemUpdateManyWithWhereWithoutPropertyInput[]
+    deleteMany?: LostItemScalarWhereInput | LostItemScalarWhereInput[]
+  }
+
   export type RoomCreateamenitiesInput = {
     set: string[]
   }
@@ -43909,6 +46405,13 @@ export namespace Prisma {
     connect?: FavoriteWhereUniqueInput | FavoriteWhereUniqueInput[]
   }
 
+  export type LostItemCreateNestedManyWithoutRoomInput = {
+    create?: XOR<LostItemCreateWithoutRoomInput, LostItemUncheckedCreateWithoutRoomInput> | LostItemCreateWithoutRoomInput[] | LostItemUncheckedCreateWithoutRoomInput[]
+    connectOrCreate?: LostItemCreateOrConnectWithoutRoomInput | LostItemCreateOrConnectWithoutRoomInput[]
+    createMany?: LostItemCreateManyRoomInputEnvelope
+    connect?: LostItemWhereUniqueInput | LostItemWhereUniqueInput[]
+  }
+
   export type BookingUncheckedCreateNestedManyWithoutRoomInput = {
     create?: XOR<BookingCreateWithoutRoomInput, BookingUncheckedCreateWithoutRoomInput> | BookingCreateWithoutRoomInput[] | BookingUncheckedCreateWithoutRoomInput[]
     connectOrCreate?: BookingCreateOrConnectWithoutRoomInput | BookingCreateOrConnectWithoutRoomInput[]
@@ -43930,12 +46433,11 @@ export namespace Prisma {
     connect?: FavoriteWhereUniqueInput | FavoriteWhereUniqueInput[]
   }
 
-  export type IntFieldUpdateOperationsInput = {
-    set?: number
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
+  export type LostItemUncheckedCreateNestedManyWithoutRoomInput = {
+    create?: XOR<LostItemCreateWithoutRoomInput, LostItemUncheckedCreateWithoutRoomInput> | LostItemCreateWithoutRoomInput[] | LostItemUncheckedCreateWithoutRoomInput[]
+    connectOrCreate?: LostItemCreateOrConnectWithoutRoomInput | LostItemCreateOrConnectWithoutRoomInput[]
+    createMany?: LostItemCreateManyRoomInputEnvelope
+    connect?: LostItemWhereUniqueInput | LostItemWhereUniqueInput[]
   }
 
   export type EnumRoomCategoryFieldUpdateOperationsInput = {
@@ -44014,6 +46516,20 @@ export namespace Prisma {
     deleteMany?: FavoriteScalarWhereInput | FavoriteScalarWhereInput[]
   }
 
+  export type LostItemUpdateManyWithoutRoomNestedInput = {
+    create?: XOR<LostItemCreateWithoutRoomInput, LostItemUncheckedCreateWithoutRoomInput> | LostItemCreateWithoutRoomInput[] | LostItemUncheckedCreateWithoutRoomInput[]
+    connectOrCreate?: LostItemCreateOrConnectWithoutRoomInput | LostItemCreateOrConnectWithoutRoomInput[]
+    upsert?: LostItemUpsertWithWhereUniqueWithoutRoomInput | LostItemUpsertWithWhereUniqueWithoutRoomInput[]
+    createMany?: LostItemCreateManyRoomInputEnvelope
+    set?: LostItemWhereUniqueInput | LostItemWhereUniqueInput[]
+    disconnect?: LostItemWhereUniqueInput | LostItemWhereUniqueInput[]
+    delete?: LostItemWhereUniqueInput | LostItemWhereUniqueInput[]
+    connect?: LostItemWhereUniqueInput | LostItemWhereUniqueInput[]
+    update?: LostItemUpdateWithWhereUniqueWithoutRoomInput | LostItemUpdateWithWhereUniqueWithoutRoomInput[]
+    updateMany?: LostItemUpdateManyWithWhereWithoutRoomInput | LostItemUpdateManyWithWhereWithoutRoomInput[]
+    deleteMany?: LostItemScalarWhereInput | LostItemScalarWhereInput[]
+  }
+
   export type BookingUncheckedUpdateManyWithoutRoomNestedInput = {
     create?: XOR<BookingCreateWithoutRoomInput, BookingUncheckedCreateWithoutRoomInput> | BookingCreateWithoutRoomInput[] | BookingUncheckedCreateWithoutRoomInput[]
     connectOrCreate?: BookingCreateOrConnectWithoutRoomInput | BookingCreateOrConnectWithoutRoomInput[]
@@ -44056,6 +46572,20 @@ export namespace Prisma {
     deleteMany?: FavoriteScalarWhereInput | FavoriteScalarWhereInput[]
   }
 
+  export type LostItemUncheckedUpdateManyWithoutRoomNestedInput = {
+    create?: XOR<LostItemCreateWithoutRoomInput, LostItemUncheckedCreateWithoutRoomInput> | LostItemCreateWithoutRoomInput[] | LostItemUncheckedCreateWithoutRoomInput[]
+    connectOrCreate?: LostItemCreateOrConnectWithoutRoomInput | LostItemCreateOrConnectWithoutRoomInput[]
+    upsert?: LostItemUpsertWithWhereUniqueWithoutRoomInput | LostItemUpsertWithWhereUniqueWithoutRoomInput[]
+    createMany?: LostItemCreateManyRoomInputEnvelope
+    set?: LostItemWhereUniqueInput | LostItemWhereUniqueInput[]
+    disconnect?: LostItemWhereUniqueInput | LostItemWhereUniqueInput[]
+    delete?: LostItemWhereUniqueInput | LostItemWhereUniqueInput[]
+    connect?: LostItemWhereUniqueInput | LostItemWhereUniqueInput[]
+    update?: LostItemUpdateWithWhereUniqueWithoutRoomInput | LostItemUpdateWithWhereUniqueWithoutRoomInput[]
+    updateMany?: LostItemUpdateManyWithWhereWithoutRoomInput | LostItemUpdateManyWithWhereWithoutRoomInput[]
+    deleteMany?: LostItemScalarWhereInput | LostItemScalarWhereInput[]
+  }
+
   export type GuestCreateNestedOneWithoutBookingsInput = {
     create?: XOR<GuestCreateWithoutBookingsInput, GuestUncheckedCreateWithoutBookingsInput>
     connectOrCreate?: GuestCreateOrConnectWithoutBookingsInput
@@ -44072,6 +46602,20 @@ export namespace Prisma {
     create?: XOR<PropertyCreateWithoutBookingsInput, PropertyUncheckedCreateWithoutBookingsInput>
     connectOrCreate?: PropertyCreateOrConnectWithoutBookingsInput
     connect?: PropertyWhereUniqueInput
+  }
+
+  export type LostItemCreateNestedManyWithoutBookingInput = {
+    create?: XOR<LostItemCreateWithoutBookingInput, LostItemUncheckedCreateWithoutBookingInput> | LostItemCreateWithoutBookingInput[] | LostItemUncheckedCreateWithoutBookingInput[]
+    connectOrCreate?: LostItemCreateOrConnectWithoutBookingInput | LostItemCreateOrConnectWithoutBookingInput[]
+    createMany?: LostItemCreateManyBookingInputEnvelope
+    connect?: LostItemWhereUniqueInput | LostItemWhereUniqueInput[]
+  }
+
+  export type LostItemUncheckedCreateNestedManyWithoutBookingInput = {
+    create?: XOR<LostItemCreateWithoutBookingInput, LostItemUncheckedCreateWithoutBookingInput> | LostItemCreateWithoutBookingInput[] | LostItemUncheckedCreateWithoutBookingInput[]
+    connectOrCreate?: LostItemCreateOrConnectWithoutBookingInput | LostItemCreateOrConnectWithoutBookingInput[]
+    createMany?: LostItemCreateManyBookingInputEnvelope
+    connect?: LostItemWhereUniqueInput | LostItemWhereUniqueInput[]
   }
 
   export type EnumBookingStatusFieldUpdateOperationsInput = {
@@ -44108,6 +46652,34 @@ export namespace Prisma {
     upsert?: PropertyUpsertWithoutBookingsInput
     connect?: PropertyWhereUniqueInput
     update?: XOR<XOR<PropertyUpdateToOneWithWhereWithoutBookingsInput, PropertyUpdateWithoutBookingsInput>, PropertyUncheckedUpdateWithoutBookingsInput>
+  }
+
+  export type LostItemUpdateManyWithoutBookingNestedInput = {
+    create?: XOR<LostItemCreateWithoutBookingInput, LostItemUncheckedCreateWithoutBookingInput> | LostItemCreateWithoutBookingInput[] | LostItemUncheckedCreateWithoutBookingInput[]
+    connectOrCreate?: LostItemCreateOrConnectWithoutBookingInput | LostItemCreateOrConnectWithoutBookingInput[]
+    upsert?: LostItemUpsertWithWhereUniqueWithoutBookingInput | LostItemUpsertWithWhereUniqueWithoutBookingInput[]
+    createMany?: LostItemCreateManyBookingInputEnvelope
+    set?: LostItemWhereUniqueInput | LostItemWhereUniqueInput[]
+    disconnect?: LostItemWhereUniqueInput | LostItemWhereUniqueInput[]
+    delete?: LostItemWhereUniqueInput | LostItemWhereUniqueInput[]
+    connect?: LostItemWhereUniqueInput | LostItemWhereUniqueInput[]
+    update?: LostItemUpdateWithWhereUniqueWithoutBookingInput | LostItemUpdateWithWhereUniqueWithoutBookingInput[]
+    updateMany?: LostItemUpdateManyWithWhereWithoutBookingInput | LostItemUpdateManyWithWhereWithoutBookingInput[]
+    deleteMany?: LostItemScalarWhereInput | LostItemScalarWhereInput[]
+  }
+
+  export type LostItemUncheckedUpdateManyWithoutBookingNestedInput = {
+    create?: XOR<LostItemCreateWithoutBookingInput, LostItemUncheckedCreateWithoutBookingInput> | LostItemCreateWithoutBookingInput[] | LostItemUncheckedCreateWithoutBookingInput[]
+    connectOrCreate?: LostItemCreateOrConnectWithoutBookingInput | LostItemCreateOrConnectWithoutBookingInput[]
+    upsert?: LostItemUpsertWithWhereUniqueWithoutBookingInput | LostItemUpsertWithWhereUniqueWithoutBookingInput[]
+    createMany?: LostItemCreateManyBookingInputEnvelope
+    set?: LostItemWhereUniqueInput | LostItemWhereUniqueInput[]
+    disconnect?: LostItemWhereUniqueInput | LostItemWhereUniqueInput[]
+    delete?: LostItemWhereUniqueInput | LostItemWhereUniqueInput[]
+    connect?: LostItemWhereUniqueInput | LostItemWhereUniqueInput[]
+    update?: LostItemUpdateWithWhereUniqueWithoutBookingInput | LostItemUpdateWithWhereUniqueWithoutBookingInput[]
+    updateMany?: LostItemUpdateManyWithWhereWithoutBookingInput | LostItemUpdateManyWithWhereWithoutBookingInput[]
+    deleteMany?: LostItemScalarWhereInput | LostItemScalarWhereInput[]
   }
 
   export type ServiceRequestCreateattachmentsInput = {
@@ -44176,15 +46748,6 @@ export namespace Prisma {
 
   export type EnumServiceStatusFieldUpdateOperationsInput = {
     set?: $Enums.ServiceStatus
-  }
-
-  export type NullableFloatFieldUpdateOperationsInput = {
-    set?: number | null
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
-    unset?: boolean
   }
 
   export type NullableEnumPaymentStatusFieldUpdateOperationsInput = {
@@ -44338,6 +46901,13 @@ export namespace Prisma {
     connect?: PerformanceScoreWhereUniqueInput | PerformanceScoreWhereUniqueInput[]
   }
 
+  export type LostItemCreateNestedManyWithoutReportedByInput = {
+    create?: XOR<LostItemCreateWithoutReportedByInput, LostItemUncheckedCreateWithoutReportedByInput> | LostItemCreateWithoutReportedByInput[] | LostItemUncheckedCreateWithoutReportedByInput[]
+    connectOrCreate?: LostItemCreateOrConnectWithoutReportedByInput | LostItemCreateOrConnectWithoutReportedByInput[]
+    createMany?: LostItemCreateManyReportedByInputEnvelope
+    connect?: LostItemWhereUniqueInput | LostItemWhereUniqueInput[]
+  }
+
   export type AttendanceUncheckedCreateNestedManyWithoutStaffInput = {
     create?: XOR<AttendanceCreateWithoutStaffInput, AttendanceUncheckedCreateWithoutStaffInput> | AttendanceCreateWithoutStaffInput[] | AttendanceUncheckedCreateWithoutStaffInput[]
     connectOrCreate?: AttendanceCreateOrConnectWithoutStaffInput | AttendanceCreateOrConnectWithoutStaffInput[]
@@ -44371,6 +46941,13 @@ export namespace Prisma {
     connectOrCreate?: PerformanceScoreCreateOrConnectWithoutStaffInput | PerformanceScoreCreateOrConnectWithoutStaffInput[]
     createMany?: PerformanceScoreCreateManyStaffInputEnvelope
     connect?: PerformanceScoreWhereUniqueInput | PerformanceScoreWhereUniqueInput[]
+  }
+
+  export type LostItemUncheckedCreateNestedManyWithoutReportedByInput = {
+    create?: XOR<LostItemCreateWithoutReportedByInput, LostItemUncheckedCreateWithoutReportedByInput> | LostItemCreateWithoutReportedByInput[] | LostItemUncheckedCreateWithoutReportedByInput[]
+    connectOrCreate?: LostItemCreateOrConnectWithoutReportedByInput | LostItemCreateOrConnectWithoutReportedByInput[]
+    createMany?: LostItemCreateManyReportedByInputEnvelope
+    connect?: LostItemWhereUniqueInput | LostItemWhereUniqueInput[]
   }
 
   export type EnumDepartmentFieldUpdateOperationsInput = {
@@ -44463,6 +47040,20 @@ export namespace Prisma {
     deleteMany?: PerformanceScoreScalarWhereInput | PerformanceScoreScalarWhereInput[]
   }
 
+  export type LostItemUpdateManyWithoutReportedByNestedInput = {
+    create?: XOR<LostItemCreateWithoutReportedByInput, LostItemUncheckedCreateWithoutReportedByInput> | LostItemCreateWithoutReportedByInput[] | LostItemUncheckedCreateWithoutReportedByInput[]
+    connectOrCreate?: LostItemCreateOrConnectWithoutReportedByInput | LostItemCreateOrConnectWithoutReportedByInput[]
+    upsert?: LostItemUpsertWithWhereUniqueWithoutReportedByInput | LostItemUpsertWithWhereUniqueWithoutReportedByInput[]
+    createMany?: LostItemCreateManyReportedByInputEnvelope
+    set?: LostItemWhereUniqueInput | LostItemWhereUniqueInput[]
+    disconnect?: LostItemWhereUniqueInput | LostItemWhereUniqueInput[]
+    delete?: LostItemWhereUniqueInput | LostItemWhereUniqueInput[]
+    connect?: LostItemWhereUniqueInput | LostItemWhereUniqueInput[]
+    update?: LostItemUpdateWithWhereUniqueWithoutReportedByInput | LostItemUpdateWithWhereUniqueWithoutReportedByInput[]
+    updateMany?: LostItemUpdateManyWithWhereWithoutReportedByInput | LostItemUpdateManyWithWhereWithoutReportedByInput[]
+    deleteMany?: LostItemScalarWhereInput | LostItemScalarWhereInput[]
+  }
+
   export type AttendanceUncheckedUpdateManyWithoutStaffNestedInput = {
     create?: XOR<AttendanceCreateWithoutStaffInput, AttendanceUncheckedCreateWithoutStaffInput> | AttendanceCreateWithoutStaffInput[] | AttendanceUncheckedCreateWithoutStaffInput[]
     connectOrCreate?: AttendanceCreateOrConnectWithoutStaffInput | AttendanceCreateOrConnectWithoutStaffInput[]
@@ -44531,6 +47122,20 @@ export namespace Prisma {
     update?: PerformanceScoreUpdateWithWhereUniqueWithoutStaffInput | PerformanceScoreUpdateWithWhereUniqueWithoutStaffInput[]
     updateMany?: PerformanceScoreUpdateManyWithWhereWithoutStaffInput | PerformanceScoreUpdateManyWithWhereWithoutStaffInput[]
     deleteMany?: PerformanceScoreScalarWhereInput | PerformanceScoreScalarWhereInput[]
+  }
+
+  export type LostItemUncheckedUpdateManyWithoutReportedByNestedInput = {
+    create?: XOR<LostItemCreateWithoutReportedByInput, LostItemUncheckedCreateWithoutReportedByInput> | LostItemCreateWithoutReportedByInput[] | LostItemUncheckedCreateWithoutReportedByInput[]
+    connectOrCreate?: LostItemCreateOrConnectWithoutReportedByInput | LostItemCreateOrConnectWithoutReportedByInput[]
+    upsert?: LostItemUpsertWithWhereUniqueWithoutReportedByInput | LostItemUpsertWithWhereUniqueWithoutReportedByInput[]
+    createMany?: LostItemCreateManyReportedByInputEnvelope
+    set?: LostItemWhereUniqueInput | LostItemWhereUniqueInput[]
+    disconnect?: LostItemWhereUniqueInput | LostItemWhereUniqueInput[]
+    delete?: LostItemWhereUniqueInput | LostItemWhereUniqueInput[]
+    connect?: LostItemWhereUniqueInput | LostItemWhereUniqueInput[]
+    update?: LostItemUpdateWithWhereUniqueWithoutReportedByInput | LostItemUpdateWithWhereUniqueWithoutReportedByInput[]
+    updateMany?: LostItemUpdateManyWithWhereWithoutReportedByInput | LostItemUpdateManyWithWhereWithoutReportedByInput[]
+    deleteMany?: LostItemScalarWhereInput | LostItemScalarWhereInput[]
   }
 
   export type StaffCreateNestedOneWithoutAttendancesInput = {
@@ -44645,10 +47250,6 @@ export namespace Prisma {
     connect?: PropertyWhereUniqueInput
   }
 
-  export type BoolFieldUpdateOperationsInput = {
-    set?: boolean
-  }
-
   export type PropertyUpdateOneRequiredWithoutAmenitiesNestedInput = {
     create?: XOR<PropertyCreateWithoutAmenitiesInput, PropertyUncheckedCreateWithoutAmenitiesInput>
     connectOrCreate?: PropertyCreateOrConnectWithoutAmenitiesInput
@@ -44657,10 +47258,19 @@ export namespace Prisma {
     update?: XOR<XOR<PropertyUpdateToOneWithWhereWithoutAmenitiesInput, PropertyUpdateWithoutAmenitiesInput>, PropertyUncheckedUpdateWithoutAmenitiesInput>
   }
 
+  export type MenuItemCreateimagesInput = {
+    set: string[]
+  }
+
   export type PropertyCreateNestedOneWithoutMenuItemsInput = {
     create?: XOR<PropertyCreateWithoutMenuItemsInput, PropertyUncheckedCreateWithoutMenuItemsInput>
     connectOrCreate?: PropertyCreateOrConnectWithoutMenuItemsInput
     connect?: PropertyWhereUniqueInput
+  }
+
+  export type MenuItemUpdateimagesInput = {
+    set?: string[]
+    push?: string | string[]
   }
 
   export type NullableIntFieldUpdateOperationsInput = {
@@ -44692,6 +47302,93 @@ export namespace Prisma {
     upsert?: PropertyUpsertWithoutSpaServicesInput
     connect?: PropertyWhereUniqueInput
     update?: XOR<XOR<PropertyUpdateToOneWithWhereWithoutSpaServicesInput, PropertyUpdateWithoutSpaServicesInput>, PropertyUncheckedUpdateWithoutSpaServicesInput>
+  }
+
+  export type LostItemCreateevidenceImagesInput = {
+    set: string[]
+  }
+
+  export type PropertyCreateNestedOneWithoutLostItemsInput = {
+    create?: XOR<PropertyCreateWithoutLostItemsInput, PropertyUncheckedCreateWithoutLostItemsInput>
+    connectOrCreate?: PropertyCreateOrConnectWithoutLostItemsInput
+    connect?: PropertyWhereUniqueInput
+  }
+
+  export type RoomCreateNestedOneWithoutLostItemsInput = {
+    create?: XOR<RoomCreateWithoutLostItemsInput, RoomUncheckedCreateWithoutLostItemsInput>
+    connectOrCreate?: RoomCreateOrConnectWithoutLostItemsInput
+    connect?: RoomWhereUniqueInput
+  }
+
+  export type StaffCreateNestedOneWithoutLostItemsInput = {
+    create?: XOR<StaffCreateWithoutLostItemsInput, StaffUncheckedCreateWithoutLostItemsInput>
+    connectOrCreate?: StaffCreateOrConnectWithoutLostItemsInput
+    connect?: StaffWhereUniqueInput
+  }
+
+  export type GuestCreateNestedOneWithoutLostItemsInput = {
+    create?: XOR<GuestCreateWithoutLostItemsInput, GuestUncheckedCreateWithoutLostItemsInput>
+    connectOrCreate?: GuestCreateOrConnectWithoutLostItemsInput
+    connect?: GuestWhereUniqueInput
+  }
+
+  export type BookingCreateNestedOneWithoutLostItemsInput = {
+    create?: XOR<BookingCreateWithoutLostItemsInput, BookingUncheckedCreateWithoutLostItemsInput>
+    connectOrCreate?: BookingCreateOrConnectWithoutLostItemsInput
+    connect?: BookingWhereUniqueInput
+  }
+
+  export type LostItemUpdateevidenceImagesInput = {
+    set?: string[]
+    push?: string | string[]
+  }
+
+  export type PropertyUpdateOneRequiredWithoutLostItemsNestedInput = {
+    create?: XOR<PropertyCreateWithoutLostItemsInput, PropertyUncheckedCreateWithoutLostItemsInput>
+    connectOrCreate?: PropertyCreateOrConnectWithoutLostItemsInput
+    upsert?: PropertyUpsertWithoutLostItemsInput
+    connect?: PropertyWhereUniqueInput
+    update?: XOR<XOR<PropertyUpdateToOneWithWhereWithoutLostItemsInput, PropertyUpdateWithoutLostItemsInput>, PropertyUncheckedUpdateWithoutLostItemsInput>
+  }
+
+  export type RoomUpdateOneWithoutLostItemsNestedInput = {
+    create?: XOR<RoomCreateWithoutLostItemsInput, RoomUncheckedCreateWithoutLostItemsInput>
+    connectOrCreate?: RoomCreateOrConnectWithoutLostItemsInput
+    upsert?: RoomUpsertWithoutLostItemsInput
+    disconnect?: boolean
+    delete?: RoomWhereInput | boolean
+    connect?: RoomWhereUniqueInput
+    update?: XOR<XOR<RoomUpdateToOneWithWhereWithoutLostItemsInput, RoomUpdateWithoutLostItemsInput>, RoomUncheckedUpdateWithoutLostItemsInput>
+  }
+
+  export type StaffUpdateOneWithoutLostItemsNestedInput = {
+    create?: XOR<StaffCreateWithoutLostItemsInput, StaffUncheckedCreateWithoutLostItemsInput>
+    connectOrCreate?: StaffCreateOrConnectWithoutLostItemsInput
+    upsert?: StaffUpsertWithoutLostItemsInput
+    disconnect?: boolean
+    delete?: StaffWhereInput | boolean
+    connect?: StaffWhereUniqueInput
+    update?: XOR<XOR<StaffUpdateToOneWithWhereWithoutLostItemsInput, StaffUpdateWithoutLostItemsInput>, StaffUncheckedUpdateWithoutLostItemsInput>
+  }
+
+  export type GuestUpdateOneWithoutLostItemsNestedInput = {
+    create?: XOR<GuestCreateWithoutLostItemsInput, GuestUncheckedCreateWithoutLostItemsInput>
+    connectOrCreate?: GuestCreateOrConnectWithoutLostItemsInput
+    upsert?: GuestUpsertWithoutLostItemsInput
+    disconnect?: boolean
+    delete?: GuestWhereInput | boolean
+    connect?: GuestWhereUniqueInput
+    update?: XOR<XOR<GuestUpdateToOneWithWhereWithoutLostItemsInput, GuestUpdateWithoutLostItemsInput>, GuestUncheckedUpdateWithoutLostItemsInput>
+  }
+
+  export type BookingUpdateOneWithoutLostItemsNestedInput = {
+    create?: XOR<BookingCreateWithoutLostItemsInput, BookingUncheckedCreateWithoutLostItemsInput>
+    connectOrCreate?: BookingCreateOrConnectWithoutLostItemsInput
+    upsert?: BookingUpsertWithoutLostItemsInput
+    disconnect?: boolean
+    delete?: BookingWhereInput | boolean
+    connect?: BookingWhereUniqueInput
+    update?: XOR<XOR<BookingUpdateToOneWithWhereWithoutLostItemsInput, BookingUpdateWithoutLostItemsInput>, BookingUncheckedUpdateWithoutLostItemsInput>
   }
 
   export type PropertyCreateNestedOneWithoutRolePermissionsInput = {
@@ -44983,6 +47680,11 @@ export namespace Prisma {
     not?: NestedEnumUserStatusFilter<$PrismaModel> | $Enums.UserStatus
   }
 
+  export type NestedBoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
   export type NestedDateTimeFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
@@ -45057,6 +47759,14 @@ export namespace Prisma {
     _max?: NestedEnumUserStatusFilter<$PrismaModel>
   }
 
+  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
+  }
+
   export type NestedDateTimeWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
@@ -45101,13 +47811,6 @@ export namespace Prisma {
     isSet?: boolean
   }
 
-  export type NestedEnumCheckInStatusFilter<$PrismaModel = never> = {
-    equals?: $Enums.CheckInStatus | EnumCheckInStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.CheckInStatus[] | ListEnumCheckInStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.CheckInStatus[] | ListEnumCheckInStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumCheckInStatusFilter<$PrismaModel> | $Enums.CheckInStatus
-  }
-
   export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
@@ -45120,14 +47823,11 @@ export namespace Prisma {
     isSet?: boolean
   }
 
-  export type NestedEnumCheckInStatusWithAggregatesFilter<$PrismaModel = never> = {
+  export type NestedEnumCheckInStatusFilter<$PrismaModel = never> = {
     equals?: $Enums.CheckInStatus | EnumCheckInStatusFieldRefInput<$PrismaModel>
     in?: $Enums.CheckInStatus[] | ListEnumCheckInStatusFieldRefInput<$PrismaModel>
     notIn?: $Enums.CheckInStatus[] | ListEnumCheckInStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumCheckInStatusWithAggregatesFilter<$PrismaModel> | $Enums.CheckInStatus
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumCheckInStatusFilter<$PrismaModel>
-    _max?: NestedEnumCheckInStatusFilter<$PrismaModel>
+    not?: NestedEnumCheckInStatusFilter<$PrismaModel> | $Enums.CheckInStatus
   }
 
   export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -45145,11 +47845,33 @@ export namespace Prisma {
     isSet?: boolean
   }
 
+  export type NestedEnumCheckInStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.CheckInStatus | EnumCheckInStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.CheckInStatus[] | ListEnumCheckInStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.CheckInStatus[] | ListEnumCheckInStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumCheckInStatusWithAggregatesFilter<$PrismaModel> | $Enums.CheckInStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumCheckInStatusFilter<$PrismaModel>
+    _max?: NestedEnumCheckInStatusFilter<$PrismaModel>
+  }
+
   export type NestedEnumSubscriptionPlanFilter<$PrismaModel = never> = {
     equals?: $Enums.SubscriptionPlan | EnumSubscriptionPlanFieldRefInput<$PrismaModel>
     in?: $Enums.SubscriptionPlan[] | ListEnumSubscriptionPlanFieldRefInput<$PrismaModel>
     notIn?: $Enums.SubscriptionPlan[] | ListEnumSubscriptionPlanFieldRefInput<$PrismaModel>
     not?: NestedEnumSubscriptionPlanFilter<$PrismaModel> | $Enums.SubscriptionPlan
+  }
+
+  export type NestedFloatNullableFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+    isSet?: boolean
   }
 
   export type NestedEnumSubscriptionPlanWithAggregatesFilter<$PrismaModel = never> = {
@@ -45160,6 +47882,50 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumSubscriptionPlanFilter<$PrismaModel>
     _max?: NestedEnumSubscriptionPlanFilter<$PrismaModel>
+  }
+
+  export type NestedFloatNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedFloatNullableFilter<$PrismaModel>
+    _min?: NestedFloatNullableFilter<$PrismaModel>
+    _max?: NestedFloatNullableFilter<$PrismaModel>
+    isSet?: boolean
+  }
+
+  export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedIntFilter<$PrismaModel>
+    _min?: NestedIntFilter<$PrismaModel>
+    _max?: NestedIntFilter<$PrismaModel>
+  }
+
+  export type NestedFloatFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatFilter<$PrismaModel> | number
   }
   export type NestedJsonNullableFilter<$PrismaModel = never> = 
     | PatchUndefined<
@@ -45181,38 +47947,11 @@ export namespace Prisma {
     not?: NestedEnumRoomCategoryFilter<$PrismaModel> | $Enums.RoomCategory
   }
 
-  export type NestedFloatFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel>
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatFilter<$PrismaModel> | number
-  }
-
   export type NestedEnumRoomStatusFilter<$PrismaModel = never> = {
     equals?: $Enums.RoomStatus | EnumRoomStatusFieldRefInput<$PrismaModel>
     in?: $Enums.RoomStatus[] | ListEnumRoomStatusFieldRefInput<$PrismaModel>
     notIn?: $Enums.RoomStatus[] | ListEnumRoomStatusFieldRefInput<$PrismaModel>
     not?: NestedEnumRoomStatusFilter<$PrismaModel> | $Enums.RoomStatus
-  }
-
-  export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
-    _count?: NestedIntFilter<$PrismaModel>
-    _avg?: NestedFloatFilter<$PrismaModel>
-    _sum?: NestedIntFilter<$PrismaModel>
-    _min?: NestedIntFilter<$PrismaModel>
-    _max?: NestedIntFilter<$PrismaModel>
   }
 
   export type NestedEnumRoomCategoryWithAggregatesFilter<$PrismaModel = never> = {
@@ -45323,18 +48062,6 @@ export namespace Prisma {
     not?: NestedEnumServiceStatusFilter<$PrismaModel> | $Enums.ServiceStatus
   }
 
-  export type NestedFloatNullableFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
-    isSet?: boolean
-  }
-
   export type NestedEnumPaymentStatusNullableFilter<$PrismaModel = never> = {
     equals?: $Enums.PaymentStatus | EnumPaymentStatusFieldRefInput<$PrismaModel> | null
     in?: $Enums.PaymentStatus[] | ListEnumPaymentStatusFieldRefInput<$PrismaModel> | null
@@ -45371,23 +48098,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumServiceStatusFilter<$PrismaModel>
     _max?: NestedEnumServiceStatusFilter<$PrismaModel>
-  }
-
-  export type NestedFloatNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatNullableWithAggregatesFilter<$PrismaModel> | number | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedFloatNullableFilter<$PrismaModel>
-    _sum?: NestedFloatNullableFilter<$PrismaModel>
-    _min?: NestedFloatNullableFilter<$PrismaModel>
-    _max?: NestedFloatNullableFilter<$PrismaModel>
-    isSet?: boolean
   }
 
   export type NestedEnumPaymentStatusNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -45501,19 +48211,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumRatingTypeFilter<$PrismaModel>
     _max?: NestedEnumRatingTypeFilter<$PrismaModel>
-  }
-
-  export type NestedBoolFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolFilter<$PrismaModel> | boolean
-  }
-
-  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedBoolFilter<$PrismaModel>
-    _max?: NestedBoolFilter<$PrismaModel>
   }
 
   export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -45662,6 +48359,9 @@ export namespace Prisma {
     plan?: $Enums.SubscriptionPlan
     features?: PropertyCreatefeaturesInput | string[]
     planExpiresAt?: Date | string | null
+    latitude?: number | null
+    longitude?: number | null
+    ranking?: number
     policies?: InputJsonValue | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -45679,6 +48379,7 @@ export namespace Prisma {
     systemNodes?: SystemNodeCreateNestedManyWithoutPropertyInput
     systemAlerts?: SystemAlertCreateNestedManyWithoutPropertyInput
     supportTickets?: SupportTicketCreateNestedManyWithoutPropertyInput
+    lostItems?: LostItemCreateNestedManyWithoutPropertyInput
   }
 
   export type PropertyUncheckedCreateWithoutWorkerListInput = {
@@ -45697,6 +48398,9 @@ export namespace Prisma {
     plan?: $Enums.SubscriptionPlan
     features?: PropertyCreatefeaturesInput | string[]
     planExpiresAt?: Date | string | null
+    latitude?: number | null
+    longitude?: number | null
+    ranking?: number
     policies?: InputJsonValue | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -45715,6 +48419,7 @@ export namespace Prisma {
     systemNodes?: SystemNodeUncheckedCreateNestedManyWithoutPropertyInput
     systemAlerts?: SystemAlertUncheckedCreateNestedManyWithoutPropertyInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutPropertyInput
+    lostItems?: LostItemUncheckedCreateNestedManyWithoutPropertyInput
   }
 
   export type PropertyCreateOrConnectWithoutWorkerListInput = {
@@ -45738,6 +48443,9 @@ export namespace Prisma {
     plan?: $Enums.SubscriptionPlan
     features?: PropertyCreatefeaturesInput | string[]
     planExpiresAt?: Date | string | null
+    latitude?: number | null
+    longitude?: number | null
+    ranking?: number
     policies?: InputJsonValue | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -45755,6 +48463,7 @@ export namespace Prisma {
     systemNodes?: SystemNodeCreateNestedManyWithoutPropertyInput
     systemAlerts?: SystemAlertCreateNestedManyWithoutPropertyInput
     supportTickets?: SupportTicketCreateNestedManyWithoutPropertyInput
+    lostItems?: LostItemCreateNestedManyWithoutPropertyInput
   }
 
   export type PropertyUncheckedCreateWithoutOwnersInput = {
@@ -45773,6 +48482,9 @@ export namespace Prisma {
     plan?: $Enums.SubscriptionPlan
     features?: PropertyCreatefeaturesInput | string[]
     planExpiresAt?: Date | string | null
+    latitude?: number | null
+    longitude?: number | null
+    ranking?: number
     policies?: InputJsonValue | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -45791,6 +48503,7 @@ export namespace Prisma {
     systemNodes?: SystemNodeUncheckedCreateNestedManyWithoutPropertyInput
     systemAlerts?: SystemAlertUncheckedCreateNestedManyWithoutPropertyInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutPropertyInput
+    lostItems?: LostItemUncheckedCreateNestedManyWithoutPropertyInput
   }
 
   export type PropertyCreateOrConnectWithoutOwnersInput = {
@@ -45805,12 +48518,16 @@ export namespace Prisma {
     dateOfJoining?: Date | string
     department: $Enums.Department
     designation: string
+    contractType?: string | null
+    workShift?: string | null
+    managerName?: string | null
     baseSalary: number
     bankName?: string | null
     accountNumber?: string | null
     ifscCode?: string | null
     emergencyContactName?: string | null
     emergencyContactPhone?: string | null
+    address?: string | null
     profilePhoto?: string | null
     documents?: InputJsonValue | null
     annualLeaveBalance?: number
@@ -45824,6 +48541,7 @@ export namespace Prisma {
     serviceRequests?: ServiceRequestCreateNestedManyWithoutAssignedToInput
     payrolls?: PayrollCreateNestedManyWithoutStaffInput
     performanceScores?: PerformanceScoreCreateNestedManyWithoutStaffInput
+    lostItems?: LostItemCreateNestedManyWithoutReportedByInput
   }
 
   export type StaffUncheckedCreateWithoutUserInput = {
@@ -45834,12 +48552,16 @@ export namespace Prisma {
     dateOfJoining?: Date | string
     department: $Enums.Department
     designation: string
+    contractType?: string | null
+    workShift?: string | null
+    managerName?: string | null
     baseSalary: number
     bankName?: string | null
     accountNumber?: string | null
     ifscCode?: string | null
     emergencyContactName?: string | null
     emergencyContactPhone?: string | null
+    address?: string | null
     profilePhoto?: string | null
     documents?: InputJsonValue | null
     annualLeaveBalance?: number
@@ -45852,6 +48574,7 @@ export namespace Prisma {
     serviceRequests?: ServiceRequestUncheckedCreateNestedManyWithoutAssignedToInput
     payrolls?: PayrollUncheckedCreateNestedManyWithoutStaffInput
     performanceScores?: PerformanceScoreUncheckedCreateNestedManyWithoutStaffInput
+    lostItems?: LostItemUncheckedCreateNestedManyWithoutReportedByInput
   }
 
   export type StaffCreateOrConnectWithoutUserInput = {
@@ -45885,6 +48608,9 @@ export namespace Prisma {
     plan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
     features?: PropertyUpdatefeaturesInput | string[]
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    ranking?: IntFieldUpdateOperationsInput | number
     policies?: InputJsonValue | InputJsonValue | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -45902,6 +48628,7 @@ export namespace Prisma {
     systemNodes?: SystemNodeUpdateManyWithoutPropertyNestedInput
     systemAlerts?: SystemAlertUpdateManyWithoutPropertyNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutPropertyNestedInput
+    lostItems?: LostItemUpdateManyWithoutPropertyNestedInput
   }
 
   export type PropertyUncheckedUpdateWithoutWorkerListInput = {
@@ -45919,6 +48646,9 @@ export namespace Prisma {
     plan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
     features?: PropertyUpdatefeaturesInput | string[]
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    ranking?: IntFieldUpdateOperationsInput | number
     policies?: InputJsonValue | InputJsonValue | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -45937,6 +48667,7 @@ export namespace Prisma {
     systemNodes?: SystemNodeUncheckedUpdateManyWithoutPropertyNestedInput
     systemAlerts?: SystemAlertUncheckedUpdateManyWithoutPropertyNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutPropertyNestedInput
+    lostItems?: LostItemUncheckedUpdateManyWithoutPropertyNestedInput
   }
 
   export type PropertyUpsertWithWhereUniqueWithoutOwnersInput = {
@@ -45974,6 +48705,9 @@ export namespace Prisma {
     plan?: EnumSubscriptionPlanFilter<"Property"> | $Enums.SubscriptionPlan
     features?: StringNullableListFilter<"Property">
     planExpiresAt?: DateTimeNullableFilter<"Property"> | Date | string | null
+    latitude?: FloatNullableFilter<"Property"> | number | null
+    longitude?: FloatNullableFilter<"Property"> | number | null
+    ranking?: IntFilter<"Property"> | number
     policies?: JsonNullableFilter<"Property">
     createdAt?: DateTimeFilter<"Property"> | Date | string
     updatedAt?: DateTimeFilter<"Property"> | Date | string
@@ -45997,12 +48731,16 @@ export namespace Prisma {
     dateOfJoining?: DateTimeFieldUpdateOperationsInput | Date | string
     department?: EnumDepartmentFieldUpdateOperationsInput | $Enums.Department
     designation?: StringFieldUpdateOperationsInput | string
+    contractType?: NullableStringFieldUpdateOperationsInput | string | null
+    workShift?: NullableStringFieldUpdateOperationsInput | string | null
+    managerName?: NullableStringFieldUpdateOperationsInput | string | null
     baseSalary?: FloatFieldUpdateOperationsInput | number
     bankName?: NullableStringFieldUpdateOperationsInput | string | null
     accountNumber?: NullableStringFieldUpdateOperationsInput | string | null
     ifscCode?: NullableStringFieldUpdateOperationsInput | string | null
     emergencyContactName?: NullableStringFieldUpdateOperationsInput | string | null
     emergencyContactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
     profilePhoto?: NullableStringFieldUpdateOperationsInput | string | null
     documents?: InputJsonValue | InputJsonValue | null
     annualLeaveBalance?: IntFieldUpdateOperationsInput | number
@@ -46016,6 +48754,7 @@ export namespace Prisma {
     serviceRequests?: ServiceRequestUpdateManyWithoutAssignedToNestedInput
     payrolls?: PayrollUpdateManyWithoutStaffNestedInput
     performanceScores?: PerformanceScoreUpdateManyWithoutStaffNestedInput
+    lostItems?: LostItemUpdateManyWithoutReportedByNestedInput
   }
 
   export type StaffUncheckedUpdateWithoutUserInput = {
@@ -46025,12 +48764,16 @@ export namespace Prisma {
     dateOfJoining?: DateTimeFieldUpdateOperationsInput | Date | string
     department?: EnumDepartmentFieldUpdateOperationsInput | $Enums.Department
     designation?: StringFieldUpdateOperationsInput | string
+    contractType?: NullableStringFieldUpdateOperationsInput | string | null
+    workShift?: NullableStringFieldUpdateOperationsInput | string | null
+    managerName?: NullableStringFieldUpdateOperationsInput | string | null
     baseSalary?: FloatFieldUpdateOperationsInput | number
     bankName?: NullableStringFieldUpdateOperationsInput | string | null
     accountNumber?: NullableStringFieldUpdateOperationsInput | string | null
     ifscCode?: NullableStringFieldUpdateOperationsInput | string | null
     emergencyContactName?: NullableStringFieldUpdateOperationsInput | string | null
     emergencyContactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
     profilePhoto?: NullableStringFieldUpdateOperationsInput | string | null
     documents?: InputJsonValue | InputJsonValue | null
     annualLeaveBalance?: IntFieldUpdateOperationsInput | number
@@ -46043,12 +48786,15 @@ export namespace Prisma {
     serviceRequests?: ServiceRequestUncheckedUpdateManyWithoutAssignedToNestedInput
     payrolls?: PayrollUncheckedUpdateManyWithoutStaffNestedInput
     performanceScores?: PerformanceScoreUncheckedUpdateManyWithoutStaffNestedInput
+    lostItems?: LostItemUncheckedUpdateManyWithoutReportedByNestedInput
   }
 
   export type BookingCreateWithoutGuestInput = {
     id?: string
     checkIn: Date | string
     checkOut: Date | string
+    actualCheckIn?: Date | string | null
+    actualCheckOut?: Date | string | null
     numberOfGuests: number
     status?: $Enums.BookingStatus
     source?: $Enums.BookingSource
@@ -46061,6 +48807,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     room: RoomCreateNestedOneWithoutBookingsInput
     property: PropertyCreateNestedOneWithoutBookingsInput
+    lostItems?: LostItemCreateNestedManyWithoutBookingInput
   }
 
   export type BookingUncheckedCreateWithoutGuestInput = {
@@ -46068,6 +48815,8 @@ export namespace Prisma {
     roomId: string
     checkIn: Date | string
     checkOut: Date | string
+    actualCheckIn?: Date | string | null
+    actualCheckOut?: Date | string | null
     numberOfGuests: number
     status?: $Enums.BookingStatus
     source?: $Enums.BookingSource
@@ -46079,6 +48828,7 @@ export namespace Prisma {
     propertyId: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    lostItems?: LostItemUncheckedCreateNestedManyWithoutBookingInput
   }
 
   export type BookingCreateOrConnectWithoutGuestInput = {
@@ -46230,6 +48980,69 @@ export namespace Prisma {
     data: FavoriteCreateManyGuestInput | FavoriteCreateManyGuestInput[]
   }
 
+  export type LostItemCreateWithoutGuestInput = {
+    id?: string
+    name: string
+    description?: string | null
+    category: string
+    status?: string
+    foundDate?: Date | string
+    location?: string | null
+    image?: string | null
+    evidenceImages?: LostItemCreateevidenceImagesInput | string[]
+    caseNotes?: InputJsonValue | null
+    claimerName?: string | null
+    claimerPhone?: string | null
+    claimedAt?: Date | string | null
+    claimNotes?: string | null
+    whatsappSent?: boolean
+    whatsappSentAt?: Date | string | null
+    whatsappStatus?: string | null
+    whatsappMessageId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    property: PropertyCreateNestedOneWithoutLostItemsInput
+    room?: RoomCreateNestedOneWithoutLostItemsInput
+    reportedBy?: StaffCreateNestedOneWithoutLostItemsInput
+    booking?: BookingCreateNestedOneWithoutLostItemsInput
+  }
+
+  export type LostItemUncheckedCreateWithoutGuestInput = {
+    id?: string
+    propertyId: string
+    name: string
+    description?: string | null
+    category: string
+    status?: string
+    foundDate?: Date | string
+    location?: string | null
+    roomId?: string | null
+    reportedById?: string | null
+    bookingId?: string | null
+    image?: string | null
+    evidenceImages?: LostItemCreateevidenceImagesInput | string[]
+    caseNotes?: InputJsonValue | null
+    claimerName?: string | null
+    claimerPhone?: string | null
+    claimedAt?: Date | string | null
+    claimNotes?: string | null
+    whatsappSent?: boolean
+    whatsappSentAt?: Date | string | null
+    whatsappStatus?: string | null
+    whatsappMessageId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type LostItemCreateOrConnectWithoutGuestInput = {
+    where: LostItemWhereUniqueInput
+    create: XOR<LostItemCreateWithoutGuestInput, LostItemUncheckedCreateWithoutGuestInput>
+  }
+
+  export type LostItemCreateManyGuestInputEnvelope = {
+    data: LostItemCreateManyGuestInput | LostItemCreateManyGuestInput[]
+  }
+
   export type BookingUpsertWithWhereUniqueWithoutGuestInput = {
     where: BookingWhereUniqueInput
     update: XOR<BookingUpdateWithoutGuestInput, BookingUncheckedUpdateWithoutGuestInput>
@@ -46255,6 +49068,8 @@ export namespace Prisma {
     roomId?: StringFilter<"Booking"> | string
     checkIn?: DateTimeFilter<"Booking"> | Date | string
     checkOut?: DateTimeFilter<"Booking"> | Date | string
+    actualCheckIn?: DateTimeNullableFilter<"Booking"> | Date | string | null
+    actualCheckOut?: DateTimeNullableFilter<"Booking"> | Date | string | null
     numberOfGuests?: IntFilter<"Booking"> | number
     status?: EnumBookingStatusFilter<"Booking"> | $Enums.BookingStatus
     source?: EnumBookingSourceFilter<"Booking"> | $Enums.BookingSource
@@ -46397,6 +49212,53 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Favorite"> | Date | string
   }
 
+  export type LostItemUpsertWithWhereUniqueWithoutGuestInput = {
+    where: LostItemWhereUniqueInput
+    update: XOR<LostItemUpdateWithoutGuestInput, LostItemUncheckedUpdateWithoutGuestInput>
+    create: XOR<LostItemCreateWithoutGuestInput, LostItemUncheckedCreateWithoutGuestInput>
+  }
+
+  export type LostItemUpdateWithWhereUniqueWithoutGuestInput = {
+    where: LostItemWhereUniqueInput
+    data: XOR<LostItemUpdateWithoutGuestInput, LostItemUncheckedUpdateWithoutGuestInput>
+  }
+
+  export type LostItemUpdateManyWithWhereWithoutGuestInput = {
+    where: LostItemScalarWhereInput
+    data: XOR<LostItemUpdateManyMutationInput, LostItemUncheckedUpdateManyWithoutGuestInput>
+  }
+
+  export type LostItemScalarWhereInput = {
+    AND?: LostItemScalarWhereInput | LostItemScalarWhereInput[]
+    OR?: LostItemScalarWhereInput[]
+    NOT?: LostItemScalarWhereInput | LostItemScalarWhereInput[]
+    id?: StringFilter<"LostItem"> | string
+    propertyId?: StringFilter<"LostItem"> | string
+    name?: StringFilter<"LostItem"> | string
+    description?: StringNullableFilter<"LostItem"> | string | null
+    category?: StringFilter<"LostItem"> | string
+    status?: StringFilter<"LostItem"> | string
+    foundDate?: DateTimeFilter<"LostItem"> | Date | string
+    location?: StringNullableFilter<"LostItem"> | string | null
+    roomId?: StringNullableFilter<"LostItem"> | string | null
+    reportedById?: StringNullableFilter<"LostItem"> | string | null
+    guestId?: StringNullableFilter<"LostItem"> | string | null
+    bookingId?: StringNullableFilter<"LostItem"> | string | null
+    image?: StringNullableFilter<"LostItem"> | string | null
+    evidenceImages?: StringNullableListFilter<"LostItem">
+    caseNotes?: JsonNullableFilter<"LostItem">
+    claimerName?: StringNullableFilter<"LostItem"> | string | null
+    claimerPhone?: StringNullableFilter<"LostItem"> | string | null
+    claimedAt?: DateTimeNullableFilter<"LostItem"> | Date | string | null
+    claimNotes?: StringNullableFilter<"LostItem"> | string | null
+    whatsappSent?: BoolFilter<"LostItem"> | boolean
+    whatsappSentAt?: DateTimeNullableFilter<"LostItem"> | Date | string | null
+    whatsappStatus?: StringNullableFilter<"LostItem"> | string | null
+    whatsappMessageId?: StringNullableFilter<"LostItem"> | string | null
+    createdAt?: DateTimeFilter<"LostItem"> | Date | string
+    updatedAt?: DateTimeFilter<"LostItem"> | Date | string
+  }
+
   export type GuestCreateWithoutFavoritesInput = {
     id?: string
     name: string
@@ -46407,6 +49269,7 @@ export namespace Prisma {
     idDocumentFront?: string | null
     idDocumentBack?: string | null
     address?: string | null
+    dateOfBirth?: Date | string | null
     checkInStatus?: $Enums.CheckInStatus
     checkInCompletedAt?: Date | string | null
     language?: string
@@ -46416,6 +49279,7 @@ export namespace Prisma {
     serviceRequests?: ServiceRequestCreateNestedManyWithoutGuestInput
     supportTickets?: SupportTicketCreateNestedManyWithoutGuestInput
     ratings?: RatingCreateNestedManyWithoutGuestInput
+    lostItems?: LostItemCreateNestedManyWithoutGuestInput
   }
 
   export type GuestUncheckedCreateWithoutFavoritesInput = {
@@ -46428,6 +49292,7 @@ export namespace Prisma {
     idDocumentFront?: string | null
     idDocumentBack?: string | null
     address?: string | null
+    dateOfBirth?: Date | string | null
     checkInStatus?: $Enums.CheckInStatus
     checkInCompletedAt?: Date | string | null
     language?: string
@@ -46437,6 +49302,7 @@ export namespace Prisma {
     serviceRequests?: ServiceRequestUncheckedCreateNestedManyWithoutGuestInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutGuestInput
     ratings?: RatingUncheckedCreateNestedManyWithoutGuestInput
+    lostItems?: LostItemUncheckedCreateNestedManyWithoutGuestInput
   }
 
   export type GuestCreateOrConnectWithoutFavoritesInput = {
@@ -46461,6 +49327,7 @@ export namespace Prisma {
     property: PropertyCreateNestedOneWithoutRoomsInput
     bookings?: BookingCreateNestedManyWithoutRoomInput
     serviceRequests?: ServiceRequestCreateNestedManyWithoutRoomInput
+    lostItems?: LostItemCreateNestedManyWithoutRoomInput
   }
 
   export type RoomUncheckedCreateWithoutFavoritesInput = {
@@ -46480,6 +49347,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     bookings?: BookingUncheckedCreateNestedManyWithoutRoomInput
     serviceRequests?: ServiceRequestUncheckedCreateNestedManyWithoutRoomInput
+    lostItems?: LostItemUncheckedCreateNestedManyWithoutRoomInput
   }
 
   export type RoomCreateOrConnectWithoutFavoritesInput = {
@@ -46507,6 +49375,7 @@ export namespace Prisma {
     idDocumentFront?: NullableStringFieldUpdateOperationsInput | string | null
     idDocumentBack?: NullableStringFieldUpdateOperationsInput | string | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
+    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     checkInStatus?: EnumCheckInStatusFieldUpdateOperationsInput | $Enums.CheckInStatus
     checkInCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     language?: StringFieldUpdateOperationsInput | string
@@ -46516,6 +49385,7 @@ export namespace Prisma {
     serviceRequests?: ServiceRequestUpdateManyWithoutGuestNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutGuestNestedInput
     ratings?: RatingUpdateManyWithoutGuestNestedInput
+    lostItems?: LostItemUpdateManyWithoutGuestNestedInput
   }
 
   export type GuestUncheckedUpdateWithoutFavoritesInput = {
@@ -46527,6 +49397,7 @@ export namespace Prisma {
     idDocumentFront?: NullableStringFieldUpdateOperationsInput | string | null
     idDocumentBack?: NullableStringFieldUpdateOperationsInput | string | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
+    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     checkInStatus?: EnumCheckInStatusFieldUpdateOperationsInput | $Enums.CheckInStatus
     checkInCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     language?: StringFieldUpdateOperationsInput | string
@@ -46536,6 +49407,7 @@ export namespace Prisma {
     serviceRequests?: ServiceRequestUncheckedUpdateManyWithoutGuestNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutGuestNestedInput
     ratings?: RatingUncheckedUpdateManyWithoutGuestNestedInput
+    lostItems?: LostItemUncheckedUpdateManyWithoutGuestNestedInput
   }
 
   export type RoomUpsertWithoutFavoritesInput = {
@@ -46565,6 +49437,7 @@ export namespace Prisma {
     property?: PropertyUpdateOneRequiredWithoutRoomsNestedInput
     bookings?: BookingUpdateManyWithoutRoomNestedInput
     serviceRequests?: ServiceRequestUpdateManyWithoutRoomNestedInput
+    lostItems?: LostItemUpdateManyWithoutRoomNestedInput
   }
 
   export type RoomUncheckedUpdateWithoutFavoritesInput = {
@@ -46583,6 +49456,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bookings?: BookingUncheckedUpdateManyWithoutRoomNestedInput
     serviceRequests?: ServiceRequestUncheckedUpdateManyWithoutRoomNestedInput
+    lostItems?: LostItemUncheckedUpdateManyWithoutRoomNestedInput
   }
 
   export type UserCreateWithoutOwnedPropertiesInput = {
@@ -46593,6 +49467,7 @@ export namespace Prisma {
     password: string
     role: $Enums.UserRole
     status?: $Enums.UserStatus
+    dndEnabled?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     myWorkplace?: PropertyCreateNestedOneWithoutWorkerListInput
@@ -46607,6 +49482,7 @@ export namespace Prisma {
     password: string
     role: $Enums.UserRole
     status?: $Enums.UserStatus
+    dndEnabled?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     workplaceId?: string | null
@@ -46627,6 +49503,7 @@ export namespace Prisma {
     password: string
     role: $Enums.UserRole
     status?: $Enums.UserStatus
+    dndEnabled?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     ownedProperties?: PropertyCreateNestedManyWithoutOwnersInput
@@ -46641,6 +49518,7 @@ export namespace Prisma {
     password: string
     role: $Enums.UserRole
     status?: $Enums.UserStatus
+    dndEnabled?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     ownedPropertyIds?: UserCreateownedPropertyIdsInput | string[]
@@ -46674,6 +49552,7 @@ export namespace Prisma {
     bookings?: BookingCreateNestedManyWithoutRoomInput
     serviceRequests?: ServiceRequestCreateNestedManyWithoutRoomInput
     favorites?: FavoriteCreateNestedManyWithoutRoomInput
+    lostItems?: LostItemCreateNestedManyWithoutRoomInput
   }
 
   export type RoomUncheckedCreateWithoutPropertyInput = {
@@ -46693,6 +49572,7 @@ export namespace Prisma {
     bookings?: BookingUncheckedCreateNestedManyWithoutRoomInput
     serviceRequests?: ServiceRequestUncheckedCreateNestedManyWithoutRoomInput
     favorites?: FavoriteUncheckedCreateNestedManyWithoutRoomInput
+    lostItems?: LostItemUncheckedCreateNestedManyWithoutRoomInput
   }
 
   export type RoomCreateOrConnectWithoutPropertyInput = {
@@ -46742,7 +49622,8 @@ export namespace Prisma {
     category: string
     cuisine?: string | null
     price: number
-    image?: string | null
+    margin?: number
+    images?: MenuItemCreateimagesInput | string[]
     isVeg?: boolean
     isAvailable?: boolean
     prepTime?: number | null
@@ -46757,7 +49638,8 @@ export namespace Prisma {
     category: string
     cuisine?: string | null
     price: number
-    image?: string | null
+    margin?: number
+    images?: MenuItemCreateimagesInput | string[]
     isVeg?: boolean
     isAvailable?: boolean
     prepTime?: number | null
@@ -46814,12 +49696,16 @@ export namespace Prisma {
     dateOfJoining?: Date | string
     department: $Enums.Department
     designation: string
+    contractType?: string | null
+    workShift?: string | null
+    managerName?: string | null
     baseSalary: number
     bankName?: string | null
     accountNumber?: string | null
     ifscCode?: string | null
     emergencyContactName?: string | null
     emergencyContactPhone?: string | null
+    address?: string | null
     profilePhoto?: string | null
     documents?: InputJsonValue | null
     annualLeaveBalance?: number
@@ -46833,6 +49719,7 @@ export namespace Prisma {
     serviceRequests?: ServiceRequestCreateNestedManyWithoutAssignedToInput
     payrolls?: PayrollCreateNestedManyWithoutStaffInput
     performanceScores?: PerformanceScoreCreateNestedManyWithoutStaffInput
+    lostItems?: LostItemCreateNestedManyWithoutReportedByInput
   }
 
   export type StaffUncheckedCreateWithoutPropertyInput = {
@@ -46843,12 +49730,16 @@ export namespace Prisma {
     dateOfJoining?: Date | string
     department: $Enums.Department
     designation: string
+    contractType?: string | null
+    workShift?: string | null
+    managerName?: string | null
     baseSalary: number
     bankName?: string | null
     accountNumber?: string | null
     ifscCode?: string | null
     emergencyContactName?: string | null
     emergencyContactPhone?: string | null
+    address?: string | null
     profilePhoto?: string | null
     documents?: InputJsonValue | null
     annualLeaveBalance?: number
@@ -46861,6 +49752,7 @@ export namespace Prisma {
     serviceRequests?: ServiceRequestUncheckedCreateNestedManyWithoutAssignedToInput
     payrolls?: PayrollUncheckedCreateNestedManyWithoutStaffInput
     performanceScores?: PerformanceScoreUncheckedCreateNestedManyWithoutStaffInput
+    lostItems?: LostItemUncheckedCreateNestedManyWithoutReportedByInput
   }
 
   export type StaffCreateOrConnectWithoutPropertyInput = {
@@ -46876,6 +49768,8 @@ export namespace Prisma {
     id?: string
     checkIn: Date | string
     checkOut: Date | string
+    actualCheckIn?: Date | string | null
+    actualCheckOut?: Date | string | null
     numberOfGuests: number
     status?: $Enums.BookingStatus
     source?: $Enums.BookingSource
@@ -46888,6 +49782,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     guest: GuestCreateNestedOneWithoutBookingsInput
     room: RoomCreateNestedOneWithoutBookingsInput
+    lostItems?: LostItemCreateNestedManyWithoutBookingInput
   }
 
   export type BookingUncheckedCreateWithoutPropertyInput = {
@@ -46896,6 +49791,8 @@ export namespace Prisma {
     roomId: string
     checkIn: Date | string
     checkOut: Date | string
+    actualCheckIn?: Date | string | null
+    actualCheckOut?: Date | string | null
     numberOfGuests: number
     status?: $Enums.BookingStatus
     source?: $Enums.BookingSource
@@ -46906,6 +49803,7 @@ export namespace Prisma {
     notes?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    lostItems?: LostItemUncheckedCreateNestedManyWithoutBookingInput
   }
 
   export type BookingCreateOrConnectWithoutPropertyInput = {
@@ -47158,6 +50056,69 @@ export namespace Prisma {
     data: SupportTicketCreateManyPropertyInput | SupportTicketCreateManyPropertyInput[]
   }
 
+  export type LostItemCreateWithoutPropertyInput = {
+    id?: string
+    name: string
+    description?: string | null
+    category: string
+    status?: string
+    foundDate?: Date | string
+    location?: string | null
+    image?: string | null
+    evidenceImages?: LostItemCreateevidenceImagesInput | string[]
+    caseNotes?: InputJsonValue | null
+    claimerName?: string | null
+    claimerPhone?: string | null
+    claimedAt?: Date | string | null
+    claimNotes?: string | null
+    whatsappSent?: boolean
+    whatsappSentAt?: Date | string | null
+    whatsappStatus?: string | null
+    whatsappMessageId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    room?: RoomCreateNestedOneWithoutLostItemsInput
+    reportedBy?: StaffCreateNestedOneWithoutLostItemsInput
+    guest?: GuestCreateNestedOneWithoutLostItemsInput
+    booking?: BookingCreateNestedOneWithoutLostItemsInput
+  }
+
+  export type LostItemUncheckedCreateWithoutPropertyInput = {
+    id?: string
+    name: string
+    description?: string | null
+    category: string
+    status?: string
+    foundDate?: Date | string
+    location?: string | null
+    roomId?: string | null
+    reportedById?: string | null
+    guestId?: string | null
+    bookingId?: string | null
+    image?: string | null
+    evidenceImages?: LostItemCreateevidenceImagesInput | string[]
+    caseNotes?: InputJsonValue | null
+    claimerName?: string | null
+    claimerPhone?: string | null
+    claimedAt?: Date | string | null
+    claimNotes?: string | null
+    whatsappSent?: boolean
+    whatsappSentAt?: Date | string | null
+    whatsappStatus?: string | null
+    whatsappMessageId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type LostItemCreateOrConnectWithoutPropertyInput = {
+    where: LostItemWhereUniqueInput
+    create: XOR<LostItemCreateWithoutPropertyInput, LostItemUncheckedCreateWithoutPropertyInput>
+  }
+
+  export type LostItemCreateManyPropertyInputEnvelope = {
+    data: LostItemCreateManyPropertyInput | LostItemCreateManyPropertyInput[]
+  }
+
   export type UserUpsertWithWhereUniqueWithoutOwnedPropertiesInput = {
     where: UserWhereUniqueInput
     update: XOR<UserUpdateWithoutOwnedPropertiesInput, UserUncheckedUpdateWithoutOwnedPropertiesInput>
@@ -47185,6 +50146,7 @@ export namespace Prisma {
     password?: StringFilter<"User"> | string
     role?: EnumUserRoleFilter<"User"> | $Enums.UserRole
     status?: EnumUserStatusFilter<"User"> | $Enums.UserStatus
+    dndEnabled?: BoolFilter<"User"> | boolean
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
     workplaceId?: StringNullableFilter<"User"> | string | null
@@ -47301,7 +50263,8 @@ export namespace Prisma {
     category?: StringFilter<"MenuItem"> | string
     cuisine?: StringNullableFilter<"MenuItem"> | string | null
     price?: FloatFilter<"MenuItem"> | number
-    image?: StringNullableFilter<"MenuItem"> | string | null
+    margin?: FloatFilter<"MenuItem"> | number
+    images?: StringNullableListFilter<"MenuItem">
     isVeg?: BoolFilter<"MenuItem"> | boolean
     isAvailable?: BoolFilter<"MenuItem"> | boolean
     prepTime?: IntNullableFilter<"MenuItem"> | number | null
@@ -47369,12 +50332,16 @@ export namespace Prisma {
     dateOfJoining?: DateTimeFilter<"Staff"> | Date | string
     department?: EnumDepartmentFilter<"Staff"> | $Enums.Department
     designation?: StringFilter<"Staff"> | string
+    contractType?: StringNullableFilter<"Staff"> | string | null
+    workShift?: StringNullableFilter<"Staff"> | string | null
+    managerName?: StringNullableFilter<"Staff"> | string | null
     baseSalary?: FloatFilter<"Staff"> | number
     bankName?: StringNullableFilter<"Staff"> | string | null
     accountNumber?: StringNullableFilter<"Staff"> | string | null
     ifscCode?: StringNullableFilter<"Staff"> | string | null
     emergencyContactName?: StringNullableFilter<"Staff"> | string | null
     emergencyContactPhone?: StringNullableFilter<"Staff"> | string | null
+    address?: StringNullableFilter<"Staff"> | string | null
     profilePhoto?: StringNullableFilter<"Staff"> | string | null
     documents?: JsonNullableFilter<"Staff">
     annualLeaveBalance?: IntFilter<"Staff"> | number
@@ -47583,6 +50550,22 @@ export namespace Prisma {
     data: XOR<SupportTicketUpdateManyMutationInput, SupportTicketUncheckedUpdateManyWithoutPropertyInput>
   }
 
+  export type LostItemUpsertWithWhereUniqueWithoutPropertyInput = {
+    where: LostItemWhereUniqueInput
+    update: XOR<LostItemUpdateWithoutPropertyInput, LostItemUncheckedUpdateWithoutPropertyInput>
+    create: XOR<LostItemCreateWithoutPropertyInput, LostItemUncheckedCreateWithoutPropertyInput>
+  }
+
+  export type LostItemUpdateWithWhereUniqueWithoutPropertyInput = {
+    where: LostItemWhereUniqueInput
+    data: XOR<LostItemUpdateWithoutPropertyInput, LostItemUncheckedUpdateWithoutPropertyInput>
+  }
+
+  export type LostItemUpdateManyWithWhereWithoutPropertyInput = {
+    where: LostItemScalarWhereInput
+    data: XOR<LostItemUpdateManyMutationInput, LostItemUncheckedUpdateManyWithoutPropertyInput>
+  }
+
   export type PropertyCreateWithoutRoomsInput = {
     id?: string
     name: string
@@ -47599,6 +50582,9 @@ export namespace Prisma {
     plan?: $Enums.SubscriptionPlan
     features?: PropertyCreatefeaturesInput | string[]
     planExpiresAt?: Date | string | null
+    latitude?: number | null
+    longitude?: number | null
+    ranking?: number
     policies?: InputJsonValue | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -47616,6 +50602,7 @@ export namespace Prisma {
     systemNodes?: SystemNodeCreateNestedManyWithoutPropertyInput
     systemAlerts?: SystemAlertCreateNestedManyWithoutPropertyInput
     supportTickets?: SupportTicketCreateNestedManyWithoutPropertyInput
+    lostItems?: LostItemCreateNestedManyWithoutPropertyInput
   }
 
   export type PropertyUncheckedCreateWithoutRoomsInput = {
@@ -47634,6 +50621,9 @@ export namespace Prisma {
     plan?: $Enums.SubscriptionPlan
     features?: PropertyCreatefeaturesInput | string[]
     planExpiresAt?: Date | string | null
+    latitude?: number | null
+    longitude?: number | null
+    ranking?: number
     policies?: InputJsonValue | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -47652,6 +50642,7 @@ export namespace Prisma {
     systemNodes?: SystemNodeUncheckedCreateNestedManyWithoutPropertyInput
     systemAlerts?: SystemAlertUncheckedCreateNestedManyWithoutPropertyInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutPropertyInput
+    lostItems?: LostItemUncheckedCreateNestedManyWithoutPropertyInput
   }
 
   export type PropertyCreateOrConnectWithoutRoomsInput = {
@@ -47663,6 +50654,8 @@ export namespace Prisma {
     id?: string
     checkIn: Date | string
     checkOut: Date | string
+    actualCheckIn?: Date | string | null
+    actualCheckOut?: Date | string | null
     numberOfGuests: number
     status?: $Enums.BookingStatus
     source?: $Enums.BookingSource
@@ -47675,6 +50668,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     guest: GuestCreateNestedOneWithoutBookingsInput
     property: PropertyCreateNestedOneWithoutBookingsInput
+    lostItems?: LostItemCreateNestedManyWithoutBookingInput
   }
 
   export type BookingUncheckedCreateWithoutRoomInput = {
@@ -47682,6 +50676,8 @@ export namespace Prisma {
     guestId: string
     checkIn: Date | string
     checkOut: Date | string
+    actualCheckIn?: Date | string | null
+    actualCheckOut?: Date | string | null
     numberOfGuests: number
     status?: $Enums.BookingStatus
     source?: $Enums.BookingSource
@@ -47693,6 +50689,7 @@ export namespace Prisma {
     propertyId: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    lostItems?: LostItemUncheckedCreateNestedManyWithoutBookingInput
   }
 
   export type BookingCreateOrConnectWithoutRoomInput = {
@@ -47782,6 +50779,69 @@ export namespace Prisma {
     data: FavoriteCreateManyRoomInput | FavoriteCreateManyRoomInput[]
   }
 
+  export type LostItemCreateWithoutRoomInput = {
+    id?: string
+    name: string
+    description?: string | null
+    category: string
+    status?: string
+    foundDate?: Date | string
+    location?: string | null
+    image?: string | null
+    evidenceImages?: LostItemCreateevidenceImagesInput | string[]
+    caseNotes?: InputJsonValue | null
+    claimerName?: string | null
+    claimerPhone?: string | null
+    claimedAt?: Date | string | null
+    claimNotes?: string | null
+    whatsappSent?: boolean
+    whatsappSentAt?: Date | string | null
+    whatsappStatus?: string | null
+    whatsappMessageId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    property: PropertyCreateNestedOneWithoutLostItemsInput
+    reportedBy?: StaffCreateNestedOneWithoutLostItemsInput
+    guest?: GuestCreateNestedOneWithoutLostItemsInput
+    booking?: BookingCreateNestedOneWithoutLostItemsInput
+  }
+
+  export type LostItemUncheckedCreateWithoutRoomInput = {
+    id?: string
+    propertyId: string
+    name: string
+    description?: string | null
+    category: string
+    status?: string
+    foundDate?: Date | string
+    location?: string | null
+    reportedById?: string | null
+    guestId?: string | null
+    bookingId?: string | null
+    image?: string | null
+    evidenceImages?: LostItemCreateevidenceImagesInput | string[]
+    caseNotes?: InputJsonValue | null
+    claimerName?: string | null
+    claimerPhone?: string | null
+    claimedAt?: Date | string | null
+    claimNotes?: string | null
+    whatsappSent?: boolean
+    whatsappSentAt?: Date | string | null
+    whatsappStatus?: string | null
+    whatsappMessageId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type LostItemCreateOrConnectWithoutRoomInput = {
+    where: LostItemWhereUniqueInput
+    create: XOR<LostItemCreateWithoutRoomInput, LostItemUncheckedCreateWithoutRoomInput>
+  }
+
+  export type LostItemCreateManyRoomInputEnvelope = {
+    data: LostItemCreateManyRoomInput | LostItemCreateManyRoomInput[]
+  }
+
   export type PropertyUpsertWithoutRoomsInput = {
     update: XOR<PropertyUpdateWithoutRoomsInput, PropertyUncheckedUpdateWithoutRoomsInput>
     create: XOR<PropertyCreateWithoutRoomsInput, PropertyUncheckedCreateWithoutRoomsInput>
@@ -47808,6 +50868,9 @@ export namespace Prisma {
     plan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
     features?: PropertyUpdatefeaturesInput | string[]
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    ranking?: IntFieldUpdateOperationsInput | number
     policies?: InputJsonValue | InputJsonValue | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -47825,6 +50888,7 @@ export namespace Prisma {
     systemNodes?: SystemNodeUpdateManyWithoutPropertyNestedInput
     systemAlerts?: SystemAlertUpdateManyWithoutPropertyNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutPropertyNestedInput
+    lostItems?: LostItemUpdateManyWithoutPropertyNestedInput
   }
 
   export type PropertyUncheckedUpdateWithoutRoomsInput = {
@@ -47842,6 +50906,9 @@ export namespace Prisma {
     plan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
     features?: PropertyUpdatefeaturesInput | string[]
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    ranking?: IntFieldUpdateOperationsInput | number
     policies?: InputJsonValue | InputJsonValue | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -47860,6 +50927,7 @@ export namespace Prisma {
     systemNodes?: SystemNodeUncheckedUpdateManyWithoutPropertyNestedInput
     systemAlerts?: SystemAlertUncheckedUpdateManyWithoutPropertyNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutPropertyNestedInput
+    lostItems?: LostItemUncheckedUpdateManyWithoutPropertyNestedInput
   }
 
   export type BookingUpsertWithWhereUniqueWithoutRoomInput = {
@@ -47910,6 +50978,22 @@ export namespace Prisma {
     data: XOR<FavoriteUpdateManyMutationInput, FavoriteUncheckedUpdateManyWithoutRoomInput>
   }
 
+  export type LostItemUpsertWithWhereUniqueWithoutRoomInput = {
+    where: LostItemWhereUniqueInput
+    update: XOR<LostItemUpdateWithoutRoomInput, LostItemUncheckedUpdateWithoutRoomInput>
+    create: XOR<LostItemCreateWithoutRoomInput, LostItemUncheckedCreateWithoutRoomInput>
+  }
+
+  export type LostItemUpdateWithWhereUniqueWithoutRoomInput = {
+    where: LostItemWhereUniqueInput
+    data: XOR<LostItemUpdateWithoutRoomInput, LostItemUncheckedUpdateWithoutRoomInput>
+  }
+
+  export type LostItemUpdateManyWithWhereWithoutRoomInput = {
+    where: LostItemScalarWhereInput
+    data: XOR<LostItemUpdateManyMutationInput, LostItemUncheckedUpdateManyWithoutRoomInput>
+  }
+
   export type GuestCreateWithoutBookingsInput = {
     id?: string
     name: string
@@ -47920,6 +51004,7 @@ export namespace Prisma {
     idDocumentFront?: string | null
     idDocumentBack?: string | null
     address?: string | null
+    dateOfBirth?: Date | string | null
     checkInStatus?: $Enums.CheckInStatus
     checkInCompletedAt?: Date | string | null
     language?: string
@@ -47929,6 +51014,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutGuestInput
     ratings?: RatingCreateNestedManyWithoutGuestInput
     favorites?: FavoriteCreateNestedManyWithoutGuestInput
+    lostItems?: LostItemCreateNestedManyWithoutGuestInput
   }
 
   export type GuestUncheckedCreateWithoutBookingsInput = {
@@ -47941,6 +51027,7 @@ export namespace Prisma {
     idDocumentFront?: string | null
     idDocumentBack?: string | null
     address?: string | null
+    dateOfBirth?: Date | string | null
     checkInStatus?: $Enums.CheckInStatus
     checkInCompletedAt?: Date | string | null
     language?: string
@@ -47950,6 +51037,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutGuestInput
     ratings?: RatingUncheckedCreateNestedManyWithoutGuestInput
     favorites?: FavoriteUncheckedCreateNestedManyWithoutGuestInput
+    lostItems?: LostItemUncheckedCreateNestedManyWithoutGuestInput
   }
 
   export type GuestCreateOrConnectWithoutBookingsInput = {
@@ -47974,6 +51062,7 @@ export namespace Prisma {
     property: PropertyCreateNestedOneWithoutRoomsInput
     serviceRequests?: ServiceRequestCreateNestedManyWithoutRoomInput
     favorites?: FavoriteCreateNestedManyWithoutRoomInput
+    lostItems?: LostItemCreateNestedManyWithoutRoomInput
   }
 
   export type RoomUncheckedCreateWithoutBookingsInput = {
@@ -47993,6 +51082,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     serviceRequests?: ServiceRequestUncheckedCreateNestedManyWithoutRoomInput
     favorites?: FavoriteUncheckedCreateNestedManyWithoutRoomInput
+    lostItems?: LostItemUncheckedCreateNestedManyWithoutRoomInput
   }
 
   export type RoomCreateOrConnectWithoutBookingsInput = {
@@ -48016,6 +51106,9 @@ export namespace Prisma {
     plan?: $Enums.SubscriptionPlan
     features?: PropertyCreatefeaturesInput | string[]
     planExpiresAt?: Date | string | null
+    latitude?: number | null
+    longitude?: number | null
+    ranking?: number
     policies?: InputJsonValue | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -48033,6 +51126,7 @@ export namespace Prisma {
     systemNodes?: SystemNodeCreateNestedManyWithoutPropertyInput
     systemAlerts?: SystemAlertCreateNestedManyWithoutPropertyInput
     supportTickets?: SupportTicketCreateNestedManyWithoutPropertyInput
+    lostItems?: LostItemCreateNestedManyWithoutPropertyInput
   }
 
   export type PropertyUncheckedCreateWithoutBookingsInput = {
@@ -48051,6 +51145,9 @@ export namespace Prisma {
     plan?: $Enums.SubscriptionPlan
     features?: PropertyCreatefeaturesInput | string[]
     planExpiresAt?: Date | string | null
+    latitude?: number | null
+    longitude?: number | null
+    ranking?: number
     policies?: InputJsonValue | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -48069,11 +51166,75 @@ export namespace Prisma {
     systemNodes?: SystemNodeUncheckedCreateNestedManyWithoutPropertyInput
     systemAlerts?: SystemAlertUncheckedCreateNestedManyWithoutPropertyInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutPropertyInput
+    lostItems?: LostItemUncheckedCreateNestedManyWithoutPropertyInput
   }
 
   export type PropertyCreateOrConnectWithoutBookingsInput = {
     where: PropertyWhereUniqueInput
     create: XOR<PropertyCreateWithoutBookingsInput, PropertyUncheckedCreateWithoutBookingsInput>
+  }
+
+  export type LostItemCreateWithoutBookingInput = {
+    id?: string
+    name: string
+    description?: string | null
+    category: string
+    status?: string
+    foundDate?: Date | string
+    location?: string | null
+    image?: string | null
+    evidenceImages?: LostItemCreateevidenceImagesInput | string[]
+    caseNotes?: InputJsonValue | null
+    claimerName?: string | null
+    claimerPhone?: string | null
+    claimedAt?: Date | string | null
+    claimNotes?: string | null
+    whatsappSent?: boolean
+    whatsappSentAt?: Date | string | null
+    whatsappStatus?: string | null
+    whatsappMessageId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    property: PropertyCreateNestedOneWithoutLostItemsInput
+    room?: RoomCreateNestedOneWithoutLostItemsInput
+    reportedBy?: StaffCreateNestedOneWithoutLostItemsInput
+    guest?: GuestCreateNestedOneWithoutLostItemsInput
+  }
+
+  export type LostItemUncheckedCreateWithoutBookingInput = {
+    id?: string
+    propertyId: string
+    name: string
+    description?: string | null
+    category: string
+    status?: string
+    foundDate?: Date | string
+    location?: string | null
+    roomId?: string | null
+    reportedById?: string | null
+    guestId?: string | null
+    image?: string | null
+    evidenceImages?: LostItemCreateevidenceImagesInput | string[]
+    caseNotes?: InputJsonValue | null
+    claimerName?: string | null
+    claimerPhone?: string | null
+    claimedAt?: Date | string | null
+    claimNotes?: string | null
+    whatsappSent?: boolean
+    whatsappSentAt?: Date | string | null
+    whatsappStatus?: string | null
+    whatsappMessageId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type LostItemCreateOrConnectWithoutBookingInput = {
+    where: LostItemWhereUniqueInput
+    create: XOR<LostItemCreateWithoutBookingInput, LostItemUncheckedCreateWithoutBookingInput>
+  }
+
+  export type LostItemCreateManyBookingInputEnvelope = {
+    data: LostItemCreateManyBookingInput | LostItemCreateManyBookingInput[]
   }
 
   export type GuestUpsertWithoutBookingsInput = {
@@ -48096,6 +51257,7 @@ export namespace Prisma {
     idDocumentFront?: NullableStringFieldUpdateOperationsInput | string | null
     idDocumentBack?: NullableStringFieldUpdateOperationsInput | string | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
+    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     checkInStatus?: EnumCheckInStatusFieldUpdateOperationsInput | $Enums.CheckInStatus
     checkInCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     language?: StringFieldUpdateOperationsInput | string
@@ -48105,6 +51267,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutGuestNestedInput
     ratings?: RatingUpdateManyWithoutGuestNestedInput
     favorites?: FavoriteUpdateManyWithoutGuestNestedInput
+    lostItems?: LostItemUpdateManyWithoutGuestNestedInput
   }
 
   export type GuestUncheckedUpdateWithoutBookingsInput = {
@@ -48116,6 +51279,7 @@ export namespace Prisma {
     idDocumentFront?: NullableStringFieldUpdateOperationsInput | string | null
     idDocumentBack?: NullableStringFieldUpdateOperationsInput | string | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
+    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     checkInStatus?: EnumCheckInStatusFieldUpdateOperationsInput | $Enums.CheckInStatus
     checkInCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     language?: StringFieldUpdateOperationsInput | string
@@ -48125,6 +51289,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutGuestNestedInput
     ratings?: RatingUncheckedUpdateManyWithoutGuestNestedInput
     favorites?: FavoriteUncheckedUpdateManyWithoutGuestNestedInput
+    lostItems?: LostItemUncheckedUpdateManyWithoutGuestNestedInput
   }
 
   export type RoomUpsertWithoutBookingsInput = {
@@ -48154,6 +51319,7 @@ export namespace Prisma {
     property?: PropertyUpdateOneRequiredWithoutRoomsNestedInput
     serviceRequests?: ServiceRequestUpdateManyWithoutRoomNestedInput
     favorites?: FavoriteUpdateManyWithoutRoomNestedInput
+    lostItems?: LostItemUpdateManyWithoutRoomNestedInput
   }
 
   export type RoomUncheckedUpdateWithoutBookingsInput = {
@@ -48172,6 +51338,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     serviceRequests?: ServiceRequestUncheckedUpdateManyWithoutRoomNestedInput
     favorites?: FavoriteUncheckedUpdateManyWithoutRoomNestedInput
+    lostItems?: LostItemUncheckedUpdateManyWithoutRoomNestedInput
   }
 
   export type PropertyUpsertWithoutBookingsInput = {
@@ -48200,6 +51367,9 @@ export namespace Prisma {
     plan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
     features?: PropertyUpdatefeaturesInput | string[]
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    ranking?: IntFieldUpdateOperationsInput | number
     policies?: InputJsonValue | InputJsonValue | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -48217,6 +51387,7 @@ export namespace Prisma {
     systemNodes?: SystemNodeUpdateManyWithoutPropertyNestedInput
     systemAlerts?: SystemAlertUpdateManyWithoutPropertyNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutPropertyNestedInput
+    lostItems?: LostItemUpdateManyWithoutPropertyNestedInput
   }
 
   export type PropertyUncheckedUpdateWithoutBookingsInput = {
@@ -48234,6 +51405,9 @@ export namespace Prisma {
     plan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
     features?: PropertyUpdatefeaturesInput | string[]
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    ranking?: IntFieldUpdateOperationsInput | number
     policies?: InputJsonValue | InputJsonValue | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -48252,6 +51426,23 @@ export namespace Prisma {
     systemNodes?: SystemNodeUncheckedUpdateManyWithoutPropertyNestedInput
     systemAlerts?: SystemAlertUncheckedUpdateManyWithoutPropertyNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutPropertyNestedInput
+    lostItems?: LostItemUncheckedUpdateManyWithoutPropertyNestedInput
+  }
+
+  export type LostItemUpsertWithWhereUniqueWithoutBookingInput = {
+    where: LostItemWhereUniqueInput
+    update: XOR<LostItemUpdateWithoutBookingInput, LostItemUncheckedUpdateWithoutBookingInput>
+    create: XOR<LostItemCreateWithoutBookingInput, LostItemUncheckedCreateWithoutBookingInput>
+  }
+
+  export type LostItemUpdateWithWhereUniqueWithoutBookingInput = {
+    where: LostItemWhereUniqueInput
+    data: XOR<LostItemUpdateWithoutBookingInput, LostItemUncheckedUpdateWithoutBookingInput>
+  }
+
+  export type LostItemUpdateManyWithWhereWithoutBookingInput = {
+    where: LostItemScalarWhereInput
+    data: XOR<LostItemUpdateManyMutationInput, LostItemUncheckedUpdateManyWithoutBookingInput>
   }
 
   export type GuestCreateWithoutServiceRequestsInput = {
@@ -48264,6 +51455,7 @@ export namespace Prisma {
     idDocumentFront?: string | null
     idDocumentBack?: string | null
     address?: string | null
+    dateOfBirth?: Date | string | null
     checkInStatus?: $Enums.CheckInStatus
     checkInCompletedAt?: Date | string | null
     language?: string
@@ -48273,6 +51465,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketCreateNestedManyWithoutGuestInput
     ratings?: RatingCreateNestedManyWithoutGuestInput
     favorites?: FavoriteCreateNestedManyWithoutGuestInput
+    lostItems?: LostItemCreateNestedManyWithoutGuestInput
   }
 
   export type GuestUncheckedCreateWithoutServiceRequestsInput = {
@@ -48285,6 +51478,7 @@ export namespace Prisma {
     idDocumentFront?: string | null
     idDocumentBack?: string | null
     address?: string | null
+    dateOfBirth?: Date | string | null
     checkInStatus?: $Enums.CheckInStatus
     checkInCompletedAt?: Date | string | null
     language?: string
@@ -48294,6 +51488,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutGuestInput
     ratings?: RatingUncheckedCreateNestedManyWithoutGuestInput
     favorites?: FavoriteUncheckedCreateNestedManyWithoutGuestInput
+    lostItems?: LostItemUncheckedCreateNestedManyWithoutGuestInput
   }
 
   export type GuestCreateOrConnectWithoutServiceRequestsInput = {
@@ -48318,6 +51513,7 @@ export namespace Prisma {
     property: PropertyCreateNestedOneWithoutRoomsInput
     bookings?: BookingCreateNestedManyWithoutRoomInput
     favorites?: FavoriteCreateNestedManyWithoutRoomInput
+    lostItems?: LostItemCreateNestedManyWithoutRoomInput
   }
 
   export type RoomUncheckedCreateWithoutServiceRequestsInput = {
@@ -48337,6 +51533,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     bookings?: BookingUncheckedCreateNestedManyWithoutRoomInput
     favorites?: FavoriteUncheckedCreateNestedManyWithoutRoomInput
+    lostItems?: LostItemUncheckedCreateNestedManyWithoutRoomInput
   }
 
   export type RoomCreateOrConnectWithoutServiceRequestsInput = {
@@ -48360,6 +51557,9 @@ export namespace Prisma {
     plan?: $Enums.SubscriptionPlan
     features?: PropertyCreatefeaturesInput | string[]
     planExpiresAt?: Date | string | null
+    latitude?: number | null
+    longitude?: number | null
+    ranking?: number
     policies?: InputJsonValue | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -48377,6 +51577,7 @@ export namespace Prisma {
     systemNodes?: SystemNodeCreateNestedManyWithoutPropertyInput
     systemAlerts?: SystemAlertCreateNestedManyWithoutPropertyInput
     supportTickets?: SupportTicketCreateNestedManyWithoutPropertyInput
+    lostItems?: LostItemCreateNestedManyWithoutPropertyInput
   }
 
   export type PropertyUncheckedCreateWithoutServiceRequestsInput = {
@@ -48395,6 +51596,9 @@ export namespace Prisma {
     plan?: $Enums.SubscriptionPlan
     features?: PropertyCreatefeaturesInput | string[]
     planExpiresAt?: Date | string | null
+    latitude?: number | null
+    longitude?: number | null
+    ranking?: number
     policies?: InputJsonValue | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -48413,6 +51617,7 @@ export namespace Prisma {
     systemNodes?: SystemNodeUncheckedCreateNestedManyWithoutPropertyInput
     systemAlerts?: SystemAlertUncheckedCreateNestedManyWithoutPropertyInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutPropertyInput
+    lostItems?: LostItemUncheckedCreateNestedManyWithoutPropertyInput
   }
 
   export type PropertyCreateOrConnectWithoutServiceRequestsInput = {
@@ -48427,12 +51632,16 @@ export namespace Prisma {
     dateOfJoining?: Date | string
     department: $Enums.Department
     designation: string
+    contractType?: string | null
+    workShift?: string | null
+    managerName?: string | null
     baseSalary: number
     bankName?: string | null
     accountNumber?: string | null
     ifscCode?: string | null
     emergencyContactName?: string | null
     emergencyContactPhone?: string | null
+    address?: string | null
     profilePhoto?: string | null
     documents?: InputJsonValue | null
     annualLeaveBalance?: number
@@ -48446,6 +51655,7 @@ export namespace Prisma {
     leaveRequests?: LeaveRequestCreateNestedManyWithoutStaffInput
     payrolls?: PayrollCreateNestedManyWithoutStaffInput
     performanceScores?: PerformanceScoreCreateNestedManyWithoutStaffInput
+    lostItems?: LostItemCreateNestedManyWithoutReportedByInput
   }
 
   export type StaffUncheckedCreateWithoutServiceRequestsInput = {
@@ -48457,12 +51667,16 @@ export namespace Prisma {
     dateOfJoining?: Date | string
     department: $Enums.Department
     designation: string
+    contractType?: string | null
+    workShift?: string | null
+    managerName?: string | null
     baseSalary: number
     bankName?: string | null
     accountNumber?: string | null
     ifscCode?: string | null
     emergencyContactName?: string | null
     emergencyContactPhone?: string | null
+    address?: string | null
     profilePhoto?: string | null
     documents?: InputJsonValue | null
     annualLeaveBalance?: number
@@ -48474,6 +51688,7 @@ export namespace Prisma {
     leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutStaffInput
     payrolls?: PayrollUncheckedCreateNestedManyWithoutStaffInput
     performanceScores?: PerformanceScoreUncheckedCreateNestedManyWithoutStaffInput
+    lostItems?: LostItemUncheckedCreateNestedManyWithoutReportedByInput
   }
 
   export type StaffCreateOrConnectWithoutServiceRequestsInput = {
@@ -48559,6 +51774,7 @@ export namespace Prisma {
     idDocumentFront?: NullableStringFieldUpdateOperationsInput | string | null
     idDocumentBack?: NullableStringFieldUpdateOperationsInput | string | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
+    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     checkInStatus?: EnumCheckInStatusFieldUpdateOperationsInput | $Enums.CheckInStatus
     checkInCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     language?: StringFieldUpdateOperationsInput | string
@@ -48568,6 +51784,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUpdateManyWithoutGuestNestedInput
     ratings?: RatingUpdateManyWithoutGuestNestedInput
     favorites?: FavoriteUpdateManyWithoutGuestNestedInput
+    lostItems?: LostItemUpdateManyWithoutGuestNestedInput
   }
 
   export type GuestUncheckedUpdateWithoutServiceRequestsInput = {
@@ -48579,6 +51796,7 @@ export namespace Prisma {
     idDocumentFront?: NullableStringFieldUpdateOperationsInput | string | null
     idDocumentBack?: NullableStringFieldUpdateOperationsInput | string | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
+    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     checkInStatus?: EnumCheckInStatusFieldUpdateOperationsInput | $Enums.CheckInStatus
     checkInCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     language?: StringFieldUpdateOperationsInput | string
@@ -48588,6 +51806,7 @@ export namespace Prisma {
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutGuestNestedInput
     ratings?: RatingUncheckedUpdateManyWithoutGuestNestedInput
     favorites?: FavoriteUncheckedUpdateManyWithoutGuestNestedInput
+    lostItems?: LostItemUncheckedUpdateManyWithoutGuestNestedInput
   }
 
   export type RoomUpsertWithoutServiceRequestsInput = {
@@ -48617,6 +51836,7 @@ export namespace Prisma {
     property?: PropertyUpdateOneRequiredWithoutRoomsNestedInput
     bookings?: BookingUpdateManyWithoutRoomNestedInput
     favorites?: FavoriteUpdateManyWithoutRoomNestedInput
+    lostItems?: LostItemUpdateManyWithoutRoomNestedInput
   }
 
   export type RoomUncheckedUpdateWithoutServiceRequestsInput = {
@@ -48635,6 +51855,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bookings?: BookingUncheckedUpdateManyWithoutRoomNestedInput
     favorites?: FavoriteUncheckedUpdateManyWithoutRoomNestedInput
+    lostItems?: LostItemUncheckedUpdateManyWithoutRoomNestedInput
   }
 
   export type PropertyUpsertWithoutServiceRequestsInput = {
@@ -48663,6 +51884,9 @@ export namespace Prisma {
     plan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
     features?: PropertyUpdatefeaturesInput | string[]
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    ranking?: IntFieldUpdateOperationsInput | number
     policies?: InputJsonValue | InputJsonValue | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -48680,6 +51904,7 @@ export namespace Prisma {
     systemNodes?: SystemNodeUpdateManyWithoutPropertyNestedInput
     systemAlerts?: SystemAlertUpdateManyWithoutPropertyNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutPropertyNestedInput
+    lostItems?: LostItemUpdateManyWithoutPropertyNestedInput
   }
 
   export type PropertyUncheckedUpdateWithoutServiceRequestsInput = {
@@ -48697,6 +51922,9 @@ export namespace Prisma {
     plan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
     features?: PropertyUpdatefeaturesInput | string[]
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    ranking?: IntFieldUpdateOperationsInput | number
     policies?: InputJsonValue | InputJsonValue | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -48715,6 +51943,7 @@ export namespace Prisma {
     systemNodes?: SystemNodeUncheckedUpdateManyWithoutPropertyNestedInput
     systemAlerts?: SystemAlertUncheckedUpdateManyWithoutPropertyNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutPropertyNestedInput
+    lostItems?: LostItemUncheckedUpdateManyWithoutPropertyNestedInput
   }
 
   export type StaffUpsertWithoutServiceRequestsInput = {
@@ -48734,12 +51963,16 @@ export namespace Prisma {
     dateOfJoining?: DateTimeFieldUpdateOperationsInput | Date | string
     department?: EnumDepartmentFieldUpdateOperationsInput | $Enums.Department
     designation?: StringFieldUpdateOperationsInput | string
+    contractType?: NullableStringFieldUpdateOperationsInput | string | null
+    workShift?: NullableStringFieldUpdateOperationsInput | string | null
+    managerName?: NullableStringFieldUpdateOperationsInput | string | null
     baseSalary?: FloatFieldUpdateOperationsInput | number
     bankName?: NullableStringFieldUpdateOperationsInput | string | null
     accountNumber?: NullableStringFieldUpdateOperationsInput | string | null
     ifscCode?: NullableStringFieldUpdateOperationsInput | string | null
     emergencyContactName?: NullableStringFieldUpdateOperationsInput | string | null
     emergencyContactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
     profilePhoto?: NullableStringFieldUpdateOperationsInput | string | null
     documents?: InputJsonValue | InputJsonValue | null
     annualLeaveBalance?: IntFieldUpdateOperationsInput | number
@@ -48753,6 +51986,7 @@ export namespace Prisma {
     leaveRequests?: LeaveRequestUpdateManyWithoutStaffNestedInput
     payrolls?: PayrollUpdateManyWithoutStaffNestedInput
     performanceScores?: PerformanceScoreUpdateManyWithoutStaffNestedInput
+    lostItems?: LostItemUpdateManyWithoutReportedByNestedInput
   }
 
   export type StaffUncheckedUpdateWithoutServiceRequestsInput = {
@@ -48763,12 +51997,16 @@ export namespace Prisma {
     dateOfJoining?: DateTimeFieldUpdateOperationsInput | Date | string
     department?: EnumDepartmentFieldUpdateOperationsInput | $Enums.Department
     designation?: StringFieldUpdateOperationsInput | string
+    contractType?: NullableStringFieldUpdateOperationsInput | string | null
+    workShift?: NullableStringFieldUpdateOperationsInput | string | null
+    managerName?: NullableStringFieldUpdateOperationsInput | string | null
     baseSalary?: FloatFieldUpdateOperationsInput | number
     bankName?: NullableStringFieldUpdateOperationsInput | string | null
     accountNumber?: NullableStringFieldUpdateOperationsInput | string | null
     ifscCode?: NullableStringFieldUpdateOperationsInput | string | null
     emergencyContactName?: NullableStringFieldUpdateOperationsInput | string | null
     emergencyContactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
     profilePhoto?: NullableStringFieldUpdateOperationsInput | string | null
     documents?: InputJsonValue | InputJsonValue | null
     annualLeaveBalance?: IntFieldUpdateOperationsInput | number
@@ -48780,6 +52018,7 @@ export namespace Prisma {
     leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutStaffNestedInput
     payrolls?: PayrollUncheckedUpdateManyWithoutStaffNestedInput
     performanceScores?: PerformanceScoreUncheckedUpdateManyWithoutStaffNestedInput
+    lostItems?: LostItemUncheckedUpdateManyWithoutReportedByNestedInput
   }
 
   export type RatingUpsertWithWhereUniqueWithoutServiceRequestInput = {
@@ -48837,6 +52076,7 @@ export namespace Prisma {
     password: string
     role: $Enums.UserRole
     status?: $Enums.UserStatus
+    dndEnabled?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     myWorkplace?: PropertyCreateNestedOneWithoutWorkerListInput
@@ -48851,6 +52091,7 @@ export namespace Prisma {
     password: string
     role: $Enums.UserRole
     status?: $Enums.UserStatus
+    dndEnabled?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     workplaceId?: string | null
@@ -48879,6 +52120,9 @@ export namespace Prisma {
     plan?: $Enums.SubscriptionPlan
     features?: PropertyCreatefeaturesInput | string[]
     planExpiresAt?: Date | string | null
+    latitude?: number | null
+    longitude?: number | null
+    ranking?: number
     policies?: InputJsonValue | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -48896,6 +52140,7 @@ export namespace Prisma {
     systemNodes?: SystemNodeCreateNestedManyWithoutPropertyInput
     systemAlerts?: SystemAlertCreateNestedManyWithoutPropertyInput
     supportTickets?: SupportTicketCreateNestedManyWithoutPropertyInput
+    lostItems?: LostItemCreateNestedManyWithoutPropertyInput
   }
 
   export type PropertyUncheckedCreateWithoutStaffInput = {
@@ -48914,6 +52159,9 @@ export namespace Prisma {
     plan?: $Enums.SubscriptionPlan
     features?: PropertyCreatefeaturesInput | string[]
     planExpiresAt?: Date | string | null
+    latitude?: number | null
+    longitude?: number | null
+    ranking?: number
     policies?: InputJsonValue | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -48932,6 +52180,7 @@ export namespace Prisma {
     systemNodes?: SystemNodeUncheckedCreateNestedManyWithoutPropertyInput
     systemAlerts?: SystemAlertUncheckedCreateNestedManyWithoutPropertyInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutPropertyInput
+    lostItems?: LostItemUncheckedCreateNestedManyWithoutPropertyInput
   }
 
   export type PropertyCreateOrConnectWithoutStaffInput = {
@@ -49154,6 +52403,69 @@ export namespace Prisma {
     data: PerformanceScoreCreateManyStaffInput | PerformanceScoreCreateManyStaffInput[]
   }
 
+  export type LostItemCreateWithoutReportedByInput = {
+    id?: string
+    name: string
+    description?: string | null
+    category: string
+    status?: string
+    foundDate?: Date | string
+    location?: string | null
+    image?: string | null
+    evidenceImages?: LostItemCreateevidenceImagesInput | string[]
+    caseNotes?: InputJsonValue | null
+    claimerName?: string | null
+    claimerPhone?: string | null
+    claimedAt?: Date | string | null
+    claimNotes?: string | null
+    whatsappSent?: boolean
+    whatsappSentAt?: Date | string | null
+    whatsappStatus?: string | null
+    whatsappMessageId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    property: PropertyCreateNestedOneWithoutLostItemsInput
+    room?: RoomCreateNestedOneWithoutLostItemsInput
+    guest?: GuestCreateNestedOneWithoutLostItemsInput
+    booking?: BookingCreateNestedOneWithoutLostItemsInput
+  }
+
+  export type LostItemUncheckedCreateWithoutReportedByInput = {
+    id?: string
+    propertyId: string
+    name: string
+    description?: string | null
+    category: string
+    status?: string
+    foundDate?: Date | string
+    location?: string | null
+    roomId?: string | null
+    guestId?: string | null
+    bookingId?: string | null
+    image?: string | null
+    evidenceImages?: LostItemCreateevidenceImagesInput | string[]
+    caseNotes?: InputJsonValue | null
+    claimerName?: string | null
+    claimerPhone?: string | null
+    claimedAt?: Date | string | null
+    claimNotes?: string | null
+    whatsappSent?: boolean
+    whatsappSentAt?: Date | string | null
+    whatsappStatus?: string | null
+    whatsappMessageId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type LostItemCreateOrConnectWithoutReportedByInput = {
+    where: LostItemWhereUniqueInput
+    create: XOR<LostItemCreateWithoutReportedByInput, LostItemUncheckedCreateWithoutReportedByInput>
+  }
+
+  export type LostItemCreateManyReportedByInputEnvelope = {
+    data: LostItemCreateManyReportedByInput | LostItemCreateManyReportedByInput[]
+  }
+
   export type UserUpsertWithoutStaffProfileInput = {
     update: XOR<UserUpdateWithoutStaffProfileInput, UserUncheckedUpdateWithoutStaffProfileInput>
     create: XOR<UserCreateWithoutStaffProfileInput, UserUncheckedCreateWithoutStaffProfileInput>
@@ -49172,6 +52484,7 @@ export namespace Prisma {
     password?: StringFieldUpdateOperationsInput | string
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    dndEnabled?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     myWorkplace?: PropertyUpdateOneWithoutWorkerListNestedInput
@@ -49185,6 +52498,7 @@ export namespace Prisma {
     password?: StringFieldUpdateOperationsInput | string
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    dndEnabled?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     workplaceId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -49218,6 +52532,9 @@ export namespace Prisma {
     plan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
     features?: PropertyUpdatefeaturesInput | string[]
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    ranking?: IntFieldUpdateOperationsInput | number
     policies?: InputJsonValue | InputJsonValue | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -49235,6 +52552,7 @@ export namespace Prisma {
     systemNodes?: SystemNodeUpdateManyWithoutPropertyNestedInput
     systemAlerts?: SystemAlertUpdateManyWithoutPropertyNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutPropertyNestedInput
+    lostItems?: LostItemUpdateManyWithoutPropertyNestedInput
   }
 
   export type PropertyUncheckedUpdateWithoutStaffInput = {
@@ -49252,6 +52570,9 @@ export namespace Prisma {
     plan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
     features?: PropertyUpdatefeaturesInput | string[]
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    ranking?: IntFieldUpdateOperationsInput | number
     policies?: InputJsonValue | InputJsonValue | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -49270,6 +52591,7 @@ export namespace Prisma {
     systemNodes?: SystemNodeUncheckedUpdateManyWithoutPropertyNestedInput
     systemAlerts?: SystemAlertUncheckedUpdateManyWithoutPropertyNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutPropertyNestedInput
+    lostItems?: LostItemUncheckedUpdateManyWithoutPropertyNestedInput
   }
 
   export type AttendanceUpsertWithWhereUniqueWithoutStaffInput = {
@@ -49429,6 +52751,22 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"PerformanceScore"> | Date | string
   }
 
+  export type LostItemUpsertWithWhereUniqueWithoutReportedByInput = {
+    where: LostItemWhereUniqueInput
+    update: XOR<LostItemUpdateWithoutReportedByInput, LostItemUncheckedUpdateWithoutReportedByInput>
+    create: XOR<LostItemCreateWithoutReportedByInput, LostItemUncheckedCreateWithoutReportedByInput>
+  }
+
+  export type LostItemUpdateWithWhereUniqueWithoutReportedByInput = {
+    where: LostItemWhereUniqueInput
+    data: XOR<LostItemUpdateWithoutReportedByInput, LostItemUncheckedUpdateWithoutReportedByInput>
+  }
+
+  export type LostItemUpdateManyWithWhereWithoutReportedByInput = {
+    where: LostItemScalarWhereInput
+    data: XOR<LostItemUpdateManyMutationInput, LostItemUncheckedUpdateManyWithoutReportedByInput>
+  }
+
   export type StaffCreateWithoutAttendancesInput = {
     id?: string
     employeeId: string
@@ -49436,12 +52774,16 @@ export namespace Prisma {
     dateOfJoining?: Date | string
     department: $Enums.Department
     designation: string
+    contractType?: string | null
+    workShift?: string | null
+    managerName?: string | null
     baseSalary: number
     bankName?: string | null
     accountNumber?: string | null
     ifscCode?: string | null
     emergencyContactName?: string | null
     emergencyContactPhone?: string | null
+    address?: string | null
     profilePhoto?: string | null
     documents?: InputJsonValue | null
     annualLeaveBalance?: number
@@ -49455,6 +52797,7 @@ export namespace Prisma {
     serviceRequests?: ServiceRequestCreateNestedManyWithoutAssignedToInput
     payrolls?: PayrollCreateNestedManyWithoutStaffInput
     performanceScores?: PerformanceScoreCreateNestedManyWithoutStaffInput
+    lostItems?: LostItemCreateNestedManyWithoutReportedByInput
   }
 
   export type StaffUncheckedCreateWithoutAttendancesInput = {
@@ -49466,12 +52809,16 @@ export namespace Prisma {
     dateOfJoining?: Date | string
     department: $Enums.Department
     designation: string
+    contractType?: string | null
+    workShift?: string | null
+    managerName?: string | null
     baseSalary: number
     bankName?: string | null
     accountNumber?: string | null
     ifscCode?: string | null
     emergencyContactName?: string | null
     emergencyContactPhone?: string | null
+    address?: string | null
     profilePhoto?: string | null
     documents?: InputJsonValue | null
     annualLeaveBalance?: number
@@ -49483,6 +52830,7 @@ export namespace Prisma {
     serviceRequests?: ServiceRequestUncheckedCreateNestedManyWithoutAssignedToInput
     payrolls?: PayrollUncheckedCreateNestedManyWithoutStaffInput
     performanceScores?: PerformanceScoreUncheckedCreateNestedManyWithoutStaffInput
+    lostItems?: LostItemUncheckedCreateNestedManyWithoutReportedByInput
   }
 
   export type StaffCreateOrConnectWithoutAttendancesInput = {
@@ -49507,12 +52855,16 @@ export namespace Prisma {
     dateOfJoining?: DateTimeFieldUpdateOperationsInput | Date | string
     department?: EnumDepartmentFieldUpdateOperationsInput | $Enums.Department
     designation?: StringFieldUpdateOperationsInput | string
+    contractType?: NullableStringFieldUpdateOperationsInput | string | null
+    workShift?: NullableStringFieldUpdateOperationsInput | string | null
+    managerName?: NullableStringFieldUpdateOperationsInput | string | null
     baseSalary?: FloatFieldUpdateOperationsInput | number
     bankName?: NullableStringFieldUpdateOperationsInput | string | null
     accountNumber?: NullableStringFieldUpdateOperationsInput | string | null
     ifscCode?: NullableStringFieldUpdateOperationsInput | string | null
     emergencyContactName?: NullableStringFieldUpdateOperationsInput | string | null
     emergencyContactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
     profilePhoto?: NullableStringFieldUpdateOperationsInput | string | null
     documents?: InputJsonValue | InputJsonValue | null
     annualLeaveBalance?: IntFieldUpdateOperationsInput | number
@@ -49526,6 +52878,7 @@ export namespace Prisma {
     serviceRequests?: ServiceRequestUpdateManyWithoutAssignedToNestedInput
     payrolls?: PayrollUpdateManyWithoutStaffNestedInput
     performanceScores?: PerformanceScoreUpdateManyWithoutStaffNestedInput
+    lostItems?: LostItemUpdateManyWithoutReportedByNestedInput
   }
 
   export type StaffUncheckedUpdateWithoutAttendancesInput = {
@@ -49536,12 +52889,16 @@ export namespace Prisma {
     dateOfJoining?: DateTimeFieldUpdateOperationsInput | Date | string
     department?: EnumDepartmentFieldUpdateOperationsInput | $Enums.Department
     designation?: StringFieldUpdateOperationsInput | string
+    contractType?: NullableStringFieldUpdateOperationsInput | string | null
+    workShift?: NullableStringFieldUpdateOperationsInput | string | null
+    managerName?: NullableStringFieldUpdateOperationsInput | string | null
     baseSalary?: FloatFieldUpdateOperationsInput | number
     bankName?: NullableStringFieldUpdateOperationsInput | string | null
     accountNumber?: NullableStringFieldUpdateOperationsInput | string | null
     ifscCode?: NullableStringFieldUpdateOperationsInput | string | null
     emergencyContactName?: NullableStringFieldUpdateOperationsInput | string | null
     emergencyContactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
     profilePhoto?: NullableStringFieldUpdateOperationsInput | string | null
     documents?: InputJsonValue | InputJsonValue | null
     annualLeaveBalance?: IntFieldUpdateOperationsInput | number
@@ -49553,6 +52910,7 @@ export namespace Prisma {
     serviceRequests?: ServiceRequestUncheckedUpdateManyWithoutAssignedToNestedInput
     payrolls?: PayrollUncheckedUpdateManyWithoutStaffNestedInput
     performanceScores?: PerformanceScoreUncheckedUpdateManyWithoutStaffNestedInput
+    lostItems?: LostItemUncheckedUpdateManyWithoutReportedByNestedInput
   }
 
   export type StaffCreateWithoutLeaveRequestsInput = {
@@ -49562,12 +52920,16 @@ export namespace Prisma {
     dateOfJoining?: Date | string
     department: $Enums.Department
     designation: string
+    contractType?: string | null
+    workShift?: string | null
+    managerName?: string | null
     baseSalary: number
     bankName?: string | null
     accountNumber?: string | null
     ifscCode?: string | null
     emergencyContactName?: string | null
     emergencyContactPhone?: string | null
+    address?: string | null
     profilePhoto?: string | null
     documents?: InputJsonValue | null
     annualLeaveBalance?: number
@@ -49581,6 +52943,7 @@ export namespace Prisma {
     serviceRequests?: ServiceRequestCreateNestedManyWithoutAssignedToInput
     payrolls?: PayrollCreateNestedManyWithoutStaffInput
     performanceScores?: PerformanceScoreCreateNestedManyWithoutStaffInput
+    lostItems?: LostItemCreateNestedManyWithoutReportedByInput
   }
 
   export type StaffUncheckedCreateWithoutLeaveRequestsInput = {
@@ -49592,12 +52955,16 @@ export namespace Prisma {
     dateOfJoining?: Date | string
     department: $Enums.Department
     designation: string
+    contractType?: string | null
+    workShift?: string | null
+    managerName?: string | null
     baseSalary: number
     bankName?: string | null
     accountNumber?: string | null
     ifscCode?: string | null
     emergencyContactName?: string | null
     emergencyContactPhone?: string | null
+    address?: string | null
     profilePhoto?: string | null
     documents?: InputJsonValue | null
     annualLeaveBalance?: number
@@ -49609,6 +52976,7 @@ export namespace Prisma {
     serviceRequests?: ServiceRequestUncheckedCreateNestedManyWithoutAssignedToInput
     payrolls?: PayrollUncheckedCreateNestedManyWithoutStaffInput
     performanceScores?: PerformanceScoreUncheckedCreateNestedManyWithoutStaffInput
+    lostItems?: LostItemUncheckedCreateNestedManyWithoutReportedByInput
   }
 
   export type StaffCreateOrConnectWithoutLeaveRequestsInput = {
@@ -49633,12 +53001,16 @@ export namespace Prisma {
     dateOfJoining?: DateTimeFieldUpdateOperationsInput | Date | string
     department?: EnumDepartmentFieldUpdateOperationsInput | $Enums.Department
     designation?: StringFieldUpdateOperationsInput | string
+    contractType?: NullableStringFieldUpdateOperationsInput | string | null
+    workShift?: NullableStringFieldUpdateOperationsInput | string | null
+    managerName?: NullableStringFieldUpdateOperationsInput | string | null
     baseSalary?: FloatFieldUpdateOperationsInput | number
     bankName?: NullableStringFieldUpdateOperationsInput | string | null
     accountNumber?: NullableStringFieldUpdateOperationsInput | string | null
     ifscCode?: NullableStringFieldUpdateOperationsInput | string | null
     emergencyContactName?: NullableStringFieldUpdateOperationsInput | string | null
     emergencyContactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
     profilePhoto?: NullableStringFieldUpdateOperationsInput | string | null
     documents?: InputJsonValue | InputJsonValue | null
     annualLeaveBalance?: IntFieldUpdateOperationsInput | number
@@ -49652,6 +53024,7 @@ export namespace Prisma {
     serviceRequests?: ServiceRequestUpdateManyWithoutAssignedToNestedInput
     payrolls?: PayrollUpdateManyWithoutStaffNestedInput
     performanceScores?: PerformanceScoreUpdateManyWithoutStaffNestedInput
+    lostItems?: LostItemUpdateManyWithoutReportedByNestedInput
   }
 
   export type StaffUncheckedUpdateWithoutLeaveRequestsInput = {
@@ -49662,12 +53035,16 @@ export namespace Prisma {
     dateOfJoining?: DateTimeFieldUpdateOperationsInput | Date | string
     department?: EnumDepartmentFieldUpdateOperationsInput | $Enums.Department
     designation?: StringFieldUpdateOperationsInput | string
+    contractType?: NullableStringFieldUpdateOperationsInput | string | null
+    workShift?: NullableStringFieldUpdateOperationsInput | string | null
+    managerName?: NullableStringFieldUpdateOperationsInput | string | null
     baseSalary?: FloatFieldUpdateOperationsInput | number
     bankName?: NullableStringFieldUpdateOperationsInput | string | null
     accountNumber?: NullableStringFieldUpdateOperationsInput | string | null
     ifscCode?: NullableStringFieldUpdateOperationsInput | string | null
     emergencyContactName?: NullableStringFieldUpdateOperationsInput | string | null
     emergencyContactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
     profilePhoto?: NullableStringFieldUpdateOperationsInput | string | null
     documents?: InputJsonValue | InputJsonValue | null
     annualLeaveBalance?: IntFieldUpdateOperationsInput | number
@@ -49679,6 +53056,7 @@ export namespace Prisma {
     serviceRequests?: ServiceRequestUncheckedUpdateManyWithoutAssignedToNestedInput
     payrolls?: PayrollUncheckedUpdateManyWithoutStaffNestedInput
     performanceScores?: PerformanceScoreUncheckedUpdateManyWithoutStaffNestedInput
+    lostItems?: LostItemUncheckedUpdateManyWithoutReportedByNestedInput
   }
 
   export type StaffCreateWithoutPayrollsInput = {
@@ -49688,12 +53066,16 @@ export namespace Prisma {
     dateOfJoining?: Date | string
     department: $Enums.Department
     designation: string
+    contractType?: string | null
+    workShift?: string | null
+    managerName?: string | null
     baseSalary: number
     bankName?: string | null
     accountNumber?: string | null
     ifscCode?: string | null
     emergencyContactName?: string | null
     emergencyContactPhone?: string | null
+    address?: string | null
     profilePhoto?: string | null
     documents?: InputJsonValue | null
     annualLeaveBalance?: number
@@ -49707,6 +53089,7 @@ export namespace Prisma {
     leaveRequests?: LeaveRequestCreateNestedManyWithoutStaffInput
     serviceRequests?: ServiceRequestCreateNestedManyWithoutAssignedToInput
     performanceScores?: PerformanceScoreCreateNestedManyWithoutStaffInput
+    lostItems?: LostItemCreateNestedManyWithoutReportedByInput
   }
 
   export type StaffUncheckedCreateWithoutPayrollsInput = {
@@ -49718,12 +53101,16 @@ export namespace Prisma {
     dateOfJoining?: Date | string
     department: $Enums.Department
     designation: string
+    contractType?: string | null
+    workShift?: string | null
+    managerName?: string | null
     baseSalary: number
     bankName?: string | null
     accountNumber?: string | null
     ifscCode?: string | null
     emergencyContactName?: string | null
     emergencyContactPhone?: string | null
+    address?: string | null
     profilePhoto?: string | null
     documents?: InputJsonValue | null
     annualLeaveBalance?: number
@@ -49735,6 +53122,7 @@ export namespace Prisma {
     leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutStaffInput
     serviceRequests?: ServiceRequestUncheckedCreateNestedManyWithoutAssignedToInput
     performanceScores?: PerformanceScoreUncheckedCreateNestedManyWithoutStaffInput
+    lostItems?: LostItemUncheckedCreateNestedManyWithoutReportedByInput
   }
 
   export type StaffCreateOrConnectWithoutPayrollsInput = {
@@ -49759,12 +53147,16 @@ export namespace Prisma {
     dateOfJoining?: DateTimeFieldUpdateOperationsInput | Date | string
     department?: EnumDepartmentFieldUpdateOperationsInput | $Enums.Department
     designation?: StringFieldUpdateOperationsInput | string
+    contractType?: NullableStringFieldUpdateOperationsInput | string | null
+    workShift?: NullableStringFieldUpdateOperationsInput | string | null
+    managerName?: NullableStringFieldUpdateOperationsInput | string | null
     baseSalary?: FloatFieldUpdateOperationsInput | number
     bankName?: NullableStringFieldUpdateOperationsInput | string | null
     accountNumber?: NullableStringFieldUpdateOperationsInput | string | null
     ifscCode?: NullableStringFieldUpdateOperationsInput | string | null
     emergencyContactName?: NullableStringFieldUpdateOperationsInput | string | null
     emergencyContactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
     profilePhoto?: NullableStringFieldUpdateOperationsInput | string | null
     documents?: InputJsonValue | InputJsonValue | null
     annualLeaveBalance?: IntFieldUpdateOperationsInput | number
@@ -49778,6 +53170,7 @@ export namespace Prisma {
     leaveRequests?: LeaveRequestUpdateManyWithoutStaffNestedInput
     serviceRequests?: ServiceRequestUpdateManyWithoutAssignedToNestedInput
     performanceScores?: PerformanceScoreUpdateManyWithoutStaffNestedInput
+    lostItems?: LostItemUpdateManyWithoutReportedByNestedInput
   }
 
   export type StaffUncheckedUpdateWithoutPayrollsInput = {
@@ -49788,12 +53181,16 @@ export namespace Prisma {
     dateOfJoining?: DateTimeFieldUpdateOperationsInput | Date | string
     department?: EnumDepartmentFieldUpdateOperationsInput | $Enums.Department
     designation?: StringFieldUpdateOperationsInput | string
+    contractType?: NullableStringFieldUpdateOperationsInput | string | null
+    workShift?: NullableStringFieldUpdateOperationsInput | string | null
+    managerName?: NullableStringFieldUpdateOperationsInput | string | null
     baseSalary?: FloatFieldUpdateOperationsInput | number
     bankName?: NullableStringFieldUpdateOperationsInput | string | null
     accountNumber?: NullableStringFieldUpdateOperationsInput | string | null
     ifscCode?: NullableStringFieldUpdateOperationsInput | string | null
     emergencyContactName?: NullableStringFieldUpdateOperationsInput | string | null
     emergencyContactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
     profilePhoto?: NullableStringFieldUpdateOperationsInput | string | null
     documents?: InputJsonValue | InputJsonValue | null
     annualLeaveBalance?: IntFieldUpdateOperationsInput | number
@@ -49805,6 +53202,7 @@ export namespace Prisma {
     leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutStaffNestedInput
     serviceRequests?: ServiceRequestUncheckedUpdateManyWithoutAssignedToNestedInput
     performanceScores?: PerformanceScoreUncheckedUpdateManyWithoutStaffNestedInput
+    lostItems?: LostItemUncheckedUpdateManyWithoutReportedByNestedInput
   }
 
   export type GuestCreateWithoutRatingsInput = {
@@ -49817,6 +53215,7 @@ export namespace Prisma {
     idDocumentFront?: string | null
     idDocumentBack?: string | null
     address?: string | null
+    dateOfBirth?: Date | string | null
     checkInStatus?: $Enums.CheckInStatus
     checkInCompletedAt?: Date | string | null
     language?: string
@@ -49826,6 +53225,7 @@ export namespace Prisma {
     serviceRequests?: ServiceRequestCreateNestedManyWithoutGuestInput
     supportTickets?: SupportTicketCreateNestedManyWithoutGuestInput
     favorites?: FavoriteCreateNestedManyWithoutGuestInput
+    lostItems?: LostItemCreateNestedManyWithoutGuestInput
   }
 
   export type GuestUncheckedCreateWithoutRatingsInput = {
@@ -49838,6 +53238,7 @@ export namespace Prisma {
     idDocumentFront?: string | null
     idDocumentBack?: string | null
     address?: string | null
+    dateOfBirth?: Date | string | null
     checkInStatus?: $Enums.CheckInStatus
     checkInCompletedAt?: Date | string | null
     language?: string
@@ -49847,6 +53248,7 @@ export namespace Prisma {
     serviceRequests?: ServiceRequestUncheckedCreateNestedManyWithoutGuestInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutGuestInput
     favorites?: FavoriteUncheckedCreateNestedManyWithoutGuestInput
+    lostItems?: LostItemUncheckedCreateNestedManyWithoutGuestInput
   }
 
   export type GuestCreateOrConnectWithoutRatingsInput = {
@@ -49927,6 +53329,7 @@ export namespace Prisma {
     idDocumentFront?: NullableStringFieldUpdateOperationsInput | string | null
     idDocumentBack?: NullableStringFieldUpdateOperationsInput | string | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
+    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     checkInStatus?: EnumCheckInStatusFieldUpdateOperationsInput | $Enums.CheckInStatus
     checkInCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     language?: StringFieldUpdateOperationsInput | string
@@ -49936,6 +53339,7 @@ export namespace Prisma {
     serviceRequests?: ServiceRequestUpdateManyWithoutGuestNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutGuestNestedInput
     favorites?: FavoriteUpdateManyWithoutGuestNestedInput
+    lostItems?: LostItemUpdateManyWithoutGuestNestedInput
   }
 
   export type GuestUncheckedUpdateWithoutRatingsInput = {
@@ -49947,6 +53351,7 @@ export namespace Prisma {
     idDocumentFront?: NullableStringFieldUpdateOperationsInput | string | null
     idDocumentBack?: NullableStringFieldUpdateOperationsInput | string | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
+    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     checkInStatus?: EnumCheckInStatusFieldUpdateOperationsInput | $Enums.CheckInStatus
     checkInCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     language?: StringFieldUpdateOperationsInput | string
@@ -49956,6 +53361,7 @@ export namespace Prisma {
     serviceRequests?: ServiceRequestUncheckedUpdateManyWithoutGuestNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutGuestNestedInput
     favorites?: FavoriteUncheckedUpdateManyWithoutGuestNestedInput
+    lostItems?: LostItemUncheckedUpdateManyWithoutGuestNestedInput
   }
 
   export type ServiceRequestUpsertWithoutRatingsInput = {
@@ -50022,12 +53428,16 @@ export namespace Prisma {
     dateOfJoining?: Date | string
     department: $Enums.Department
     designation: string
+    contractType?: string | null
+    workShift?: string | null
+    managerName?: string | null
     baseSalary: number
     bankName?: string | null
     accountNumber?: string | null
     ifscCode?: string | null
     emergencyContactName?: string | null
     emergencyContactPhone?: string | null
+    address?: string | null
     profilePhoto?: string | null
     documents?: InputJsonValue | null
     annualLeaveBalance?: number
@@ -50041,6 +53451,7 @@ export namespace Prisma {
     leaveRequests?: LeaveRequestCreateNestedManyWithoutStaffInput
     serviceRequests?: ServiceRequestCreateNestedManyWithoutAssignedToInput
     payrolls?: PayrollCreateNestedManyWithoutStaffInput
+    lostItems?: LostItemCreateNestedManyWithoutReportedByInput
   }
 
   export type StaffUncheckedCreateWithoutPerformanceScoresInput = {
@@ -50052,12 +53463,16 @@ export namespace Prisma {
     dateOfJoining?: Date | string
     department: $Enums.Department
     designation: string
+    contractType?: string | null
+    workShift?: string | null
+    managerName?: string | null
     baseSalary: number
     bankName?: string | null
     accountNumber?: string | null
     ifscCode?: string | null
     emergencyContactName?: string | null
     emergencyContactPhone?: string | null
+    address?: string | null
     profilePhoto?: string | null
     documents?: InputJsonValue | null
     annualLeaveBalance?: number
@@ -50069,6 +53484,7 @@ export namespace Prisma {
     leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutStaffInput
     serviceRequests?: ServiceRequestUncheckedCreateNestedManyWithoutAssignedToInput
     payrolls?: PayrollUncheckedCreateNestedManyWithoutStaffInput
+    lostItems?: LostItemUncheckedCreateNestedManyWithoutReportedByInput
   }
 
   export type StaffCreateOrConnectWithoutPerformanceScoresInput = {
@@ -50093,12 +53509,16 @@ export namespace Prisma {
     dateOfJoining?: DateTimeFieldUpdateOperationsInput | Date | string
     department?: EnumDepartmentFieldUpdateOperationsInput | $Enums.Department
     designation?: StringFieldUpdateOperationsInput | string
+    contractType?: NullableStringFieldUpdateOperationsInput | string | null
+    workShift?: NullableStringFieldUpdateOperationsInput | string | null
+    managerName?: NullableStringFieldUpdateOperationsInput | string | null
     baseSalary?: FloatFieldUpdateOperationsInput | number
     bankName?: NullableStringFieldUpdateOperationsInput | string | null
     accountNumber?: NullableStringFieldUpdateOperationsInput | string | null
     ifscCode?: NullableStringFieldUpdateOperationsInput | string | null
     emergencyContactName?: NullableStringFieldUpdateOperationsInput | string | null
     emergencyContactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
     profilePhoto?: NullableStringFieldUpdateOperationsInput | string | null
     documents?: InputJsonValue | InputJsonValue | null
     annualLeaveBalance?: IntFieldUpdateOperationsInput | number
@@ -50112,6 +53532,7 @@ export namespace Prisma {
     leaveRequests?: LeaveRequestUpdateManyWithoutStaffNestedInput
     serviceRequests?: ServiceRequestUpdateManyWithoutAssignedToNestedInput
     payrolls?: PayrollUpdateManyWithoutStaffNestedInput
+    lostItems?: LostItemUpdateManyWithoutReportedByNestedInput
   }
 
   export type StaffUncheckedUpdateWithoutPerformanceScoresInput = {
@@ -50122,12 +53543,16 @@ export namespace Prisma {
     dateOfJoining?: DateTimeFieldUpdateOperationsInput | Date | string
     department?: EnumDepartmentFieldUpdateOperationsInput | $Enums.Department
     designation?: StringFieldUpdateOperationsInput | string
+    contractType?: NullableStringFieldUpdateOperationsInput | string | null
+    workShift?: NullableStringFieldUpdateOperationsInput | string | null
+    managerName?: NullableStringFieldUpdateOperationsInput | string | null
     baseSalary?: FloatFieldUpdateOperationsInput | number
     bankName?: NullableStringFieldUpdateOperationsInput | string | null
     accountNumber?: NullableStringFieldUpdateOperationsInput | string | null
     ifscCode?: NullableStringFieldUpdateOperationsInput | string | null
     emergencyContactName?: NullableStringFieldUpdateOperationsInput | string | null
     emergencyContactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
     profilePhoto?: NullableStringFieldUpdateOperationsInput | string | null
     documents?: InputJsonValue | InputJsonValue | null
     annualLeaveBalance?: IntFieldUpdateOperationsInput | number
@@ -50139,6 +53564,7 @@ export namespace Prisma {
     leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutStaffNestedInput
     serviceRequests?: ServiceRequestUncheckedUpdateManyWithoutAssignedToNestedInput
     payrolls?: PayrollUncheckedUpdateManyWithoutStaffNestedInput
+    lostItems?: LostItemUncheckedUpdateManyWithoutReportedByNestedInput
   }
 
   export type PropertyCreateWithoutAmenitiesInput = {
@@ -50157,6 +53583,9 @@ export namespace Prisma {
     plan?: $Enums.SubscriptionPlan
     features?: PropertyCreatefeaturesInput | string[]
     planExpiresAt?: Date | string | null
+    latitude?: number | null
+    longitude?: number | null
+    ranking?: number
     policies?: InputJsonValue | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -50174,6 +53603,7 @@ export namespace Prisma {
     systemNodes?: SystemNodeCreateNestedManyWithoutPropertyInput
     systemAlerts?: SystemAlertCreateNestedManyWithoutPropertyInput
     supportTickets?: SupportTicketCreateNestedManyWithoutPropertyInput
+    lostItems?: LostItemCreateNestedManyWithoutPropertyInput
   }
 
   export type PropertyUncheckedCreateWithoutAmenitiesInput = {
@@ -50192,6 +53622,9 @@ export namespace Prisma {
     plan?: $Enums.SubscriptionPlan
     features?: PropertyCreatefeaturesInput | string[]
     planExpiresAt?: Date | string | null
+    latitude?: number | null
+    longitude?: number | null
+    ranking?: number
     policies?: InputJsonValue | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -50210,6 +53643,7 @@ export namespace Prisma {
     systemNodes?: SystemNodeUncheckedCreateNestedManyWithoutPropertyInput
     systemAlerts?: SystemAlertUncheckedCreateNestedManyWithoutPropertyInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutPropertyInput
+    lostItems?: LostItemUncheckedCreateNestedManyWithoutPropertyInput
   }
 
   export type PropertyCreateOrConnectWithoutAmenitiesInput = {
@@ -50243,6 +53677,9 @@ export namespace Prisma {
     plan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
     features?: PropertyUpdatefeaturesInput | string[]
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    ranking?: IntFieldUpdateOperationsInput | number
     policies?: InputJsonValue | InputJsonValue | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -50260,6 +53697,7 @@ export namespace Prisma {
     systemNodes?: SystemNodeUpdateManyWithoutPropertyNestedInput
     systemAlerts?: SystemAlertUpdateManyWithoutPropertyNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutPropertyNestedInput
+    lostItems?: LostItemUpdateManyWithoutPropertyNestedInput
   }
 
   export type PropertyUncheckedUpdateWithoutAmenitiesInput = {
@@ -50277,6 +53715,9 @@ export namespace Prisma {
     plan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
     features?: PropertyUpdatefeaturesInput | string[]
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    ranking?: IntFieldUpdateOperationsInput | number
     policies?: InputJsonValue | InputJsonValue | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -50295,6 +53736,7 @@ export namespace Prisma {
     systemNodes?: SystemNodeUncheckedUpdateManyWithoutPropertyNestedInput
     systemAlerts?: SystemAlertUncheckedUpdateManyWithoutPropertyNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutPropertyNestedInput
+    lostItems?: LostItemUncheckedUpdateManyWithoutPropertyNestedInput
   }
 
   export type PropertyCreateWithoutMenuItemsInput = {
@@ -50313,6 +53755,9 @@ export namespace Prisma {
     plan?: $Enums.SubscriptionPlan
     features?: PropertyCreatefeaturesInput | string[]
     planExpiresAt?: Date | string | null
+    latitude?: number | null
+    longitude?: number | null
+    ranking?: number
     policies?: InputJsonValue | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -50330,6 +53775,7 @@ export namespace Prisma {
     systemNodes?: SystemNodeCreateNestedManyWithoutPropertyInput
     systemAlerts?: SystemAlertCreateNestedManyWithoutPropertyInput
     supportTickets?: SupportTicketCreateNestedManyWithoutPropertyInput
+    lostItems?: LostItemCreateNestedManyWithoutPropertyInput
   }
 
   export type PropertyUncheckedCreateWithoutMenuItemsInput = {
@@ -50348,6 +53794,9 @@ export namespace Prisma {
     plan?: $Enums.SubscriptionPlan
     features?: PropertyCreatefeaturesInput | string[]
     planExpiresAt?: Date | string | null
+    latitude?: number | null
+    longitude?: number | null
+    ranking?: number
     policies?: InputJsonValue | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -50366,6 +53815,7 @@ export namespace Prisma {
     systemNodes?: SystemNodeUncheckedCreateNestedManyWithoutPropertyInput
     systemAlerts?: SystemAlertUncheckedCreateNestedManyWithoutPropertyInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutPropertyInput
+    lostItems?: LostItemUncheckedCreateNestedManyWithoutPropertyInput
   }
 
   export type PropertyCreateOrConnectWithoutMenuItemsInput = {
@@ -50399,6 +53849,9 @@ export namespace Prisma {
     plan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
     features?: PropertyUpdatefeaturesInput | string[]
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    ranking?: IntFieldUpdateOperationsInput | number
     policies?: InputJsonValue | InputJsonValue | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -50416,6 +53869,7 @@ export namespace Prisma {
     systemNodes?: SystemNodeUpdateManyWithoutPropertyNestedInput
     systemAlerts?: SystemAlertUpdateManyWithoutPropertyNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutPropertyNestedInput
+    lostItems?: LostItemUpdateManyWithoutPropertyNestedInput
   }
 
   export type PropertyUncheckedUpdateWithoutMenuItemsInput = {
@@ -50433,6 +53887,9 @@ export namespace Prisma {
     plan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
     features?: PropertyUpdatefeaturesInput | string[]
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    ranking?: IntFieldUpdateOperationsInput | number
     policies?: InputJsonValue | InputJsonValue | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -50451,6 +53908,7 @@ export namespace Prisma {
     systemNodes?: SystemNodeUncheckedUpdateManyWithoutPropertyNestedInput
     systemAlerts?: SystemAlertUncheckedUpdateManyWithoutPropertyNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutPropertyNestedInput
+    lostItems?: LostItemUncheckedUpdateManyWithoutPropertyNestedInput
   }
 
   export type PropertyCreateWithoutSpaServicesInput = {
@@ -50469,6 +53927,9 @@ export namespace Prisma {
     plan?: $Enums.SubscriptionPlan
     features?: PropertyCreatefeaturesInput | string[]
     planExpiresAt?: Date | string | null
+    latitude?: number | null
+    longitude?: number | null
+    ranking?: number
     policies?: InputJsonValue | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -50486,6 +53947,7 @@ export namespace Prisma {
     systemNodes?: SystemNodeCreateNestedManyWithoutPropertyInput
     systemAlerts?: SystemAlertCreateNestedManyWithoutPropertyInput
     supportTickets?: SupportTicketCreateNestedManyWithoutPropertyInput
+    lostItems?: LostItemCreateNestedManyWithoutPropertyInput
   }
 
   export type PropertyUncheckedCreateWithoutSpaServicesInput = {
@@ -50504,6 +53966,9 @@ export namespace Prisma {
     plan?: $Enums.SubscriptionPlan
     features?: PropertyCreatefeaturesInput | string[]
     planExpiresAt?: Date | string | null
+    latitude?: number | null
+    longitude?: number | null
+    ranking?: number
     policies?: InputJsonValue | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -50522,6 +53987,7 @@ export namespace Prisma {
     systemNodes?: SystemNodeUncheckedCreateNestedManyWithoutPropertyInput
     systemAlerts?: SystemAlertUncheckedCreateNestedManyWithoutPropertyInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutPropertyInput
+    lostItems?: LostItemUncheckedCreateNestedManyWithoutPropertyInput
   }
 
   export type PropertyCreateOrConnectWithoutSpaServicesInput = {
@@ -50555,6 +54021,9 @@ export namespace Prisma {
     plan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
     features?: PropertyUpdatefeaturesInput | string[]
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    ranking?: IntFieldUpdateOperationsInput | number
     policies?: InputJsonValue | InputJsonValue | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -50572,6 +54041,7 @@ export namespace Prisma {
     systemNodes?: SystemNodeUpdateManyWithoutPropertyNestedInput
     systemAlerts?: SystemAlertUpdateManyWithoutPropertyNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutPropertyNestedInput
+    lostItems?: LostItemUpdateManyWithoutPropertyNestedInput
   }
 
   export type PropertyUncheckedUpdateWithoutSpaServicesInput = {
@@ -50589,6 +54059,9 @@ export namespace Prisma {
     plan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
     features?: PropertyUpdatefeaturesInput | string[]
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    ranking?: IntFieldUpdateOperationsInput | number
     policies?: InputJsonValue | InputJsonValue | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -50607,6 +54080,623 @@ export namespace Prisma {
     systemNodes?: SystemNodeUncheckedUpdateManyWithoutPropertyNestedInput
     systemAlerts?: SystemAlertUncheckedUpdateManyWithoutPropertyNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutPropertyNestedInput
+    lostItems?: LostItemUncheckedUpdateManyWithoutPropertyNestedInput
+  }
+
+  export type PropertyCreateWithoutLostItemsInput = {
+    id?: string
+    name: string
+    description?: string | null
+    address: string
+    phone: string
+    email: string
+    logo?: string | null
+    coverImage?: string | null
+    images?: PropertyCreateimagesInput | string[]
+    checkInTime?: string
+    checkOutTime?: string
+    cancellationPolicy?: string | null
+    plan?: $Enums.SubscriptionPlan
+    features?: PropertyCreatefeaturesInput | string[]
+    planExpiresAt?: Date | string | null
+    latitude?: number | null
+    longitude?: number | null
+    ranking?: number
+    policies?: InputJsonValue | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    owners?: UserCreateNestedManyWithoutOwnedPropertiesInput
+    workerList?: UserCreateNestedManyWithoutMyWorkplaceInput
+    rooms?: RoomCreateNestedManyWithoutPropertyInput
+    amenities?: AmenityCreateNestedManyWithoutPropertyInput
+    menuItems?: MenuItemCreateNestedManyWithoutPropertyInput
+    spaServices?: SpaServiceCreateNestedManyWithoutPropertyInput
+    staff?: StaffCreateNestedManyWithoutPropertyInput
+    bookings?: BookingCreateNestedManyWithoutPropertyInput
+    serviceRequests?: ServiceRequestCreateNestedManyWithoutPropertyInput
+    rolePermissions?: RolePermissionCreateNestedManyWithoutPropertyInput
+    serviceConfigs?: ServiceConfigCreateNestedManyWithoutPropertyInput
+    campaigns?: CampaignCreateNestedManyWithoutPropertyInput
+    systemNodes?: SystemNodeCreateNestedManyWithoutPropertyInput
+    systemAlerts?: SystemAlertCreateNestedManyWithoutPropertyInput
+    supportTickets?: SupportTicketCreateNestedManyWithoutPropertyInput
+  }
+
+  export type PropertyUncheckedCreateWithoutLostItemsInput = {
+    id?: string
+    name: string
+    description?: string | null
+    address: string
+    phone: string
+    email: string
+    logo?: string | null
+    coverImage?: string | null
+    images?: PropertyCreateimagesInput | string[]
+    checkInTime?: string
+    checkOutTime?: string
+    cancellationPolicy?: string | null
+    plan?: $Enums.SubscriptionPlan
+    features?: PropertyCreatefeaturesInput | string[]
+    planExpiresAt?: Date | string | null
+    latitude?: number | null
+    longitude?: number | null
+    ranking?: number
+    policies?: InputJsonValue | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    ownerIds?: PropertyCreateownerIdsInput | string[]
+    owners?: UserUncheckedCreateNestedManyWithoutOwnedPropertiesInput
+    workerList?: UserUncheckedCreateNestedManyWithoutMyWorkplaceInput
+    rooms?: RoomUncheckedCreateNestedManyWithoutPropertyInput
+    amenities?: AmenityUncheckedCreateNestedManyWithoutPropertyInput
+    menuItems?: MenuItemUncheckedCreateNestedManyWithoutPropertyInput
+    spaServices?: SpaServiceUncheckedCreateNestedManyWithoutPropertyInput
+    staff?: StaffUncheckedCreateNestedManyWithoutPropertyInput
+    bookings?: BookingUncheckedCreateNestedManyWithoutPropertyInput
+    serviceRequests?: ServiceRequestUncheckedCreateNestedManyWithoutPropertyInput
+    rolePermissions?: RolePermissionUncheckedCreateNestedManyWithoutPropertyInput
+    serviceConfigs?: ServiceConfigUncheckedCreateNestedManyWithoutPropertyInput
+    campaigns?: CampaignUncheckedCreateNestedManyWithoutPropertyInput
+    systemNodes?: SystemNodeUncheckedCreateNestedManyWithoutPropertyInput
+    systemAlerts?: SystemAlertUncheckedCreateNestedManyWithoutPropertyInput
+    supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutPropertyInput
+  }
+
+  export type PropertyCreateOrConnectWithoutLostItemsInput = {
+    where: PropertyWhereUniqueInput
+    create: XOR<PropertyCreateWithoutLostItemsInput, PropertyUncheckedCreateWithoutLostItemsInput>
+  }
+
+  export type RoomCreateWithoutLostItemsInput = {
+    id?: string
+    roomNumber: string
+    floor: number
+    category: $Enums.RoomCategory
+    type: string
+    maxOccupancy: number
+    basePrice: number
+    amenities?: RoomCreateamenitiesInput | string[]
+    images?: RoomCreateimagesInput | string[]
+    description?: string | null
+    status?: $Enums.RoomStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    property: PropertyCreateNestedOneWithoutRoomsInput
+    bookings?: BookingCreateNestedManyWithoutRoomInput
+    serviceRequests?: ServiceRequestCreateNestedManyWithoutRoomInput
+    favorites?: FavoriteCreateNestedManyWithoutRoomInput
+  }
+
+  export type RoomUncheckedCreateWithoutLostItemsInput = {
+    id?: string
+    propertyId: string
+    roomNumber: string
+    floor: number
+    category: $Enums.RoomCategory
+    type: string
+    maxOccupancy: number
+    basePrice: number
+    amenities?: RoomCreateamenitiesInput | string[]
+    images?: RoomCreateimagesInput | string[]
+    description?: string | null
+    status?: $Enums.RoomStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    bookings?: BookingUncheckedCreateNestedManyWithoutRoomInput
+    serviceRequests?: ServiceRequestUncheckedCreateNestedManyWithoutRoomInput
+    favorites?: FavoriteUncheckedCreateNestedManyWithoutRoomInput
+  }
+
+  export type RoomCreateOrConnectWithoutLostItemsInput = {
+    where: RoomWhereUniqueInput
+    create: XOR<RoomCreateWithoutLostItemsInput, RoomUncheckedCreateWithoutLostItemsInput>
+  }
+
+  export type StaffCreateWithoutLostItemsInput = {
+    id?: string
+    employeeId: string
+    dateOfBirth?: Date | string | null
+    dateOfJoining?: Date | string
+    department: $Enums.Department
+    designation: string
+    contractType?: string | null
+    workShift?: string | null
+    managerName?: string | null
+    baseSalary: number
+    bankName?: string | null
+    accountNumber?: string | null
+    ifscCode?: string | null
+    emergencyContactName?: string | null
+    emergencyContactPhone?: string | null
+    address?: string | null
+    profilePhoto?: string | null
+    documents?: InputJsonValue | null
+    annualLeaveBalance?: number
+    sickLeaveBalance?: number
+    casualLeaveBalance?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutStaffProfileInput
+    property: PropertyCreateNestedOneWithoutStaffInput
+    attendances?: AttendanceCreateNestedManyWithoutStaffInput
+    leaveRequests?: LeaveRequestCreateNestedManyWithoutStaffInput
+    serviceRequests?: ServiceRequestCreateNestedManyWithoutAssignedToInput
+    payrolls?: PayrollCreateNestedManyWithoutStaffInput
+    performanceScores?: PerformanceScoreCreateNestedManyWithoutStaffInput
+  }
+
+  export type StaffUncheckedCreateWithoutLostItemsInput = {
+    id?: string
+    userId: string
+    propertyId: string
+    employeeId: string
+    dateOfBirth?: Date | string | null
+    dateOfJoining?: Date | string
+    department: $Enums.Department
+    designation: string
+    contractType?: string | null
+    workShift?: string | null
+    managerName?: string | null
+    baseSalary: number
+    bankName?: string | null
+    accountNumber?: string | null
+    ifscCode?: string | null
+    emergencyContactName?: string | null
+    emergencyContactPhone?: string | null
+    address?: string | null
+    profilePhoto?: string | null
+    documents?: InputJsonValue | null
+    annualLeaveBalance?: number
+    sickLeaveBalance?: number
+    casualLeaveBalance?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    attendances?: AttendanceUncheckedCreateNestedManyWithoutStaffInput
+    leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutStaffInput
+    serviceRequests?: ServiceRequestUncheckedCreateNestedManyWithoutAssignedToInput
+    payrolls?: PayrollUncheckedCreateNestedManyWithoutStaffInput
+    performanceScores?: PerformanceScoreUncheckedCreateNestedManyWithoutStaffInput
+  }
+
+  export type StaffCreateOrConnectWithoutLostItemsInput = {
+    where: StaffWhereUniqueInput
+    create: XOR<StaffCreateWithoutLostItemsInput, StaffUncheckedCreateWithoutLostItemsInput>
+  }
+
+  export type GuestCreateWithoutLostItemsInput = {
+    id?: string
+    name: string
+    email?: string | null
+    phone: string
+    idType?: string | null
+    idNumber?: string | null
+    idDocumentFront?: string | null
+    idDocumentBack?: string | null
+    address?: string | null
+    dateOfBirth?: Date | string | null
+    checkInStatus?: $Enums.CheckInStatus
+    checkInCompletedAt?: Date | string | null
+    language?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    bookings?: BookingCreateNestedManyWithoutGuestInput
+    serviceRequests?: ServiceRequestCreateNestedManyWithoutGuestInput
+    supportTickets?: SupportTicketCreateNestedManyWithoutGuestInput
+    ratings?: RatingCreateNestedManyWithoutGuestInput
+    favorites?: FavoriteCreateNestedManyWithoutGuestInput
+  }
+
+  export type GuestUncheckedCreateWithoutLostItemsInput = {
+    id?: string
+    name: string
+    email?: string | null
+    phone: string
+    idType?: string | null
+    idNumber?: string | null
+    idDocumentFront?: string | null
+    idDocumentBack?: string | null
+    address?: string | null
+    dateOfBirth?: Date | string | null
+    checkInStatus?: $Enums.CheckInStatus
+    checkInCompletedAt?: Date | string | null
+    language?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    bookings?: BookingUncheckedCreateNestedManyWithoutGuestInput
+    serviceRequests?: ServiceRequestUncheckedCreateNestedManyWithoutGuestInput
+    supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutGuestInput
+    ratings?: RatingUncheckedCreateNestedManyWithoutGuestInput
+    favorites?: FavoriteUncheckedCreateNestedManyWithoutGuestInput
+  }
+
+  export type GuestCreateOrConnectWithoutLostItemsInput = {
+    where: GuestWhereUniqueInput
+    create: XOR<GuestCreateWithoutLostItemsInput, GuestUncheckedCreateWithoutLostItemsInput>
+  }
+
+  export type BookingCreateWithoutLostItemsInput = {
+    id?: string
+    checkIn: Date | string
+    checkOut: Date | string
+    actualCheckIn?: Date | string | null
+    actualCheckOut?: Date | string | null
+    numberOfGuests: number
+    status?: $Enums.BookingStatus
+    source?: $Enums.BookingSource
+    totalAmount: number
+    paidAmount?: number
+    paymentStatus?: $Enums.PaymentStatus
+    specialRequests?: string | null
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    guest: GuestCreateNestedOneWithoutBookingsInput
+    room: RoomCreateNestedOneWithoutBookingsInput
+    property: PropertyCreateNestedOneWithoutBookingsInput
+  }
+
+  export type BookingUncheckedCreateWithoutLostItemsInput = {
+    id?: string
+    guestId: string
+    roomId: string
+    checkIn: Date | string
+    checkOut: Date | string
+    actualCheckIn?: Date | string | null
+    actualCheckOut?: Date | string | null
+    numberOfGuests: number
+    status?: $Enums.BookingStatus
+    source?: $Enums.BookingSource
+    totalAmount: number
+    paidAmount?: number
+    paymentStatus?: $Enums.PaymentStatus
+    specialRequests?: string | null
+    notes?: string | null
+    propertyId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type BookingCreateOrConnectWithoutLostItemsInput = {
+    where: BookingWhereUniqueInput
+    create: XOR<BookingCreateWithoutLostItemsInput, BookingUncheckedCreateWithoutLostItemsInput>
+  }
+
+  export type PropertyUpsertWithoutLostItemsInput = {
+    update: XOR<PropertyUpdateWithoutLostItemsInput, PropertyUncheckedUpdateWithoutLostItemsInput>
+    create: XOR<PropertyCreateWithoutLostItemsInput, PropertyUncheckedCreateWithoutLostItemsInput>
+    where?: PropertyWhereInput
+  }
+
+  export type PropertyUpdateToOneWithWhereWithoutLostItemsInput = {
+    where?: PropertyWhereInput
+    data: XOR<PropertyUpdateWithoutLostItemsInput, PropertyUncheckedUpdateWithoutLostItemsInput>
+  }
+
+  export type PropertyUpdateWithoutLostItemsInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: StringFieldUpdateOperationsInput | string
+    phone?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    logo?: NullableStringFieldUpdateOperationsInput | string | null
+    coverImage?: NullableStringFieldUpdateOperationsInput | string | null
+    images?: PropertyUpdateimagesInput | string[]
+    checkInTime?: StringFieldUpdateOperationsInput | string
+    checkOutTime?: StringFieldUpdateOperationsInput | string
+    cancellationPolicy?: NullableStringFieldUpdateOperationsInput | string | null
+    plan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
+    features?: PropertyUpdatefeaturesInput | string[]
+    planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    ranking?: IntFieldUpdateOperationsInput | number
+    policies?: InputJsonValue | InputJsonValue | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    owners?: UserUpdateManyWithoutOwnedPropertiesNestedInput
+    workerList?: UserUpdateManyWithoutMyWorkplaceNestedInput
+    rooms?: RoomUpdateManyWithoutPropertyNestedInput
+    amenities?: AmenityUpdateManyWithoutPropertyNestedInput
+    menuItems?: MenuItemUpdateManyWithoutPropertyNestedInput
+    spaServices?: SpaServiceUpdateManyWithoutPropertyNestedInput
+    staff?: StaffUpdateManyWithoutPropertyNestedInput
+    bookings?: BookingUpdateManyWithoutPropertyNestedInput
+    serviceRequests?: ServiceRequestUpdateManyWithoutPropertyNestedInput
+    rolePermissions?: RolePermissionUpdateManyWithoutPropertyNestedInput
+    serviceConfigs?: ServiceConfigUpdateManyWithoutPropertyNestedInput
+    campaigns?: CampaignUpdateManyWithoutPropertyNestedInput
+    systemNodes?: SystemNodeUpdateManyWithoutPropertyNestedInput
+    systemAlerts?: SystemAlertUpdateManyWithoutPropertyNestedInput
+    supportTickets?: SupportTicketUpdateManyWithoutPropertyNestedInput
+  }
+
+  export type PropertyUncheckedUpdateWithoutLostItemsInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: StringFieldUpdateOperationsInput | string
+    phone?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    logo?: NullableStringFieldUpdateOperationsInput | string | null
+    coverImage?: NullableStringFieldUpdateOperationsInput | string | null
+    images?: PropertyUpdateimagesInput | string[]
+    checkInTime?: StringFieldUpdateOperationsInput | string
+    checkOutTime?: StringFieldUpdateOperationsInput | string
+    cancellationPolicy?: NullableStringFieldUpdateOperationsInput | string | null
+    plan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
+    features?: PropertyUpdatefeaturesInput | string[]
+    planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    ranking?: IntFieldUpdateOperationsInput | number
+    policies?: InputJsonValue | InputJsonValue | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ownerIds?: PropertyUpdateownerIdsInput | string[]
+    owners?: UserUncheckedUpdateManyWithoutOwnedPropertiesNestedInput
+    workerList?: UserUncheckedUpdateManyWithoutMyWorkplaceNestedInput
+    rooms?: RoomUncheckedUpdateManyWithoutPropertyNestedInput
+    amenities?: AmenityUncheckedUpdateManyWithoutPropertyNestedInput
+    menuItems?: MenuItemUncheckedUpdateManyWithoutPropertyNestedInput
+    spaServices?: SpaServiceUncheckedUpdateManyWithoutPropertyNestedInput
+    staff?: StaffUncheckedUpdateManyWithoutPropertyNestedInput
+    bookings?: BookingUncheckedUpdateManyWithoutPropertyNestedInput
+    serviceRequests?: ServiceRequestUncheckedUpdateManyWithoutPropertyNestedInput
+    rolePermissions?: RolePermissionUncheckedUpdateManyWithoutPropertyNestedInput
+    serviceConfigs?: ServiceConfigUncheckedUpdateManyWithoutPropertyNestedInput
+    campaigns?: CampaignUncheckedUpdateManyWithoutPropertyNestedInput
+    systemNodes?: SystemNodeUncheckedUpdateManyWithoutPropertyNestedInput
+    systemAlerts?: SystemAlertUncheckedUpdateManyWithoutPropertyNestedInput
+    supportTickets?: SupportTicketUncheckedUpdateManyWithoutPropertyNestedInput
+  }
+
+  export type RoomUpsertWithoutLostItemsInput = {
+    update: XOR<RoomUpdateWithoutLostItemsInput, RoomUncheckedUpdateWithoutLostItemsInput>
+    create: XOR<RoomCreateWithoutLostItemsInput, RoomUncheckedCreateWithoutLostItemsInput>
+    where?: RoomWhereInput
+  }
+
+  export type RoomUpdateToOneWithWhereWithoutLostItemsInput = {
+    where?: RoomWhereInput
+    data: XOR<RoomUpdateWithoutLostItemsInput, RoomUncheckedUpdateWithoutLostItemsInput>
+  }
+
+  export type RoomUpdateWithoutLostItemsInput = {
+    roomNumber?: StringFieldUpdateOperationsInput | string
+    floor?: IntFieldUpdateOperationsInput | number
+    category?: EnumRoomCategoryFieldUpdateOperationsInput | $Enums.RoomCategory
+    type?: StringFieldUpdateOperationsInput | string
+    maxOccupancy?: IntFieldUpdateOperationsInput | number
+    basePrice?: FloatFieldUpdateOperationsInput | number
+    amenities?: RoomUpdateamenitiesInput | string[]
+    images?: RoomUpdateimagesInput | string[]
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumRoomStatusFieldUpdateOperationsInput | $Enums.RoomStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    property?: PropertyUpdateOneRequiredWithoutRoomsNestedInput
+    bookings?: BookingUpdateManyWithoutRoomNestedInput
+    serviceRequests?: ServiceRequestUpdateManyWithoutRoomNestedInput
+    favorites?: FavoriteUpdateManyWithoutRoomNestedInput
+  }
+
+  export type RoomUncheckedUpdateWithoutLostItemsInput = {
+    propertyId?: StringFieldUpdateOperationsInput | string
+    roomNumber?: StringFieldUpdateOperationsInput | string
+    floor?: IntFieldUpdateOperationsInput | number
+    category?: EnumRoomCategoryFieldUpdateOperationsInput | $Enums.RoomCategory
+    type?: StringFieldUpdateOperationsInput | string
+    maxOccupancy?: IntFieldUpdateOperationsInput | number
+    basePrice?: FloatFieldUpdateOperationsInput | number
+    amenities?: RoomUpdateamenitiesInput | string[]
+    images?: RoomUpdateimagesInput | string[]
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumRoomStatusFieldUpdateOperationsInput | $Enums.RoomStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    bookings?: BookingUncheckedUpdateManyWithoutRoomNestedInput
+    serviceRequests?: ServiceRequestUncheckedUpdateManyWithoutRoomNestedInput
+    favorites?: FavoriteUncheckedUpdateManyWithoutRoomNestedInput
+  }
+
+  export type StaffUpsertWithoutLostItemsInput = {
+    update: XOR<StaffUpdateWithoutLostItemsInput, StaffUncheckedUpdateWithoutLostItemsInput>
+    create: XOR<StaffCreateWithoutLostItemsInput, StaffUncheckedCreateWithoutLostItemsInput>
+    where?: StaffWhereInput
+  }
+
+  export type StaffUpdateToOneWithWhereWithoutLostItemsInput = {
+    where?: StaffWhereInput
+    data: XOR<StaffUpdateWithoutLostItemsInput, StaffUncheckedUpdateWithoutLostItemsInput>
+  }
+
+  export type StaffUpdateWithoutLostItemsInput = {
+    employeeId?: StringFieldUpdateOperationsInput | string
+    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dateOfJoining?: DateTimeFieldUpdateOperationsInput | Date | string
+    department?: EnumDepartmentFieldUpdateOperationsInput | $Enums.Department
+    designation?: StringFieldUpdateOperationsInput | string
+    contractType?: NullableStringFieldUpdateOperationsInput | string | null
+    workShift?: NullableStringFieldUpdateOperationsInput | string | null
+    managerName?: NullableStringFieldUpdateOperationsInput | string | null
+    baseSalary?: FloatFieldUpdateOperationsInput | number
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
+    accountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    ifscCode?: NullableStringFieldUpdateOperationsInput | string | null
+    emergencyContactName?: NullableStringFieldUpdateOperationsInput | string | null
+    emergencyContactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    profilePhoto?: NullableStringFieldUpdateOperationsInput | string | null
+    documents?: InputJsonValue | InputJsonValue | null
+    annualLeaveBalance?: IntFieldUpdateOperationsInput | number
+    sickLeaveBalance?: IntFieldUpdateOperationsInput | number
+    casualLeaveBalance?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutStaffProfileNestedInput
+    property?: PropertyUpdateOneRequiredWithoutStaffNestedInput
+    attendances?: AttendanceUpdateManyWithoutStaffNestedInput
+    leaveRequests?: LeaveRequestUpdateManyWithoutStaffNestedInput
+    serviceRequests?: ServiceRequestUpdateManyWithoutAssignedToNestedInput
+    payrolls?: PayrollUpdateManyWithoutStaffNestedInput
+    performanceScores?: PerformanceScoreUpdateManyWithoutStaffNestedInput
+  }
+
+  export type StaffUncheckedUpdateWithoutLostItemsInput = {
+    userId?: StringFieldUpdateOperationsInput | string
+    propertyId?: StringFieldUpdateOperationsInput | string
+    employeeId?: StringFieldUpdateOperationsInput | string
+    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dateOfJoining?: DateTimeFieldUpdateOperationsInput | Date | string
+    department?: EnumDepartmentFieldUpdateOperationsInput | $Enums.Department
+    designation?: StringFieldUpdateOperationsInput | string
+    contractType?: NullableStringFieldUpdateOperationsInput | string | null
+    workShift?: NullableStringFieldUpdateOperationsInput | string | null
+    managerName?: NullableStringFieldUpdateOperationsInput | string | null
+    baseSalary?: FloatFieldUpdateOperationsInput | number
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
+    accountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    ifscCode?: NullableStringFieldUpdateOperationsInput | string | null
+    emergencyContactName?: NullableStringFieldUpdateOperationsInput | string | null
+    emergencyContactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    profilePhoto?: NullableStringFieldUpdateOperationsInput | string | null
+    documents?: InputJsonValue | InputJsonValue | null
+    annualLeaveBalance?: IntFieldUpdateOperationsInput | number
+    sickLeaveBalance?: IntFieldUpdateOperationsInput | number
+    casualLeaveBalance?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    attendances?: AttendanceUncheckedUpdateManyWithoutStaffNestedInput
+    leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutStaffNestedInput
+    serviceRequests?: ServiceRequestUncheckedUpdateManyWithoutAssignedToNestedInput
+    payrolls?: PayrollUncheckedUpdateManyWithoutStaffNestedInput
+    performanceScores?: PerformanceScoreUncheckedUpdateManyWithoutStaffNestedInput
+  }
+
+  export type GuestUpsertWithoutLostItemsInput = {
+    update: XOR<GuestUpdateWithoutLostItemsInput, GuestUncheckedUpdateWithoutLostItemsInput>
+    create: XOR<GuestCreateWithoutLostItemsInput, GuestUncheckedCreateWithoutLostItemsInput>
+    where?: GuestWhereInput
+  }
+
+  export type GuestUpdateToOneWithWhereWithoutLostItemsInput = {
+    where?: GuestWhereInput
+    data: XOR<GuestUpdateWithoutLostItemsInput, GuestUncheckedUpdateWithoutLostItemsInput>
+  }
+
+  export type GuestUpdateWithoutLostItemsInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: StringFieldUpdateOperationsInput | string
+    idType?: NullableStringFieldUpdateOperationsInput | string | null
+    idNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    idDocumentFront?: NullableStringFieldUpdateOperationsInput | string | null
+    idDocumentBack?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    checkInStatus?: EnumCheckInStatusFieldUpdateOperationsInput | $Enums.CheckInStatus
+    checkInCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    language?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    bookings?: BookingUpdateManyWithoutGuestNestedInput
+    serviceRequests?: ServiceRequestUpdateManyWithoutGuestNestedInput
+    supportTickets?: SupportTicketUpdateManyWithoutGuestNestedInput
+    ratings?: RatingUpdateManyWithoutGuestNestedInput
+    favorites?: FavoriteUpdateManyWithoutGuestNestedInput
+  }
+
+  export type GuestUncheckedUpdateWithoutLostItemsInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: StringFieldUpdateOperationsInput | string
+    idType?: NullableStringFieldUpdateOperationsInput | string | null
+    idNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    idDocumentFront?: NullableStringFieldUpdateOperationsInput | string | null
+    idDocumentBack?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    checkInStatus?: EnumCheckInStatusFieldUpdateOperationsInput | $Enums.CheckInStatus
+    checkInCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    language?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    bookings?: BookingUncheckedUpdateManyWithoutGuestNestedInput
+    serviceRequests?: ServiceRequestUncheckedUpdateManyWithoutGuestNestedInput
+    supportTickets?: SupportTicketUncheckedUpdateManyWithoutGuestNestedInput
+    ratings?: RatingUncheckedUpdateManyWithoutGuestNestedInput
+    favorites?: FavoriteUncheckedUpdateManyWithoutGuestNestedInput
+  }
+
+  export type BookingUpsertWithoutLostItemsInput = {
+    update: XOR<BookingUpdateWithoutLostItemsInput, BookingUncheckedUpdateWithoutLostItemsInput>
+    create: XOR<BookingCreateWithoutLostItemsInput, BookingUncheckedCreateWithoutLostItemsInput>
+    where?: BookingWhereInput
+  }
+
+  export type BookingUpdateToOneWithWhereWithoutLostItemsInput = {
+    where?: BookingWhereInput
+    data: XOR<BookingUpdateWithoutLostItemsInput, BookingUncheckedUpdateWithoutLostItemsInput>
+  }
+
+  export type BookingUpdateWithoutLostItemsInput = {
+    checkIn?: DateTimeFieldUpdateOperationsInput | Date | string
+    checkOut?: DateTimeFieldUpdateOperationsInput | Date | string
+    actualCheckIn?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    actualCheckOut?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    numberOfGuests?: IntFieldUpdateOperationsInput | number
+    status?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
+    source?: EnumBookingSourceFieldUpdateOperationsInput | $Enums.BookingSource
+    totalAmount?: FloatFieldUpdateOperationsInput | number
+    paidAmount?: FloatFieldUpdateOperationsInput | number
+    paymentStatus?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
+    specialRequests?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    guest?: GuestUpdateOneRequiredWithoutBookingsNestedInput
+    room?: RoomUpdateOneRequiredWithoutBookingsNestedInput
+    property?: PropertyUpdateOneRequiredWithoutBookingsNestedInput
+  }
+
+  export type BookingUncheckedUpdateWithoutLostItemsInput = {
+    guestId?: StringFieldUpdateOperationsInput | string
+    roomId?: StringFieldUpdateOperationsInput | string
+    checkIn?: DateTimeFieldUpdateOperationsInput | Date | string
+    checkOut?: DateTimeFieldUpdateOperationsInput | Date | string
+    actualCheckIn?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    actualCheckOut?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    numberOfGuests?: IntFieldUpdateOperationsInput | number
+    status?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
+    source?: EnumBookingSourceFieldUpdateOperationsInput | $Enums.BookingSource
+    totalAmount?: FloatFieldUpdateOperationsInput | number
+    paidAmount?: FloatFieldUpdateOperationsInput | number
+    paymentStatus?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
+    specialRequests?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    propertyId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type PropertyCreateWithoutRolePermissionsInput = {
@@ -50625,6 +54715,9 @@ export namespace Prisma {
     plan?: $Enums.SubscriptionPlan
     features?: PropertyCreatefeaturesInput | string[]
     planExpiresAt?: Date | string | null
+    latitude?: number | null
+    longitude?: number | null
+    ranking?: number
     policies?: InputJsonValue | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -50642,6 +54735,7 @@ export namespace Prisma {
     systemNodes?: SystemNodeCreateNestedManyWithoutPropertyInput
     systemAlerts?: SystemAlertCreateNestedManyWithoutPropertyInput
     supportTickets?: SupportTicketCreateNestedManyWithoutPropertyInput
+    lostItems?: LostItemCreateNestedManyWithoutPropertyInput
   }
 
   export type PropertyUncheckedCreateWithoutRolePermissionsInput = {
@@ -50660,6 +54754,9 @@ export namespace Prisma {
     plan?: $Enums.SubscriptionPlan
     features?: PropertyCreatefeaturesInput | string[]
     planExpiresAt?: Date | string | null
+    latitude?: number | null
+    longitude?: number | null
+    ranking?: number
     policies?: InputJsonValue | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -50678,6 +54775,7 @@ export namespace Prisma {
     systemNodes?: SystemNodeUncheckedCreateNestedManyWithoutPropertyInput
     systemAlerts?: SystemAlertUncheckedCreateNestedManyWithoutPropertyInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutPropertyInput
+    lostItems?: LostItemUncheckedCreateNestedManyWithoutPropertyInput
   }
 
   export type PropertyCreateOrConnectWithoutRolePermissionsInput = {
@@ -50711,6 +54809,9 @@ export namespace Prisma {
     plan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
     features?: PropertyUpdatefeaturesInput | string[]
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    ranking?: IntFieldUpdateOperationsInput | number
     policies?: InputJsonValue | InputJsonValue | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -50728,6 +54829,7 @@ export namespace Prisma {
     systemNodes?: SystemNodeUpdateManyWithoutPropertyNestedInput
     systemAlerts?: SystemAlertUpdateManyWithoutPropertyNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutPropertyNestedInput
+    lostItems?: LostItemUpdateManyWithoutPropertyNestedInput
   }
 
   export type PropertyUncheckedUpdateWithoutRolePermissionsInput = {
@@ -50745,6 +54847,9 @@ export namespace Prisma {
     plan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
     features?: PropertyUpdatefeaturesInput | string[]
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    ranking?: IntFieldUpdateOperationsInput | number
     policies?: InputJsonValue | InputJsonValue | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -50763,6 +54868,7 @@ export namespace Prisma {
     systemNodes?: SystemNodeUncheckedUpdateManyWithoutPropertyNestedInput
     systemAlerts?: SystemAlertUncheckedUpdateManyWithoutPropertyNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutPropertyNestedInput
+    lostItems?: LostItemUncheckedUpdateManyWithoutPropertyNestedInput
   }
 
   export type PropertyCreateWithoutServiceConfigsInput = {
@@ -50781,6 +54887,9 @@ export namespace Prisma {
     plan?: $Enums.SubscriptionPlan
     features?: PropertyCreatefeaturesInput | string[]
     planExpiresAt?: Date | string | null
+    latitude?: number | null
+    longitude?: number | null
+    ranking?: number
     policies?: InputJsonValue | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -50798,6 +54907,7 @@ export namespace Prisma {
     systemNodes?: SystemNodeCreateNestedManyWithoutPropertyInput
     systemAlerts?: SystemAlertCreateNestedManyWithoutPropertyInput
     supportTickets?: SupportTicketCreateNestedManyWithoutPropertyInput
+    lostItems?: LostItemCreateNestedManyWithoutPropertyInput
   }
 
   export type PropertyUncheckedCreateWithoutServiceConfigsInput = {
@@ -50816,6 +54926,9 @@ export namespace Prisma {
     plan?: $Enums.SubscriptionPlan
     features?: PropertyCreatefeaturesInput | string[]
     planExpiresAt?: Date | string | null
+    latitude?: number | null
+    longitude?: number | null
+    ranking?: number
     policies?: InputJsonValue | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -50834,6 +54947,7 @@ export namespace Prisma {
     systemNodes?: SystemNodeUncheckedCreateNestedManyWithoutPropertyInput
     systemAlerts?: SystemAlertUncheckedCreateNestedManyWithoutPropertyInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutPropertyInput
+    lostItems?: LostItemUncheckedCreateNestedManyWithoutPropertyInput
   }
 
   export type PropertyCreateOrConnectWithoutServiceConfigsInput = {
@@ -50890,6 +55004,9 @@ export namespace Prisma {
     plan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
     features?: PropertyUpdatefeaturesInput | string[]
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    ranking?: IntFieldUpdateOperationsInput | number
     policies?: InputJsonValue | InputJsonValue | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -50907,6 +55024,7 @@ export namespace Prisma {
     systemNodes?: SystemNodeUpdateManyWithoutPropertyNestedInput
     systemAlerts?: SystemAlertUpdateManyWithoutPropertyNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutPropertyNestedInput
+    lostItems?: LostItemUpdateManyWithoutPropertyNestedInput
   }
 
   export type PropertyUncheckedUpdateWithoutServiceConfigsInput = {
@@ -50924,6 +55042,9 @@ export namespace Prisma {
     plan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
     features?: PropertyUpdatefeaturesInput | string[]
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    ranking?: IntFieldUpdateOperationsInput | number
     policies?: InputJsonValue | InputJsonValue | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -50942,6 +55063,7 @@ export namespace Prisma {
     systemNodes?: SystemNodeUncheckedUpdateManyWithoutPropertyNestedInput
     systemAlerts?: SystemAlertUncheckedUpdateManyWithoutPropertyNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutPropertyNestedInput
+    lostItems?: LostItemUncheckedUpdateManyWithoutPropertyNestedInput
   }
 
   export type ServiceStepUpsertWithWhereUniqueWithoutServiceConfigInput = {
@@ -51041,6 +55163,9 @@ export namespace Prisma {
     plan?: $Enums.SubscriptionPlan
     features?: PropertyCreatefeaturesInput | string[]
     planExpiresAt?: Date | string | null
+    latitude?: number | null
+    longitude?: number | null
+    ranking?: number
     policies?: InputJsonValue | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -51058,6 +55183,7 @@ export namespace Prisma {
     systemNodes?: SystemNodeCreateNestedManyWithoutPropertyInput
     systemAlerts?: SystemAlertCreateNestedManyWithoutPropertyInput
     supportTickets?: SupportTicketCreateNestedManyWithoutPropertyInput
+    lostItems?: LostItemCreateNestedManyWithoutPropertyInput
   }
 
   export type PropertyUncheckedCreateWithoutCampaignsInput = {
@@ -51076,6 +55202,9 @@ export namespace Prisma {
     plan?: $Enums.SubscriptionPlan
     features?: PropertyCreatefeaturesInput | string[]
     planExpiresAt?: Date | string | null
+    latitude?: number | null
+    longitude?: number | null
+    ranking?: number
     policies?: InputJsonValue | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -51094,6 +55223,7 @@ export namespace Prisma {
     systemNodes?: SystemNodeUncheckedCreateNestedManyWithoutPropertyInput
     systemAlerts?: SystemAlertUncheckedCreateNestedManyWithoutPropertyInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutPropertyInput
+    lostItems?: LostItemUncheckedCreateNestedManyWithoutPropertyInput
   }
 
   export type PropertyCreateOrConnectWithoutCampaignsInput = {
@@ -51127,6 +55257,9 @@ export namespace Prisma {
     plan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
     features?: PropertyUpdatefeaturesInput | string[]
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    ranking?: IntFieldUpdateOperationsInput | number
     policies?: InputJsonValue | InputJsonValue | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -51144,6 +55277,7 @@ export namespace Prisma {
     systemNodes?: SystemNodeUpdateManyWithoutPropertyNestedInput
     systemAlerts?: SystemAlertUpdateManyWithoutPropertyNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutPropertyNestedInput
+    lostItems?: LostItemUpdateManyWithoutPropertyNestedInput
   }
 
   export type PropertyUncheckedUpdateWithoutCampaignsInput = {
@@ -51161,6 +55295,9 @@ export namespace Prisma {
     plan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
     features?: PropertyUpdatefeaturesInput | string[]
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    ranking?: IntFieldUpdateOperationsInput | number
     policies?: InputJsonValue | InputJsonValue | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -51179,6 +55316,7 @@ export namespace Prisma {
     systemNodes?: SystemNodeUncheckedUpdateManyWithoutPropertyNestedInput
     systemAlerts?: SystemAlertUncheckedUpdateManyWithoutPropertyNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutPropertyNestedInput
+    lostItems?: LostItemUncheckedUpdateManyWithoutPropertyNestedInput
   }
 
   export type PropertyCreateWithoutSystemNodesInput = {
@@ -51197,6 +55335,9 @@ export namespace Prisma {
     plan?: $Enums.SubscriptionPlan
     features?: PropertyCreatefeaturesInput | string[]
     planExpiresAt?: Date | string | null
+    latitude?: number | null
+    longitude?: number | null
+    ranking?: number
     policies?: InputJsonValue | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -51214,6 +55355,7 @@ export namespace Prisma {
     campaigns?: CampaignCreateNestedManyWithoutPropertyInput
     systemAlerts?: SystemAlertCreateNestedManyWithoutPropertyInput
     supportTickets?: SupportTicketCreateNestedManyWithoutPropertyInput
+    lostItems?: LostItemCreateNestedManyWithoutPropertyInput
   }
 
   export type PropertyUncheckedCreateWithoutSystemNodesInput = {
@@ -51232,6 +55374,9 @@ export namespace Prisma {
     plan?: $Enums.SubscriptionPlan
     features?: PropertyCreatefeaturesInput | string[]
     planExpiresAt?: Date | string | null
+    latitude?: number | null
+    longitude?: number | null
+    ranking?: number
     policies?: InputJsonValue | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -51250,6 +55395,7 @@ export namespace Prisma {
     campaigns?: CampaignUncheckedCreateNestedManyWithoutPropertyInput
     systemAlerts?: SystemAlertUncheckedCreateNestedManyWithoutPropertyInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutPropertyInput
+    lostItems?: LostItemUncheckedCreateNestedManyWithoutPropertyInput
   }
 
   export type PropertyCreateOrConnectWithoutSystemNodesInput = {
@@ -51283,6 +55429,9 @@ export namespace Prisma {
     plan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
     features?: PropertyUpdatefeaturesInput | string[]
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    ranking?: IntFieldUpdateOperationsInput | number
     policies?: InputJsonValue | InputJsonValue | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -51300,6 +55449,7 @@ export namespace Prisma {
     campaigns?: CampaignUpdateManyWithoutPropertyNestedInput
     systemAlerts?: SystemAlertUpdateManyWithoutPropertyNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutPropertyNestedInput
+    lostItems?: LostItemUpdateManyWithoutPropertyNestedInput
   }
 
   export type PropertyUncheckedUpdateWithoutSystemNodesInput = {
@@ -51317,6 +55467,9 @@ export namespace Prisma {
     plan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
     features?: PropertyUpdatefeaturesInput | string[]
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    ranking?: IntFieldUpdateOperationsInput | number
     policies?: InputJsonValue | InputJsonValue | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -51335,6 +55488,7 @@ export namespace Prisma {
     campaigns?: CampaignUncheckedUpdateManyWithoutPropertyNestedInput
     systemAlerts?: SystemAlertUncheckedUpdateManyWithoutPropertyNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutPropertyNestedInput
+    lostItems?: LostItemUncheckedUpdateManyWithoutPropertyNestedInput
   }
 
   export type PropertyCreateWithoutSystemAlertsInput = {
@@ -51353,6 +55507,9 @@ export namespace Prisma {
     plan?: $Enums.SubscriptionPlan
     features?: PropertyCreatefeaturesInput | string[]
     planExpiresAt?: Date | string | null
+    latitude?: number | null
+    longitude?: number | null
+    ranking?: number
     policies?: InputJsonValue | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -51370,6 +55527,7 @@ export namespace Prisma {
     campaigns?: CampaignCreateNestedManyWithoutPropertyInput
     systemNodes?: SystemNodeCreateNestedManyWithoutPropertyInput
     supportTickets?: SupportTicketCreateNestedManyWithoutPropertyInput
+    lostItems?: LostItemCreateNestedManyWithoutPropertyInput
   }
 
   export type PropertyUncheckedCreateWithoutSystemAlertsInput = {
@@ -51388,6 +55546,9 @@ export namespace Prisma {
     plan?: $Enums.SubscriptionPlan
     features?: PropertyCreatefeaturesInput | string[]
     planExpiresAt?: Date | string | null
+    latitude?: number | null
+    longitude?: number | null
+    ranking?: number
     policies?: InputJsonValue | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -51406,6 +55567,7 @@ export namespace Prisma {
     campaigns?: CampaignUncheckedCreateNestedManyWithoutPropertyInput
     systemNodes?: SystemNodeUncheckedCreateNestedManyWithoutPropertyInput
     supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutPropertyInput
+    lostItems?: LostItemUncheckedCreateNestedManyWithoutPropertyInput
   }
 
   export type PropertyCreateOrConnectWithoutSystemAlertsInput = {
@@ -51439,6 +55601,9 @@ export namespace Prisma {
     plan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
     features?: PropertyUpdatefeaturesInput | string[]
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    ranking?: IntFieldUpdateOperationsInput | number
     policies?: InputJsonValue | InputJsonValue | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -51456,6 +55621,7 @@ export namespace Prisma {
     campaigns?: CampaignUpdateManyWithoutPropertyNestedInput
     systemNodes?: SystemNodeUpdateManyWithoutPropertyNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutPropertyNestedInput
+    lostItems?: LostItemUpdateManyWithoutPropertyNestedInput
   }
 
   export type PropertyUncheckedUpdateWithoutSystemAlertsInput = {
@@ -51473,6 +55639,9 @@ export namespace Prisma {
     plan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
     features?: PropertyUpdatefeaturesInput | string[]
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    ranking?: IntFieldUpdateOperationsInput | number
     policies?: InputJsonValue | InputJsonValue | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -51491,6 +55660,7 @@ export namespace Prisma {
     campaigns?: CampaignUncheckedUpdateManyWithoutPropertyNestedInput
     systemNodes?: SystemNodeUncheckedUpdateManyWithoutPropertyNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutPropertyNestedInput
+    lostItems?: LostItemUncheckedUpdateManyWithoutPropertyNestedInput
   }
 
   export type ServiceRequestCreateWithoutMessagesInput = {
@@ -51613,6 +55783,7 @@ export namespace Prisma {
     idDocumentFront?: string | null
     idDocumentBack?: string | null
     address?: string | null
+    dateOfBirth?: Date | string | null
     checkInStatus?: $Enums.CheckInStatus
     checkInCompletedAt?: Date | string | null
     language?: string
@@ -51622,6 +55793,7 @@ export namespace Prisma {
     serviceRequests?: ServiceRequestCreateNestedManyWithoutGuestInput
     ratings?: RatingCreateNestedManyWithoutGuestInput
     favorites?: FavoriteCreateNestedManyWithoutGuestInput
+    lostItems?: LostItemCreateNestedManyWithoutGuestInput
   }
 
   export type GuestUncheckedCreateWithoutSupportTicketsInput = {
@@ -51634,6 +55806,7 @@ export namespace Prisma {
     idDocumentFront?: string | null
     idDocumentBack?: string | null
     address?: string | null
+    dateOfBirth?: Date | string | null
     checkInStatus?: $Enums.CheckInStatus
     checkInCompletedAt?: Date | string | null
     language?: string
@@ -51643,6 +55816,7 @@ export namespace Prisma {
     serviceRequests?: ServiceRequestUncheckedCreateNestedManyWithoutGuestInput
     ratings?: RatingUncheckedCreateNestedManyWithoutGuestInput
     favorites?: FavoriteUncheckedCreateNestedManyWithoutGuestInput
+    lostItems?: LostItemUncheckedCreateNestedManyWithoutGuestInput
   }
 
   export type GuestCreateOrConnectWithoutSupportTicketsInput = {
@@ -51666,6 +55840,9 @@ export namespace Prisma {
     plan?: $Enums.SubscriptionPlan
     features?: PropertyCreatefeaturesInput | string[]
     planExpiresAt?: Date | string | null
+    latitude?: number | null
+    longitude?: number | null
+    ranking?: number
     policies?: InputJsonValue | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -51683,6 +55860,7 @@ export namespace Prisma {
     campaigns?: CampaignCreateNestedManyWithoutPropertyInput
     systemNodes?: SystemNodeCreateNestedManyWithoutPropertyInput
     systemAlerts?: SystemAlertCreateNestedManyWithoutPropertyInput
+    lostItems?: LostItemCreateNestedManyWithoutPropertyInput
   }
 
   export type PropertyUncheckedCreateWithoutSupportTicketsInput = {
@@ -51701,6 +55879,9 @@ export namespace Prisma {
     plan?: $Enums.SubscriptionPlan
     features?: PropertyCreatefeaturesInput | string[]
     planExpiresAt?: Date | string | null
+    latitude?: number | null
+    longitude?: number | null
+    ranking?: number
     policies?: InputJsonValue | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -51719,6 +55900,7 @@ export namespace Prisma {
     campaigns?: CampaignUncheckedCreateNestedManyWithoutPropertyInput
     systemNodes?: SystemNodeUncheckedCreateNestedManyWithoutPropertyInput
     systemAlerts?: SystemAlertUncheckedCreateNestedManyWithoutPropertyInput
+    lostItems?: LostItemUncheckedCreateNestedManyWithoutPropertyInput
   }
 
   export type PropertyCreateOrConnectWithoutSupportTicketsInput = {
@@ -51771,6 +55953,7 @@ export namespace Prisma {
     idDocumentFront?: NullableStringFieldUpdateOperationsInput | string | null
     idDocumentBack?: NullableStringFieldUpdateOperationsInput | string | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
+    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     checkInStatus?: EnumCheckInStatusFieldUpdateOperationsInput | $Enums.CheckInStatus
     checkInCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     language?: StringFieldUpdateOperationsInput | string
@@ -51780,6 +55963,7 @@ export namespace Prisma {
     serviceRequests?: ServiceRequestUpdateManyWithoutGuestNestedInput
     ratings?: RatingUpdateManyWithoutGuestNestedInput
     favorites?: FavoriteUpdateManyWithoutGuestNestedInput
+    lostItems?: LostItemUpdateManyWithoutGuestNestedInput
   }
 
   export type GuestUncheckedUpdateWithoutSupportTicketsInput = {
@@ -51791,6 +55975,7 @@ export namespace Prisma {
     idDocumentFront?: NullableStringFieldUpdateOperationsInput | string | null
     idDocumentBack?: NullableStringFieldUpdateOperationsInput | string | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
+    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     checkInStatus?: EnumCheckInStatusFieldUpdateOperationsInput | $Enums.CheckInStatus
     checkInCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     language?: StringFieldUpdateOperationsInput | string
@@ -51800,6 +55985,7 @@ export namespace Prisma {
     serviceRequests?: ServiceRequestUncheckedUpdateManyWithoutGuestNestedInput
     ratings?: RatingUncheckedUpdateManyWithoutGuestNestedInput
     favorites?: FavoriteUncheckedUpdateManyWithoutGuestNestedInput
+    lostItems?: LostItemUncheckedUpdateManyWithoutGuestNestedInput
   }
 
   export type PropertyUpsertWithoutSupportTicketsInput = {
@@ -51828,6 +56014,9 @@ export namespace Prisma {
     plan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
     features?: PropertyUpdatefeaturesInput | string[]
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    ranking?: IntFieldUpdateOperationsInput | number
     policies?: InputJsonValue | InputJsonValue | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -51845,6 +56034,7 @@ export namespace Prisma {
     campaigns?: CampaignUpdateManyWithoutPropertyNestedInput
     systemNodes?: SystemNodeUpdateManyWithoutPropertyNestedInput
     systemAlerts?: SystemAlertUpdateManyWithoutPropertyNestedInput
+    lostItems?: LostItemUpdateManyWithoutPropertyNestedInput
   }
 
   export type PropertyUncheckedUpdateWithoutSupportTicketsInput = {
@@ -51862,6 +56052,9 @@ export namespace Prisma {
     plan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
     features?: PropertyUpdatefeaturesInput | string[]
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    ranking?: IntFieldUpdateOperationsInput | number
     policies?: InputJsonValue | InputJsonValue | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -51880,6 +56073,7 @@ export namespace Prisma {
     campaigns?: CampaignUncheckedUpdateManyWithoutPropertyNestedInput
     systemNodes?: SystemNodeUncheckedUpdateManyWithoutPropertyNestedInput
     systemAlerts?: SystemAlertUncheckedUpdateManyWithoutPropertyNestedInput
+    lostItems?: LostItemUncheckedUpdateManyWithoutPropertyNestedInput
   }
 
   export type TicketMessageUpsertWithWhereUniqueWithoutTicketInput = {
@@ -51991,6 +56185,9 @@ export namespace Prisma {
     plan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
     features?: PropertyUpdatefeaturesInput | string[]
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    ranking?: IntFieldUpdateOperationsInput | number
     policies?: InputJsonValue | InputJsonValue | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -52008,6 +56205,7 @@ export namespace Prisma {
     systemNodes?: SystemNodeUpdateManyWithoutPropertyNestedInput
     systemAlerts?: SystemAlertUpdateManyWithoutPropertyNestedInput
     supportTickets?: SupportTicketUpdateManyWithoutPropertyNestedInput
+    lostItems?: LostItemUpdateManyWithoutPropertyNestedInput
   }
 
   export type PropertyUncheckedUpdateWithoutOwnersInput = {
@@ -52025,6 +56223,9 @@ export namespace Prisma {
     plan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
     features?: PropertyUpdatefeaturesInput | string[]
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    ranking?: IntFieldUpdateOperationsInput | number
     policies?: InputJsonValue | InputJsonValue | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -52043,6 +56244,7 @@ export namespace Prisma {
     systemNodes?: SystemNodeUncheckedUpdateManyWithoutPropertyNestedInput
     systemAlerts?: SystemAlertUncheckedUpdateManyWithoutPropertyNestedInput
     supportTickets?: SupportTicketUncheckedUpdateManyWithoutPropertyNestedInput
+    lostItems?: LostItemUncheckedUpdateManyWithoutPropertyNestedInput
   }
 
   export type PropertyUncheckedUpdateManyWithoutOwnersInput = {
@@ -52060,6 +56262,9 @@ export namespace Prisma {
     plan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
     features?: PropertyUpdatefeaturesInput | string[]
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    ranking?: IntFieldUpdateOperationsInput | number
     policies?: InputJsonValue | InputJsonValue | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -52071,6 +56276,8 @@ export namespace Prisma {
     roomId: string
     checkIn: Date | string
     checkOut: Date | string
+    actualCheckIn?: Date | string | null
+    actualCheckOut?: Date | string | null
     numberOfGuests: number
     status?: $Enums.BookingStatus
     source?: $Enums.BookingSource
@@ -52133,9 +56340,38 @@ export namespace Prisma {
     createdAt?: Date | string
   }
 
+  export type LostItemCreateManyGuestInput = {
+    id?: string
+    propertyId: string
+    name: string
+    description?: string | null
+    category: string
+    status?: string
+    foundDate?: Date | string
+    location?: string | null
+    roomId?: string | null
+    reportedById?: string | null
+    bookingId?: string | null
+    image?: string | null
+    evidenceImages?: LostItemCreateevidenceImagesInput | string[]
+    caseNotes?: InputJsonValue | null
+    claimerName?: string | null
+    claimerPhone?: string | null
+    claimedAt?: Date | string | null
+    claimNotes?: string | null
+    whatsappSent?: boolean
+    whatsappSentAt?: Date | string | null
+    whatsappStatus?: string | null
+    whatsappMessageId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type BookingUpdateWithoutGuestInput = {
     checkIn?: DateTimeFieldUpdateOperationsInput | Date | string
     checkOut?: DateTimeFieldUpdateOperationsInput | Date | string
+    actualCheckIn?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    actualCheckOut?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     numberOfGuests?: IntFieldUpdateOperationsInput | number
     status?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
     source?: EnumBookingSourceFieldUpdateOperationsInput | $Enums.BookingSource
@@ -52148,12 +56384,15 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     room?: RoomUpdateOneRequiredWithoutBookingsNestedInput
     property?: PropertyUpdateOneRequiredWithoutBookingsNestedInput
+    lostItems?: LostItemUpdateManyWithoutBookingNestedInput
   }
 
   export type BookingUncheckedUpdateWithoutGuestInput = {
     roomId?: StringFieldUpdateOperationsInput | string
     checkIn?: DateTimeFieldUpdateOperationsInput | Date | string
     checkOut?: DateTimeFieldUpdateOperationsInput | Date | string
+    actualCheckIn?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    actualCheckOut?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     numberOfGuests?: IntFieldUpdateOperationsInput | number
     status?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
     source?: EnumBookingSourceFieldUpdateOperationsInput | $Enums.BookingSource
@@ -52165,12 +56404,15 @@ export namespace Prisma {
     propertyId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lostItems?: LostItemUncheckedUpdateManyWithoutBookingNestedInput
   }
 
   export type BookingUncheckedUpdateManyWithoutGuestInput = {
     roomId?: StringFieldUpdateOperationsInput | string
     checkIn?: DateTimeFieldUpdateOperationsInput | Date | string
     checkOut?: DateTimeFieldUpdateOperationsInput | Date | string
+    actualCheckIn?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    actualCheckOut?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     numberOfGuests?: IntFieldUpdateOperationsInput | number
     status?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
     source?: EnumBookingSourceFieldUpdateOperationsInput | $Enums.BookingSource
@@ -52325,6 +56567,84 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type LostItemUpdateWithoutGuestInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    foundDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    evidenceImages?: LostItemUpdateevidenceImagesInput | string[]
+    caseNotes?: InputJsonValue | InputJsonValue | null
+    claimerName?: NullableStringFieldUpdateOperationsInput | string | null
+    claimerPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    claimedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    claimNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappSent?: BoolFieldUpdateOperationsInput | boolean
+    whatsappSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    whatsappStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappMessageId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    property?: PropertyUpdateOneRequiredWithoutLostItemsNestedInput
+    room?: RoomUpdateOneWithoutLostItemsNestedInput
+    reportedBy?: StaffUpdateOneWithoutLostItemsNestedInput
+    booking?: BookingUpdateOneWithoutLostItemsNestedInput
+  }
+
+  export type LostItemUncheckedUpdateWithoutGuestInput = {
+    propertyId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    foundDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    roomId?: NullableStringFieldUpdateOperationsInput | string | null
+    reportedById?: NullableStringFieldUpdateOperationsInput | string | null
+    bookingId?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    evidenceImages?: LostItemUpdateevidenceImagesInput | string[]
+    caseNotes?: InputJsonValue | InputJsonValue | null
+    claimerName?: NullableStringFieldUpdateOperationsInput | string | null
+    claimerPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    claimedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    claimNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappSent?: BoolFieldUpdateOperationsInput | boolean
+    whatsappSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    whatsappStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappMessageId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LostItemUncheckedUpdateManyWithoutGuestInput = {
+    propertyId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    foundDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    roomId?: NullableStringFieldUpdateOperationsInput | string | null
+    reportedById?: NullableStringFieldUpdateOperationsInput | string | null
+    bookingId?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    evidenceImages?: LostItemUpdateevidenceImagesInput | string[]
+    caseNotes?: InputJsonValue | InputJsonValue | null
+    claimerName?: NullableStringFieldUpdateOperationsInput | string | null
+    claimerPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    claimedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    claimNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappSent?: BoolFieldUpdateOperationsInput | boolean
+    whatsappSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    whatsappStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappMessageId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type UserCreateManyMyWorkplaceInput = {
     id?: string
     name: string
@@ -52333,6 +56653,7 @@ export namespace Prisma {
     password: string
     role: $Enums.UserRole
     status?: $Enums.UserStatus
+    dndEnabled?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     ownedPropertyIds?: UserCreateownedPropertyIdsInput | string[]
@@ -52372,7 +56693,8 @@ export namespace Prisma {
     category: string
     cuisine?: string | null
     price: number
-    image?: string | null
+    margin?: number
+    images?: MenuItemCreateimagesInput | string[]
     isVeg?: boolean
     isAvailable?: boolean
     prepTime?: number | null
@@ -52400,12 +56722,16 @@ export namespace Prisma {
     dateOfJoining?: Date | string
     department: $Enums.Department
     designation: string
+    contractType?: string | null
+    workShift?: string | null
+    managerName?: string | null
     baseSalary: number
     bankName?: string | null
     accountNumber?: string | null
     ifscCode?: string | null
     emergencyContactName?: string | null
     emergencyContactPhone?: string | null
+    address?: string | null
     profilePhoto?: string | null
     documents?: InputJsonValue | null
     annualLeaveBalance?: number
@@ -52421,6 +56747,8 @@ export namespace Prisma {
     roomId: string
     checkIn: Date | string
     checkOut: Date | string
+    actualCheckIn?: Date | string | null
+    actualCheckOut?: Date | string | null
     numberOfGuests: number
     status?: $Enums.BookingStatus
     source?: $Enums.BookingSource
@@ -52518,6 +56846,33 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
+  export type LostItemCreateManyPropertyInput = {
+    id?: string
+    name: string
+    description?: string | null
+    category: string
+    status?: string
+    foundDate?: Date | string
+    location?: string | null
+    roomId?: string | null
+    reportedById?: string | null
+    guestId?: string | null
+    bookingId?: string | null
+    image?: string | null
+    evidenceImages?: LostItemCreateevidenceImagesInput | string[]
+    caseNotes?: InputJsonValue | null
+    claimerName?: string | null
+    claimerPhone?: string | null
+    claimedAt?: Date | string | null
+    claimNotes?: string | null
+    whatsappSent?: boolean
+    whatsappSentAt?: Date | string | null
+    whatsappStatus?: string | null
+    whatsappMessageId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type UserUpdateWithoutOwnedPropertiesInput = {
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
@@ -52525,6 +56880,7 @@ export namespace Prisma {
     password?: StringFieldUpdateOperationsInput | string
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    dndEnabled?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     myWorkplace?: PropertyUpdateOneWithoutWorkerListNestedInput
@@ -52538,6 +56894,7 @@ export namespace Prisma {
     password?: StringFieldUpdateOperationsInput | string
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    dndEnabled?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     workplaceId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -52552,6 +56909,7 @@ export namespace Prisma {
     password?: StringFieldUpdateOperationsInput | string
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    dndEnabled?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     workplaceId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -52565,6 +56923,7 @@ export namespace Prisma {
     password?: StringFieldUpdateOperationsInput | string
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    dndEnabled?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     ownedProperties?: PropertyUpdateManyWithoutOwnersNestedInput
@@ -52578,6 +56937,7 @@ export namespace Prisma {
     password?: StringFieldUpdateOperationsInput | string
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    dndEnabled?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     ownedPropertyIds?: UserUpdateownedPropertyIdsInput | string[]
@@ -52592,6 +56952,7 @@ export namespace Prisma {
     password?: StringFieldUpdateOperationsInput | string
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    dndEnabled?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     ownedPropertyIds?: UserUpdateownedPropertyIdsInput | string[]
@@ -52613,6 +56974,7 @@ export namespace Prisma {
     bookings?: BookingUpdateManyWithoutRoomNestedInput
     serviceRequests?: ServiceRequestUpdateManyWithoutRoomNestedInput
     favorites?: FavoriteUpdateManyWithoutRoomNestedInput
+    lostItems?: LostItemUpdateManyWithoutRoomNestedInput
   }
 
   export type RoomUncheckedUpdateWithoutPropertyInput = {
@@ -52631,6 +56993,7 @@ export namespace Prisma {
     bookings?: BookingUncheckedUpdateManyWithoutRoomNestedInput
     serviceRequests?: ServiceRequestUncheckedUpdateManyWithoutRoomNestedInput
     favorites?: FavoriteUncheckedUpdateManyWithoutRoomNestedInput
+    lostItems?: LostItemUncheckedUpdateManyWithoutRoomNestedInput
   }
 
   export type RoomUncheckedUpdateManyWithoutPropertyInput = {
@@ -52684,7 +57047,8 @@ export namespace Prisma {
     category?: StringFieldUpdateOperationsInput | string
     cuisine?: NullableStringFieldUpdateOperationsInput | string | null
     price?: FloatFieldUpdateOperationsInput | number
-    image?: NullableStringFieldUpdateOperationsInput | string | null
+    margin?: FloatFieldUpdateOperationsInput | number
+    images?: MenuItemUpdateimagesInput | string[]
     isVeg?: BoolFieldUpdateOperationsInput | boolean
     isAvailable?: BoolFieldUpdateOperationsInput | boolean
     prepTime?: NullableIntFieldUpdateOperationsInput | number | null
@@ -52698,7 +57062,8 @@ export namespace Prisma {
     category?: StringFieldUpdateOperationsInput | string
     cuisine?: NullableStringFieldUpdateOperationsInput | string | null
     price?: FloatFieldUpdateOperationsInput | number
-    image?: NullableStringFieldUpdateOperationsInput | string | null
+    margin?: FloatFieldUpdateOperationsInput | number
+    images?: MenuItemUpdateimagesInput | string[]
     isVeg?: BoolFieldUpdateOperationsInput | boolean
     isAvailable?: BoolFieldUpdateOperationsInput | boolean
     prepTime?: NullableIntFieldUpdateOperationsInput | number | null
@@ -52712,7 +57077,8 @@ export namespace Prisma {
     category?: StringFieldUpdateOperationsInput | string
     cuisine?: NullableStringFieldUpdateOperationsInput | string | null
     price?: FloatFieldUpdateOperationsInput | number
-    image?: NullableStringFieldUpdateOperationsInput | string | null
+    margin?: FloatFieldUpdateOperationsInput | number
+    images?: MenuItemUpdateimagesInput | string[]
     isVeg?: BoolFieldUpdateOperationsInput | boolean
     isAvailable?: BoolFieldUpdateOperationsInput | boolean
     prepTime?: NullableIntFieldUpdateOperationsInput | number | null
@@ -52759,12 +57125,16 @@ export namespace Prisma {
     dateOfJoining?: DateTimeFieldUpdateOperationsInput | Date | string
     department?: EnumDepartmentFieldUpdateOperationsInput | $Enums.Department
     designation?: StringFieldUpdateOperationsInput | string
+    contractType?: NullableStringFieldUpdateOperationsInput | string | null
+    workShift?: NullableStringFieldUpdateOperationsInput | string | null
+    managerName?: NullableStringFieldUpdateOperationsInput | string | null
     baseSalary?: FloatFieldUpdateOperationsInput | number
     bankName?: NullableStringFieldUpdateOperationsInput | string | null
     accountNumber?: NullableStringFieldUpdateOperationsInput | string | null
     ifscCode?: NullableStringFieldUpdateOperationsInput | string | null
     emergencyContactName?: NullableStringFieldUpdateOperationsInput | string | null
     emergencyContactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
     profilePhoto?: NullableStringFieldUpdateOperationsInput | string | null
     documents?: InputJsonValue | InputJsonValue | null
     annualLeaveBalance?: IntFieldUpdateOperationsInput | number
@@ -52778,6 +57148,7 @@ export namespace Prisma {
     serviceRequests?: ServiceRequestUpdateManyWithoutAssignedToNestedInput
     payrolls?: PayrollUpdateManyWithoutStaffNestedInput
     performanceScores?: PerformanceScoreUpdateManyWithoutStaffNestedInput
+    lostItems?: LostItemUpdateManyWithoutReportedByNestedInput
   }
 
   export type StaffUncheckedUpdateWithoutPropertyInput = {
@@ -52787,12 +57158,16 @@ export namespace Prisma {
     dateOfJoining?: DateTimeFieldUpdateOperationsInput | Date | string
     department?: EnumDepartmentFieldUpdateOperationsInput | $Enums.Department
     designation?: StringFieldUpdateOperationsInput | string
+    contractType?: NullableStringFieldUpdateOperationsInput | string | null
+    workShift?: NullableStringFieldUpdateOperationsInput | string | null
+    managerName?: NullableStringFieldUpdateOperationsInput | string | null
     baseSalary?: FloatFieldUpdateOperationsInput | number
     bankName?: NullableStringFieldUpdateOperationsInput | string | null
     accountNumber?: NullableStringFieldUpdateOperationsInput | string | null
     ifscCode?: NullableStringFieldUpdateOperationsInput | string | null
     emergencyContactName?: NullableStringFieldUpdateOperationsInput | string | null
     emergencyContactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
     profilePhoto?: NullableStringFieldUpdateOperationsInput | string | null
     documents?: InputJsonValue | InputJsonValue | null
     annualLeaveBalance?: IntFieldUpdateOperationsInput | number
@@ -52805,6 +57180,7 @@ export namespace Prisma {
     serviceRequests?: ServiceRequestUncheckedUpdateManyWithoutAssignedToNestedInput
     payrolls?: PayrollUncheckedUpdateManyWithoutStaffNestedInput
     performanceScores?: PerformanceScoreUncheckedUpdateManyWithoutStaffNestedInput
+    lostItems?: LostItemUncheckedUpdateManyWithoutReportedByNestedInput
   }
 
   export type StaffUncheckedUpdateManyWithoutPropertyInput = {
@@ -52814,12 +57190,16 @@ export namespace Prisma {
     dateOfJoining?: DateTimeFieldUpdateOperationsInput | Date | string
     department?: EnumDepartmentFieldUpdateOperationsInput | $Enums.Department
     designation?: StringFieldUpdateOperationsInput | string
+    contractType?: NullableStringFieldUpdateOperationsInput | string | null
+    workShift?: NullableStringFieldUpdateOperationsInput | string | null
+    managerName?: NullableStringFieldUpdateOperationsInput | string | null
     baseSalary?: FloatFieldUpdateOperationsInput | number
     bankName?: NullableStringFieldUpdateOperationsInput | string | null
     accountNumber?: NullableStringFieldUpdateOperationsInput | string | null
     ifscCode?: NullableStringFieldUpdateOperationsInput | string | null
     emergencyContactName?: NullableStringFieldUpdateOperationsInput | string | null
     emergencyContactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
     profilePhoto?: NullableStringFieldUpdateOperationsInput | string | null
     documents?: InputJsonValue | InputJsonValue | null
     annualLeaveBalance?: IntFieldUpdateOperationsInput | number
@@ -52832,6 +57212,8 @@ export namespace Prisma {
   export type BookingUpdateWithoutPropertyInput = {
     checkIn?: DateTimeFieldUpdateOperationsInput | Date | string
     checkOut?: DateTimeFieldUpdateOperationsInput | Date | string
+    actualCheckIn?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    actualCheckOut?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     numberOfGuests?: IntFieldUpdateOperationsInput | number
     status?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
     source?: EnumBookingSourceFieldUpdateOperationsInput | $Enums.BookingSource
@@ -52844,6 +57226,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     guest?: GuestUpdateOneRequiredWithoutBookingsNestedInput
     room?: RoomUpdateOneRequiredWithoutBookingsNestedInput
+    lostItems?: LostItemUpdateManyWithoutBookingNestedInput
   }
 
   export type BookingUncheckedUpdateWithoutPropertyInput = {
@@ -52851,6 +57234,8 @@ export namespace Prisma {
     roomId?: StringFieldUpdateOperationsInput | string
     checkIn?: DateTimeFieldUpdateOperationsInput | Date | string
     checkOut?: DateTimeFieldUpdateOperationsInput | Date | string
+    actualCheckIn?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    actualCheckOut?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     numberOfGuests?: IntFieldUpdateOperationsInput | number
     status?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
     source?: EnumBookingSourceFieldUpdateOperationsInput | $Enums.BookingSource
@@ -52861,6 +57246,7 @@ export namespace Prisma {
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lostItems?: LostItemUncheckedUpdateManyWithoutBookingNestedInput
   }
 
   export type BookingUncheckedUpdateManyWithoutPropertyInput = {
@@ -52868,6 +57254,8 @@ export namespace Prisma {
     roomId?: StringFieldUpdateOperationsInput | string
     checkIn?: DateTimeFieldUpdateOperationsInput | Date | string
     checkOut?: DateTimeFieldUpdateOperationsInput | Date | string
+    actualCheckIn?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    actualCheckOut?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     numberOfGuests?: IntFieldUpdateOperationsInput | number
     status?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
     source?: EnumBookingSourceFieldUpdateOperationsInput | $Enums.BookingSource
@@ -53122,11 +57510,91 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type LostItemUpdateWithoutPropertyInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    foundDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    evidenceImages?: LostItemUpdateevidenceImagesInput | string[]
+    caseNotes?: InputJsonValue | InputJsonValue | null
+    claimerName?: NullableStringFieldUpdateOperationsInput | string | null
+    claimerPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    claimedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    claimNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappSent?: BoolFieldUpdateOperationsInput | boolean
+    whatsappSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    whatsappStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappMessageId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    room?: RoomUpdateOneWithoutLostItemsNestedInput
+    reportedBy?: StaffUpdateOneWithoutLostItemsNestedInput
+    guest?: GuestUpdateOneWithoutLostItemsNestedInput
+    booking?: BookingUpdateOneWithoutLostItemsNestedInput
+  }
+
+  export type LostItemUncheckedUpdateWithoutPropertyInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    foundDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    roomId?: NullableStringFieldUpdateOperationsInput | string | null
+    reportedById?: NullableStringFieldUpdateOperationsInput | string | null
+    guestId?: NullableStringFieldUpdateOperationsInput | string | null
+    bookingId?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    evidenceImages?: LostItemUpdateevidenceImagesInput | string[]
+    caseNotes?: InputJsonValue | InputJsonValue | null
+    claimerName?: NullableStringFieldUpdateOperationsInput | string | null
+    claimerPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    claimedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    claimNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappSent?: BoolFieldUpdateOperationsInput | boolean
+    whatsappSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    whatsappStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappMessageId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LostItemUncheckedUpdateManyWithoutPropertyInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    foundDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    roomId?: NullableStringFieldUpdateOperationsInput | string | null
+    reportedById?: NullableStringFieldUpdateOperationsInput | string | null
+    guestId?: NullableStringFieldUpdateOperationsInput | string | null
+    bookingId?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    evidenceImages?: LostItemUpdateevidenceImagesInput | string[]
+    caseNotes?: InputJsonValue | InputJsonValue | null
+    claimerName?: NullableStringFieldUpdateOperationsInput | string | null
+    claimerPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    claimedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    claimNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappSent?: BoolFieldUpdateOperationsInput | boolean
+    whatsappSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    whatsappStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappMessageId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type BookingCreateManyRoomInput = {
     id?: string
     guestId: string
     checkIn: Date | string
     checkOut: Date | string
+    actualCheckIn?: Date | string | null
+    actualCheckOut?: Date | string | null
     numberOfGuests: number
     status?: $Enums.BookingStatus
     source?: $Enums.BookingSource
@@ -53168,9 +57636,38 @@ export namespace Prisma {
     createdAt?: Date | string
   }
 
+  export type LostItemCreateManyRoomInput = {
+    id?: string
+    propertyId: string
+    name: string
+    description?: string | null
+    category: string
+    status?: string
+    foundDate?: Date | string
+    location?: string | null
+    reportedById?: string | null
+    guestId?: string | null
+    bookingId?: string | null
+    image?: string | null
+    evidenceImages?: LostItemCreateevidenceImagesInput | string[]
+    caseNotes?: InputJsonValue | null
+    claimerName?: string | null
+    claimerPhone?: string | null
+    claimedAt?: Date | string | null
+    claimNotes?: string | null
+    whatsappSent?: boolean
+    whatsappSentAt?: Date | string | null
+    whatsappStatus?: string | null
+    whatsappMessageId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type BookingUpdateWithoutRoomInput = {
     checkIn?: DateTimeFieldUpdateOperationsInput | Date | string
     checkOut?: DateTimeFieldUpdateOperationsInput | Date | string
+    actualCheckIn?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    actualCheckOut?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     numberOfGuests?: IntFieldUpdateOperationsInput | number
     status?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
     source?: EnumBookingSourceFieldUpdateOperationsInput | $Enums.BookingSource
@@ -53183,12 +57680,15 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     guest?: GuestUpdateOneRequiredWithoutBookingsNestedInput
     property?: PropertyUpdateOneRequiredWithoutBookingsNestedInput
+    lostItems?: LostItemUpdateManyWithoutBookingNestedInput
   }
 
   export type BookingUncheckedUpdateWithoutRoomInput = {
     guestId?: StringFieldUpdateOperationsInput | string
     checkIn?: DateTimeFieldUpdateOperationsInput | Date | string
     checkOut?: DateTimeFieldUpdateOperationsInput | Date | string
+    actualCheckIn?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    actualCheckOut?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     numberOfGuests?: IntFieldUpdateOperationsInput | number
     status?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
     source?: EnumBookingSourceFieldUpdateOperationsInput | $Enums.BookingSource
@@ -53200,12 +57700,15 @@ export namespace Prisma {
     propertyId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lostItems?: LostItemUncheckedUpdateManyWithoutBookingNestedInput
   }
 
   export type BookingUncheckedUpdateManyWithoutRoomInput = {
     guestId?: StringFieldUpdateOperationsInput | string
     checkIn?: DateTimeFieldUpdateOperationsInput | Date | string
     checkOut?: DateTimeFieldUpdateOperationsInput | Date | string
+    actualCheckIn?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    actualCheckOut?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     numberOfGuests?: IntFieldUpdateOperationsInput | number
     status?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
     source?: EnumBookingSourceFieldUpdateOperationsInput | $Enums.BookingSource
@@ -53299,6 +57802,189 @@ export namespace Prisma {
   export type FavoriteUncheckedUpdateManyWithoutRoomInput = {
     guestId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LostItemUpdateWithoutRoomInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    foundDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    evidenceImages?: LostItemUpdateevidenceImagesInput | string[]
+    caseNotes?: InputJsonValue | InputJsonValue | null
+    claimerName?: NullableStringFieldUpdateOperationsInput | string | null
+    claimerPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    claimedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    claimNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappSent?: BoolFieldUpdateOperationsInput | boolean
+    whatsappSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    whatsappStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappMessageId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    property?: PropertyUpdateOneRequiredWithoutLostItemsNestedInput
+    reportedBy?: StaffUpdateOneWithoutLostItemsNestedInput
+    guest?: GuestUpdateOneWithoutLostItemsNestedInput
+    booking?: BookingUpdateOneWithoutLostItemsNestedInput
+  }
+
+  export type LostItemUncheckedUpdateWithoutRoomInput = {
+    propertyId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    foundDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    reportedById?: NullableStringFieldUpdateOperationsInput | string | null
+    guestId?: NullableStringFieldUpdateOperationsInput | string | null
+    bookingId?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    evidenceImages?: LostItemUpdateevidenceImagesInput | string[]
+    caseNotes?: InputJsonValue | InputJsonValue | null
+    claimerName?: NullableStringFieldUpdateOperationsInput | string | null
+    claimerPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    claimedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    claimNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappSent?: BoolFieldUpdateOperationsInput | boolean
+    whatsappSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    whatsappStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappMessageId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LostItemUncheckedUpdateManyWithoutRoomInput = {
+    propertyId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    foundDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    reportedById?: NullableStringFieldUpdateOperationsInput | string | null
+    guestId?: NullableStringFieldUpdateOperationsInput | string | null
+    bookingId?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    evidenceImages?: LostItemUpdateevidenceImagesInput | string[]
+    caseNotes?: InputJsonValue | InputJsonValue | null
+    claimerName?: NullableStringFieldUpdateOperationsInput | string | null
+    claimerPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    claimedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    claimNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappSent?: BoolFieldUpdateOperationsInput | boolean
+    whatsappSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    whatsappStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappMessageId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LostItemCreateManyBookingInput = {
+    id?: string
+    propertyId: string
+    name: string
+    description?: string | null
+    category: string
+    status?: string
+    foundDate?: Date | string
+    location?: string | null
+    roomId?: string | null
+    reportedById?: string | null
+    guestId?: string | null
+    image?: string | null
+    evidenceImages?: LostItemCreateevidenceImagesInput | string[]
+    caseNotes?: InputJsonValue | null
+    claimerName?: string | null
+    claimerPhone?: string | null
+    claimedAt?: Date | string | null
+    claimNotes?: string | null
+    whatsappSent?: boolean
+    whatsappSentAt?: Date | string | null
+    whatsappStatus?: string | null
+    whatsappMessageId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type LostItemUpdateWithoutBookingInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    foundDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    evidenceImages?: LostItemUpdateevidenceImagesInput | string[]
+    caseNotes?: InputJsonValue | InputJsonValue | null
+    claimerName?: NullableStringFieldUpdateOperationsInput | string | null
+    claimerPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    claimedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    claimNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappSent?: BoolFieldUpdateOperationsInput | boolean
+    whatsappSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    whatsappStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappMessageId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    property?: PropertyUpdateOneRequiredWithoutLostItemsNestedInput
+    room?: RoomUpdateOneWithoutLostItemsNestedInput
+    reportedBy?: StaffUpdateOneWithoutLostItemsNestedInput
+    guest?: GuestUpdateOneWithoutLostItemsNestedInput
+  }
+
+  export type LostItemUncheckedUpdateWithoutBookingInput = {
+    propertyId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    foundDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    roomId?: NullableStringFieldUpdateOperationsInput | string | null
+    reportedById?: NullableStringFieldUpdateOperationsInput | string | null
+    guestId?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    evidenceImages?: LostItemUpdateevidenceImagesInput | string[]
+    caseNotes?: InputJsonValue | InputJsonValue | null
+    claimerName?: NullableStringFieldUpdateOperationsInput | string | null
+    claimerPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    claimedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    claimNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappSent?: BoolFieldUpdateOperationsInput | boolean
+    whatsappSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    whatsappStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappMessageId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LostItemUncheckedUpdateManyWithoutBookingInput = {
+    propertyId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    foundDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    roomId?: NullableStringFieldUpdateOperationsInput | string | null
+    reportedById?: NullableStringFieldUpdateOperationsInput | string | null
+    guestId?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    evidenceImages?: LostItemUpdateevidenceImagesInput | string[]
+    caseNotes?: InputJsonValue | InputJsonValue | null
+    claimerName?: NullableStringFieldUpdateOperationsInput | string | null
+    claimerPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    claimedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    claimNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappSent?: BoolFieldUpdateOperationsInput | boolean
+    whatsappSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    whatsappStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappMessageId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type RatingCreateManyServiceRequestInput = {
@@ -53454,6 +58140,33 @@ export namespace Prisma {
     avgRating?: number | null
     slaBreaches?: number
     overallScore?: number | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type LostItemCreateManyReportedByInput = {
+    id?: string
+    propertyId: string
+    name: string
+    description?: string | null
+    category: string
+    status?: string
+    foundDate?: Date | string
+    location?: string | null
+    roomId?: string | null
+    guestId?: string | null
+    bookingId?: string | null
+    image?: string | null
+    evidenceImages?: LostItemCreateevidenceImagesInput | string[]
+    caseNotes?: InputJsonValue | null
+    claimerName?: string | null
+    claimerPhone?: string | null
+    claimedAt?: Date | string | null
+    claimNotes?: string | null
+    whatsappSent?: boolean
+    whatsappSentAt?: Date | string | null
+    whatsappStatus?: string | null
+    whatsappMessageId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -53696,6 +58409,84 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type LostItemUpdateWithoutReportedByInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    foundDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    evidenceImages?: LostItemUpdateevidenceImagesInput | string[]
+    caseNotes?: InputJsonValue | InputJsonValue | null
+    claimerName?: NullableStringFieldUpdateOperationsInput | string | null
+    claimerPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    claimedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    claimNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappSent?: BoolFieldUpdateOperationsInput | boolean
+    whatsappSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    whatsappStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappMessageId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    property?: PropertyUpdateOneRequiredWithoutLostItemsNestedInput
+    room?: RoomUpdateOneWithoutLostItemsNestedInput
+    guest?: GuestUpdateOneWithoutLostItemsNestedInput
+    booking?: BookingUpdateOneWithoutLostItemsNestedInput
+  }
+
+  export type LostItemUncheckedUpdateWithoutReportedByInput = {
+    propertyId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    foundDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    roomId?: NullableStringFieldUpdateOperationsInput | string | null
+    guestId?: NullableStringFieldUpdateOperationsInput | string | null
+    bookingId?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    evidenceImages?: LostItemUpdateevidenceImagesInput | string[]
+    caseNotes?: InputJsonValue | InputJsonValue | null
+    claimerName?: NullableStringFieldUpdateOperationsInput | string | null
+    claimerPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    claimedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    claimNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappSent?: BoolFieldUpdateOperationsInput | boolean
+    whatsappSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    whatsappStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappMessageId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LostItemUncheckedUpdateManyWithoutReportedByInput = {
+    propertyId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    foundDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    roomId?: NullableStringFieldUpdateOperationsInput | string | null
+    guestId?: NullableStringFieldUpdateOperationsInput | string | null
+    bookingId?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    evidenceImages?: LostItemUpdateevidenceImagesInput | string[]
+    caseNotes?: InputJsonValue | InputJsonValue | null
+    claimerName?: NullableStringFieldUpdateOperationsInput | string | null
+    claimerPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    claimedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    claimNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappSent?: BoolFieldUpdateOperationsInput | boolean
+    whatsappSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    whatsappStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    whatsappMessageId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type ServiceStepCreateManyServiceConfigInput = {
     id?: string
     name: string
@@ -53771,6 +58562,10 @@ export namespace Prisma {
      * @deprecated Use RoomCountOutputTypeDefaultArgs instead
      */
     export type RoomCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = RoomCountOutputTypeDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use BookingCountOutputTypeDefaultArgs instead
+     */
+    export type BookingCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = BookingCountOutputTypeDefaultArgs<ExtArgs>
     /**
      * @deprecated Use ServiceRequestCountOutputTypeDefaultArgs instead
      */
@@ -53851,6 +58646,10 @@ export namespace Prisma {
      * @deprecated Use SpaServiceDefaultArgs instead
      */
     export type SpaServiceArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = SpaServiceDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use LostItemDefaultArgs instead
+     */
+    export type LostItemArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = LostItemDefaultArgs<ExtArgs>
     /**
      * @deprecated Use RolePermissionDefaultArgs instead
      */

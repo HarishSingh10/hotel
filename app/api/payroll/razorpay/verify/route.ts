@@ -7,8 +7,13 @@ export const dynamic = 'force-dynamic'
 
 export async function POST(req: NextRequest) {
     try {
-        const authResult = await requireAuth(req, ['HOTEL_ADMIN', 'SUPER_ADMIN'])
+        const authResult = await requireAuth(req)
         if (authResult instanceof NextResponse) return authResult
+
+        const isAuthorized = ['SUPER_ADMIN', 'HOTEL_ADMIN', 'MANAGER'].includes(authResult.user.role) || authResult.user.department === 'ACCOUNTS'
+        if (!isAuthorized) {
+            return NextResponse.json({ error: 'Forbidden. Insufficient permissions.' }, { status: 403 })
+        }
 
         const body = await req.json()
         const { 

@@ -9,6 +9,7 @@ export interface AuthUser {
     email: string
     role: string
     propertyId?: string | null
+    department?: string | null
 }
 
 /**
@@ -73,7 +74,8 @@ export async function requireAuth(
             id: session.user.id,
             email: session.user.email,
             role: session.user.role,
-            propertyId: session.user.propertyId
+            propertyId: session.user.propertyId,
+            department: session.user.department
         } as AuthUser
 
         if (allowedRoles && !hasRole(user.role, allowedRoles)) {

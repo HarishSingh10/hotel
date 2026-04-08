@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic'
 
 export async function POST(request: Request) {
     const session = await getServerSession(authOptions)
-    if (!session || (session.user.role !== 'SUPER_ADMIN' && session.user.role !== 'HOTEL_ADMIN')) {
+    if (!session || !['SUPER_ADMIN', 'HOTEL_ADMIN', 'MANAGER', 'RECEPTIONIST', 'STAFF'].includes(session.user.role)) {
         return new NextResponse('Unauthorized', { status: 401 })
     }
 
@@ -24,8 +24,12 @@ export async function POST(request: Request) {
         const updateData: any = {}
         if (assignedToId) updateData.assignedToId = assignedToId
         // priority must be: LOW, NORMAL, HIGH, URGENT — 'MEDIUM' is NOT valid
-        if (priority && ['LOW', 'NORMAL', 'HIGH', 'URGENT'].includes(priority)) {
-            updateData.priority = priority
+        if (priority) {
+            const ValidP = ['LOW', 'NORMAL', 'HIGH', 'URGENT']
+            const normalizedP = priority === 'MEDIUM' ? 'NORMAL' : priority
+            if (ValidP.includes(normalizedP)) {
+                updateData.priority = normalizedP
+            }
         }
         if (status) {
             updateData.status = status

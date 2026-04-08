@@ -62,12 +62,20 @@ export const authOptions: NextAuthOptions = {
                     propertyId = (user as any).ownedPropertyIds[0]
                 }
 
+                // Fetch department if staff
+                let department = null
+                if (user.role === 'STAFF' || user.role === 'MANAGER' || user.role === 'RECEPTIONIST') {
+                    const staff = await prisma.staff.findUnique({ where: { userId: user.id } })
+                    department = staff?.department
+                }
+
                 return {
                     id: user.id,
                     email: user.email,
                     name: user.name,
                     role: user.role,
-                    propertyId: propertyId,
+                    propertyId,
+                    department
                 }
             },
         }),
@@ -78,6 +86,7 @@ export const authOptions: NextAuthOptions = {
                 session.user.id = token.id as string
                 session.user.role = token.role as string
                 session.user.propertyId = token.propertyId as string
+                session.user.department = token.department as string
             }
             return session
         },
@@ -86,6 +95,7 @@ export const authOptions: NextAuthOptions = {
                 token.id = user.id
                 token.role = (user as any).role
                 token.propertyId = (user as any).propertyId
+                token.department = (user as any).department
             }
             return token
         },

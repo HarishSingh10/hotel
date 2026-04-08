@@ -9,6 +9,7 @@ import Modal from '@/components/ui/Modal'
 import Input from '@/components/ui/Input'
 import Textarea from '@/components/ui/Textarea'
 import { toast } from 'sonner'
+import Avatar from '@/components/common/Avatar'
 import { cn } from '@/lib/utils'
 
 interface StaffMember {
@@ -65,7 +66,9 @@ export default function PropertiesPage() {
         email: '',
         phone: '',
         address: '',
-        description: ''
+        description: '',
+        latitude: '',
+        longitude: ''
     })
 
     useEffect(() => {
@@ -102,7 +105,7 @@ export default function PropertiesPage() {
             if (res.ok) {
                 toast.success('Property added successfully!')
                 setIsModalOpen(false)
-                setFormData({ name: '', email: '', phone: '', address: '', description: '' })
+                setFormData({ name: '', email: '', phone: '', address: '', description: '', latitude: '', longitude: '' })
                 fetchHierarchy()
             } else {
                 const data = await res.json()
@@ -181,9 +184,7 @@ export default function PropertiesPage() {
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                             {property.owners.map(owner => (
                                                 <div key={owner.id} className="flex items-center gap-3 p-3 bg-surface rounded-lg border border-border">
-                                                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
-                                                        {owner.name[0]}
-                                                    </div>
+                                                    <Avatar name={owner.name} size="md" />
                                                     <div>
                                                         <p className="font-medium text-sm">{owner.name}</p>
                                                         <p className="text-xs text-text-secondary">{owner.email}</p>
@@ -202,9 +203,7 @@ export default function PropertiesPage() {
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                             {property.staff.map(member => (
                                                 <div key={member.id} className="flex items-center gap-3 p-3 bg-surface rounded-lg border border-border">
-                                                    <div className="w-10 h-10 rounded-full bg-secondary/20 flex items-center justify-center text-secondary font-bold">
-                                                        {member.user.name[0]}
-                                                    </div>
+                                                    <Avatar name={member.user.name} size="md" />
                                                     <div>
                                                         <p className="font-medium text-sm">{member.user.name}</p>
                                                         <p className="text-xs text-text-secondary">{member.user.email}</p>
@@ -213,7 +212,7 @@ export default function PropertiesPage() {
                                                 </div>
                                             ))}
                                             {property.staff.length === 0 && (
-                                                <p className="text-sm text-text-tertiary col-span-full italic">No staff mapped to this property yet.</p>
+                                                <p className="text-sm text-text-tertiary col-span-full ">No staff mapped to this property yet.</p>
                                             )}
                                         </div>
                                     </div>
@@ -225,7 +224,7 @@ export default function PropertiesPage() {
                                                 <h4 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-text-tertiary mb-1">
                                                     <Sparkles className="w-4 h-4 text-amber-500" /> Subscription & Feature Flags
                                                 </h4>
-                                                <p className="text-xs text-text-darker italic font-medium">Control module access and subscription level for this hotel.</p>
+                                                <p className="text-xs text-text-darker  font-medium">Control module access and subscription level for this hotel.</p>
                                             </div>
                                             <div className="flex items-center gap-2">
                                                 {['GOLD', 'PLATINUM', 'DIAMOND'].map(p => (
@@ -243,7 +242,7 @@ export default function PropertiesPage() {
                                                             }
                                                         }}
                                                         className={cn(
-                                                            "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest transition-all",
+                                                            "px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all",
                                                             property.plan === p 
                                                                 ? "bg-primary text-white shadow-lg shadow-primary/20" 
                                                                 : "bg-surface border border-border text-text-tertiary hover:text-white"
@@ -369,6 +368,59 @@ export default function PropertiesPage() {
                         value={formData.description}
                         onChange={e => setFormData({ ...formData, description: e.target.value })}
                     />
+
+                    <div className="pt-4 border-t border-white/10 space-y-4">
+                        <div className="flex items-center justify-between">
+                            <h4 className="text-[11px] font-black text-gray-400 uppercase tracking-widest italic flex items-center gap-2">
+                                <MapPin className="w-3.5 h-3.5 text-primary" /> Spatial Coordinates
+                            </h4>
+                            <button 
+                                type="button"
+                                onClick={() => {
+                                    if (navigator.geolocation) {
+                                        navigator.geolocation.getCurrentPosition((pos) => {
+                                            setFormData({
+                                                ...formData,
+                                                latitude: pos.coords.latitude.toString(),
+                                                longitude: pos.coords.longitude.toString()
+                                            })
+                                            toast.success('Live coordinates captured!')
+                                        })
+                                    }
+                                }}
+                                className="text-[9px] font-black text-primary uppercase tracking-widest hover:underline"
+                            >
+                                Get Current
+                            </button>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <Input
+                                label="Latitude"
+                                placeholder="e.g. 28.6139"
+                                value={formData.latitude}
+                                onChange={e => setFormData({ ...formData, latitude: e.target.value })}
+                            />
+                            <Input
+                                label="Longitude"
+                                placeholder="e.g. 77.2090"
+                                value={formData.longitude}
+                                onChange={e => setFormData({ ...formData, longitude: e.target.value })}
+                            />
+                        </div>
+                        <div 
+                            className="h-24 bg-[#0d1117] border border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center cursor-crosshair hover:bg-white/[0.02] transition-colors"
+                            onClick={() => {
+                                // Simulate map click
+                                if (!formData.latitude) {
+                                    setFormData({ ...formData, latitude: '28.6139', longitude: '77.2090' })
+                                    toast.info('Simulated map coordinate picked')
+                                }
+                            }}
+                        >
+                            <div className="w-1.5 h-1.5 bg-primary rounded-full animate-ping mb-2"></div>
+                            <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Interactive Map Target (Beta)</span>
+                        </div>
+                    </div>
                 </form>
             </Modal>
         </div>

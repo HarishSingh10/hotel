@@ -20,8 +20,6 @@ import {
   Smartphone,
   ArrowRight,
   Sparkles,
-  Command,
-  Zap,
   Fingerprint,
   Activity,
   Layers,
@@ -65,9 +63,9 @@ export default function ProfessionalLandingPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-[#050505] text-[#D1D1D1] selection:bg-[#C5A059]/30 font-sans tracking-tight overflow-x-hidden">
+    <div className="min-h-screen bg-[#050505] text-[#D1D1D1] selection:bg-[#4A9EFF]/30 font-sans tracking-tight overflow-x-hidden">
       
-      {/* ── LUXURY HEADER ── */}
+      {/* ── HEADER ── */}
       <nav className={cn(
         "fixed top-0 inset-x-0 z-[100] transition-all duration-1000",
         scrolled 
@@ -76,13 +74,13 @@ export default function ProfessionalLandingPage() {
       )}>
         <div className="max-w-[1400px] mx-auto px-10 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-6 h-6 rounded-full border border-white/20 flex items-center justify-center group-hover:border-[#C5A059] transition-colors duration-500">
-               <div className="w-1 h-1 bg-white rounded-full group-hover:bg-[#C5A059] transition-all duration-500 shrink-0" />
+            <div className="w-6 h-6 rounded-full border border-white/20 flex items-center justify-center group-hover:border-[#4A9EFF] transition-colors duration-500">
+               <div className="w-1 h-1 bg-white rounded-full group-hover:bg-[#4A9EFF] transition-all duration-500 shrink-0" />
             </div>
-            <span className="text-lg font-medium tracking-[0.4em] uppercase text-white font-serif">Zenbourg</span>
+            <span className="text-xl font-bold tracking-[0.2em] uppercase text-white font-outfit">Zenbourg</span>
           </Link>
 
-          <div className="hidden lg:flex items-center gap-14 font-sans text-[9px] font-black uppercase tracking-[0.4em] text-white/30">
+          <div className="hidden lg:flex items-center gap-14 text-[9px] font-bold uppercase tracking-[0.4em] text-white/30">
             {['Ecosystem', 'Intelligence', 'Security', 'Network'].map((item) => (
               <motion.div key={item} whileHover={{ y: -1 }}>
                 <Link 
@@ -143,17 +141,17 @@ export default function ProfessionalLandingPage() {
                 variants={FADE_UP}
                 className="flex items-center gap-4 mb-8"
               >
-                <div className="h-px w-8 bg-[#C5A059]/60" />
-                <span className="text-[9px] font-black uppercase tracking-[0.5em] text-[#C5A059]">ESTATE ORCHESTRATION</span>
+                <div className="h-px w-8 bg-[#4A9EFF]/60" />
+                <span className="text-[9px] font-bold uppercase tracking-[0.5em] text-[#4A9EFF]">ESTATE ORCHESTRATION</span>
               </motion.div>
               
               <motion.h1 
                 variants={FADE_UP}
-                className="text-6xl md:text-8xl font-serif italic text-white leading-[0.9] mb-12 tracking-tight"
+                className="text-5xl md:text-7xl font-bold text-white leading-[1.1] mb-8 tracking-tighter font-outfit"
               >
-                Quiet <br/>
-                Excellence <br/>
-                <span className="font-sans text-[0.45em] not-italic font-light tracking-tight text-white/50">for Global Portfolios.</span>
+                Executive <br/>
+                Orchestration <br/>
+                <span className="text-2xl md:text-3xl font-normal tracking-tight text-white/40">Scale your hospitality vision.</span>
               </motion.h1>
 
               <motion.p 
@@ -172,8 +170,8 @@ export default function ProfessionalLandingPage() {
                         <ArrowRight size={22} strokeWidth={2.5} />
                     </div>
                     <div>
-                        <div className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 mb-1">STRATEGIC ACCESS</div>
-                        <div className="text-sm font-bold text-white group-hover:text-[#C5A059] transition-colors">Command Center</div>
+                        <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/40 mb-1">STRATEGIC ACCESS</div>
+                        <div className="text-sm font-bold text-white group-hover:text-[#4A9EFF] transition-colors">Command Center</div>
                     </div>
                 </Link>
                 <Link href="/staff/login" className="group flex items-center gap-6">
@@ -181,8 +179,8 @@ export default function ProfessionalLandingPage() {
                         <UserCog size={22} strokeWidth={1} />
                     </div>
                     <div>
-                        <div className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 mb-1">OPERATIONAL</div>
-                        <div className="text-sm font-bold text-white group-hover:text-[#C5A059] transition-colors">Staff Dashboard</div>
+                        <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/40 mb-1">OPERATIONAL</div>
+                        <div className="text-sm font-bold text-white group-hover:text-[#4A9EFF] transition-colors">Staff Dashboard</div>
                     </div>
                 </Link>
               </motion.div>
@@ -190,8 +188,8 @@ export default function ProfessionalLandingPage() {
           </div>
         </section>
 
-        {/* ── INTELLIGENCE: REAL-TIME COMMAND ── */}
-        <section id="intelligence" className="py-60 bg-[#050505]">
+        {/* ── INTELLIGENCE ── */}
+        <section id="intelligence" className="py-40 bg-[#050505]">
            <div className="max-w-[1400px] mx-auto px-10">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-32 items-center">
                  <motion.div 
@@ -201,15 +199,14 @@ export default function ProfessionalLandingPage() {
                    viewport={{ once: true }}
                    className="relative order-2 lg:order-1"
                  >
-                    <div className="absolute inset-0 bg-[#C5A059]/5 rounded-[3rem] blur-3xl -z-10" />
+                    <div className="absolute inset-0 bg-[#4A9EFF]/5 rounded-[3rem] blur-3xl -z-10" />
                     <div className="border border-white/5 rounded-3xl overflow-hidden shadow-2xl">
                        <img src="/images/concierge.png" alt="Command Interface" className="w-full h-auto" />
                     </div>
                  </motion.div>
 
                  <div className="space-y-16 order-1 lg:order-2 lg:pl-20 relative">
-                    {/* Background architectural element */}
-                    <div className="absolute top-0 right-0 w-3/4 h-3/4 bg-[#C5A059]/5 blur-[120px] -z-10" />
+                    <div className="absolute top-0 right-0 w-3/4 h-3/4 bg-[#4A9EFF]/5 blur-[120px] -z-10" />
 
                     <div className="space-y-10">
                        <motion.div 
@@ -219,8 +216,8 @@ export default function ProfessionalLandingPage() {
                          viewport={{ once: true }}
                          className="flex items-center gap-4"
                        >
-                          <div className="h-px w-10 bg-[#C5A059]/40" />
-                          <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[#C5A059]">DATA COMMAND</span>
+                          <div className="h-px w-10 bg-[#4A9EFF]/40" />
+                          <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#4A9EFF]">DATA COMMAND</span>
                        </motion.div>
                        
                        <motion.h2 
@@ -228,10 +225,10 @@ export default function ProfessionalLandingPage() {
                          whileInView={{ opacity: 1, y: 0 }}
                          transition={{ duration: 1, delay: 0.2 }}
                          viewport={{ once: true }}
-                         className="text-5xl md:text-7xl font-serif italic text-white leading-tight"
+                         className="text-4xl md:text-6xl font-bold text-white leading-tight font-outfit uppercase tracking-tight"
                        >
                          Anticipatory <br/> 
-                         <span className="text-[#C5A059]">Intelligence.</span>
+                         <span className="text-[#4A9EFF]">Intelligence Layer.</span>
                        </motion.h2>
 
                        <motion.p 
@@ -251,7 +248,7 @@ export default function ProfessionalLandingPage() {
                          { title: "Guest Persona", icon: <Fingerprint strokeWidth={1} />, desc: "Behavioral mapping that enables impeccable, six-star personalized concierge services." }
                        ].map((f, i) => (
                          <div key={i} className="space-y-4 group">
-                            <div className="text-[#C5A059] group-hover:scale-110 transition-transform duration-500">{f.icon}</div>
+                            <div className="text-[#4A9EFF] group-hover:scale-110 transition-transform duration-500">{f.icon}</div>
                             <h4 className="text-sm font-bold text-white uppercase tracking-widest">{f.title}</h4>
                             <p className="text-xs text-white/30 font-light leading-relaxed">{f.desc}</p>
                          </div>
@@ -262,32 +259,31 @@ export default function ProfessionalLandingPage() {
            </div>
         </section>
 
-        {/* ── GLOBAL CONNECTIVITY: ANIMATED MAP ── */}
-        <section id="network" className="py-60 bg-[#0A0A0A] border-y border-white/[0.03]">
+        {/* ── NETWORK ── */}
+        <section id="network" className="py-40 bg-[#0A0A0A] border-y border-white/[0.03]">
            <div className="max-w-[1400px] mx-auto px-10">
               <div className="text-center max-w-2xl mx-auto mb-32 space-y-8">
                  <motion.div 
                    initial={{ opacity: 0 }}
                    whileInView={{ opacity: 1 }}
-                   className="text-[9px] font-black uppercase tracking-[0.5em] text-[#C5A059]"
+                   className="text-[9px] font-bold uppercase tracking-[0.5em] text-[#4A9EFF]"
                  >
                    Global Enterprise Sync
                  </motion.div>
-                 <h2 className="text-5xl md:text-7xl font-serif italic text-white leading-tight">Unified Presence. <br/> Local Control.</h2>
+                 <h2 className="text-4xl md:text-6xl font-bold text-white leading-tight font-outfit uppercase tracking-tight">Unified Sync. <br/> Total Control.</h2>
                  <p className="text-white/40 font-light text-xl">Manage every node in your global portfolio through a singular, high-performance network synchronized in real-time.</p>
               </div>
 
               <div className="relative aspect-[21/9] w-full bg-[#050505] rounded-[3rem] border border-white/5 overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] group">
                  <img src="/images/map.png" alt="Global Map" className="w-full h-full object-cover opacity-30 grayscale brightness-125 transition-all duration-1000 group-hover:opacity-40" />
                  
-                 {/* Connection SVG */}
                  <svg className="absolute inset-0 w-full h-full z-10 pointer-events-none">
                     <motion.path 
                       initial={{ pathLength: 0, opacity: 0 }}
                       whileInView={{ pathLength: 1, opacity: 0.2 }}
                       transition={{ duration: 4, ease: "easeInOut", delay: 1 }}
                       d="M 350,320 C 450,250 550,250 670,405" 
-                      stroke="#C5A059" 
+                      stroke="#4A9EFF" 
                       strokeWidth="1" 
                       fill="transparent"
                       className="hidden md:block"
@@ -297,14 +293,13 @@ export default function ProfessionalLandingPage() {
                       whileInView={{ pathLength: 1, opacity: 0.2 }}
                       transition={{ duration: 4, ease: "easeInOut", delay: 1.5 }}
                       d="M 670,405 C 800,450 950,550 1120,500" 
-                      stroke="#C5A059" 
+                      stroke="#4A9EFF" 
                       strokeWidth="1" 
                       fill="transparent"
                       className="hidden md:block"
                     />
                  </svg>
 
-                 {/* Hub Nodes */}
                  {connectionNodes.map((node, i) => (
                    <div 
                      key={i} 
@@ -320,17 +315,16 @@ export default function ProfessionalLandingPage() {
                          <motion.div 
                            animate={{ scale: [1, 2, 1], opacity: [0.6, 0, 0.6] }}
                            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                           className="absolute w-8 h-8 rounded-full bg-[#C5A059]/40"
+                           className="absolute w-8 h-8 rounded-full bg-[#4A9EFF]/40"
                          />
-                         <div className="w-2 h-2 bg-[#C5A059] rounded-full shadow-[0_0_15px_rgba(197,160,89,0.8)]" />
-                         <div className="absolute top-4 left-4 text-[8px] font-black uppercase tracking-widest text-white/40 whitespace-nowrap bg-[#050505]/60 backdrop-blur pb-1 px-2 rounded">
+                         <div className="w-2 h-2 bg-[#4A9EFF] rounded-full shadow-[0_0_15px_rgba(74,158,255,0.8)]" />
+                         <div className="absolute top-4 left-4 text-[8px] font-bold uppercase tracking-widest text-white/40 whitespace-nowrap bg-[#050505]/60 backdrop-blur pb-1 px-2 rounded">
                             {node.city}
                          </div>
                       </motion.div>
                    </div>
                  ))}
 
-                 {/* Global Stats bar */}
                  <div className="absolute bottom-10 inset-x-10 z-30 flex items-center justify-between border-t border-white/5 pt-10">
                     {[
                       { l: "Time", v: "15:44 UTC", c: "London" },
@@ -338,27 +332,27 @@ export default function ProfessionalLandingPage() {
                       { l: "Sync", v: "< 2ms", c: "Global" }
                     ].map((stat, i) => (
                       <div key={i} className="space-y-1">
-                         <div className="text-[8px] font-black uppercase tracking-widest text-white/20">{stat.l}</div>
-                         <div className="text-sm font-serif italic text-white">{stat.v}</div>
-                         <div className="text-[7px] text-[#C5A059] font-bold tracking-widest">{stat.c}</div>
-                      </div>
+                          <div className="text-[8px] font-bold uppercase tracking-[0.2em] text-white/20">{stat.l}</div>
+                          <div className="text-sm font-bold text-white font-outfit">{stat.v}</div>
+                          <div className="text-[7px] text-[#4A9EFF] font-bold tracking-widest">{stat.c}</div>
+                       </div>
                     ))}
                  </div>
               </div>
            </div>
         </section>
 
-        {/* ── SECURITY: THE VAULT ── */}
-        <section id="security" className="py-60 bg-[#050505]">
+        {/* ── SECURITY ── */}
+        <section id="security" className="py-40 bg-[#050505]">
           <div className="max-w-[1400px] mx-auto px-10 border-b border-white/[0.03] pb-40">
              <div className="grid grid-cols-1 lg:grid-cols-2 gap-32 items-center">
                 <div className="space-y-12">
                    <div className="space-y-8">
                       <div className="flex items-center gap-3">
-                         <Lock size={14} className="text-[#C5A059]" />
-                         <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[#C5A059]">VAULT PRIVACY</span>
+                         <Lock size={14} className="text-[#4A9EFF]" />
+                         <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#4A9EFF]">VAULT PRIVACY</span>
                       </div>
-                      <h2 className="text-5xl md:text-7xl font-serif italic text-white leading-tight">Architecture <br/> of Trust.</h2>
+                      <h2 className="text-4xl md:text-6xl font-bold text-white leading-tight font-outfit uppercase tracking-tight">Architecture <br/> of Trust.</h2>
                       <p className="text-xl text-white/40 font-light leading-relaxed max-w-lg">
                         Privacy is not a feature; it is our foundation. Zenbourg houses administrative authority and guest personas within a multi-layered encryption vault.
                       </p>
@@ -372,7 +366,7 @@ export default function ProfessionalLandingPage() {
                       ].map((s, i) => (
                         <div key={i} className="flex items-center justify-between">
                            <span className="text-[10px] uppercase tracking-widest text-white/20">{s.l}</span>
-                           <span className="text-[9px] font-black uppercase tracking-widest text-[#C5A059] border border-[#C5A059]/30 px-3 py-1 rounded-full">{s.v}</span>
+                           <span className="text-[9px] font-bold uppercase tracking-widest text-[#4A9EFF] border border-[#4A9EFF]/30 px-3 py-1 rounded-full">{s.v}</span>
                         </div>
                       ))}
                    </div>
@@ -387,8 +381,8 @@ export default function ProfessionalLandingPage() {
                    >
                       <img src="/images/intelligence.png" className="w-full h-auto rounded-[3rem] grayscale brightness-50" alt="Vault" />
                       <div className="absolute inset-0 flex items-center justify-center">
-                         <div className="w-24 h-24 rounded-full border border-[#C5A059]/20 flex items-center justify-center animate-pulse">
-                            <ShieldCheck size={40} className="text-[#C5A059]" strokeWidth={0.5} />
+                         <div className="w-24 h-24 rounded-full border border-[#4A9EFF]/20 flex items-center justify-center animate-pulse">
+                            <ShieldCheck size={40} className="text-[#4A9EFF]" strokeWidth={0.5} />
                          </div>
                       </div>
                    </motion.div>
@@ -397,8 +391,8 @@ export default function ProfessionalLandingPage() {
           </div>
         </section>
 
-        {/* ── PWA: DEPLOYMENT ── */}
-        <section className="py-60 bg-[#050505]">
+        {/* ── PWA ── */}
+        <section className="py-40 bg-[#050505]">
            <div className="max-w-[1400px] mx-auto px-10">
               <div className="bg-[#111111] border border-white/5 rounded-[4rem] p-20 flex flex-col md:flex-row items-center justify-between gap-20 overflow-hidden relative group">
                  <div className="absolute top-0 right-0 p-10 opacity-5 group-hover:opacity-10 transition-opacity duration-1000">
@@ -407,7 +401,7 @@ export default function ProfessionalLandingPage() {
                  
                  <div className="max-w-xl space-y-12 relative z-10">
                     <div className="space-y-6">
-                       <h2 className="text-5xl font-serif italic text-white leading-tight">Command Everywhere.</h2>
+                       <h2 className="text-4xl font-bold text-white leading-tight font-outfit uppercase tracking-tight">Command Everywhere.</h2>
                        <p className="text-white/40 font-light leading-relaxed text-lg">
                           The Zenbourg PWA bridges the gap between the executive desk and the property floor. Instant deployment. Unified sync.
                        </p>
@@ -419,7 +413,7 @@ export default function ProfessionalLandingPage() {
                            whileHover={{ scale: 1.05 }}
                            whileTap={{ scale: 0.95 }}
                            onClick={installPwa}
-                           className="px-10 py-5 bg-white text-black rounded-full text-[11px] font-black uppercase tracking-[0.3em] flex items-center gap-3 shadow-2xl"
+                           className="px-10 py-5 bg-white text-black rounded-full text-[11px] font-bold uppercase tracking-[0.3em] flex items-center gap-3 shadow-2xl"
                          >
                             <Download size={18} /> Deploy Application
                          </motion.button>
@@ -431,11 +425,11 @@ export default function ProfessionalLandingPage() {
 
                  <div className="grid grid-cols-2 gap-px bg-white/5 rounded-3xl overflow-hidden shadow-2xl shrink-0">
                     <div className="p-12 bg-[#0A0A0A] space-y-6">
-                       <LayoutDashboard className="text-[#C5A059]" size={28} strokeWidth={1} />
+                       <LayoutDashboard className="text-[#4A9EFF]" size={28} strokeWidth={1} />
                        <h3 className="text-sm font-bold text-white uppercase tracking-widest">Executive</h3>
                     </div>
                     <div className="p-12 bg-[#0A0A0A] space-y-6">
-                       <UserCog className="text-[#C5A059]" size={28} strokeWidth={1} />
+                       <UserCog className="text-[#4A9EFF]" size={28} strokeWidth={1} />
                        <h3 className="text-sm font-bold text-white uppercase tracking-widest">Staff</h3>
                     </div>
                  </div>
@@ -449,11 +443,11 @@ export default function ProfessionalLandingPage() {
         <div className="max-w-[1400px] mx-auto px-10">
           <div className="flex flex-col md:flex-row justify-between items-start gap-40">
             <div className="space-y-10 max-w-sm">
-              <div className="flex items-center gap-4">
-                 <div className="w-6 h-6 rounded-full border border-[#C5A059]" />
-                 <span className="text-xl font-serif italic tracking-[0.2em] text-white uppercase">Zenbourg</span>
+              <div className="flex items-center gap-3">
+                 <div className="w-5 h-5 rounded-full border-2 border-[#4A9EFF]" />
+                 <span className="text-lg font-bold tracking-[0.1em] text-white uppercase font-outfit">Zenbourg</span>
               </div>
-              <p className="text-sm text-white/30 font-light leading-relaxed italic">
+              <p className="text-sm text-white/30 font-light leading-relaxed">
                  "Designed for the world’s most breathtaking estates, delivering operational silence and administrative clarity at scale."
               </p>
             </div>
@@ -466,7 +460,7 @@ export default function ProfessionalLandingPage() {
                  { title: "CONTACT", links: ["Inquiry", "Advisory", "Support"] },
                ].map((cat) => (
                  <div key={cat.title} className="space-y-8">
-                    <h5 className="text-[10px] font-black uppercase tracking-[0.4em] text-white">{cat.title}</h5>
+                    <h5 className="text-[10px] font-bold uppercase tracking-[0.4em] text-white">{cat.title}</h5>
                     <div className="flex flex-col gap-4">
                        {cat.links.map(link => (
                          <Link key={link} href="#" className="text-sm text-white/30 hover:text-white transition-colors font-light">
@@ -480,11 +474,11 @@ export default function ProfessionalLandingPage() {
           </div>
 
           <div className="mt-40 pt-10 border-t border-white/[0.03] flex flex-col md:flex-row justify-between items-center gap-10">
-             <div className="text-[10px] font-black tracking-[0.4em] text-white/20 uppercase">&copy; 2026 ZENBOURG SYSTEMS. ALL RIGHTS RESERVED.</div>
-             <div className="flex gap-10 text-[10px] font-black tracking-[0.3em] text-white/20 uppercase">
-                <Link href="#" className="hover:text-[#C5A059]">Architecture</Link>
-                <Link href="#" className="hover:text-[#C5A059]">Security</Link>
-                <Link href="#" className="hover:text-[#C5A059]">Compliance</Link>
+             <div className="text-[10px] font-bold tracking-[0.4em] text-white/20 uppercase">&copy; 2026 ZENBOURG SYSTEMS. ALL RIGHTS RESERVED.</div>
+             <div className="flex gap-10 text-[10px] font-bold tracking-[0.3em] text-white/20 uppercase">
+                <Link href="#" className="hover:text-[#4A9EFF]">Architecture</Link>
+                <Link href="#" className="hover:text-[#4A9EFF]">Security</Link>
+                <Link href="#" className="hover:text-[#4A9EFF]">Compliance</Link>
              </div>
           </div>
         </div>
@@ -511,7 +505,7 @@ export default function ProfessionalLandingPage() {
                    key={link} 
                    href={`#${link.toLowerCase()}`}
                    onClick={() => setMobileMenuOpen(false)}
-                   className="text-5xl font-serif italic text-white"
+                   className="text-5xl font-bold text-white uppercase tracking-tighter font-outfit"
                  >
                    {link}
                  </Link>
@@ -519,7 +513,7 @@ export default function ProfessionalLandingPage() {
             </div>
             <Link 
               href="/admin/login"
-              className="w-full py-6 bg-white text-black text-center rounded-full text-[11px] font-black uppercase tracking-[0.4em]"
+              className="w-full py-6 bg-white text-black text-center rounded-full text-[11px] font-bold uppercase tracking-[0.4em]"
             >
               Executive Access
             </Link>

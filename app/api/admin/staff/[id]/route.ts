@@ -56,6 +56,66 @@ export async function GET(
     }
 }
 
+export async function PATCH(
+    request: Request,
+    { params }: { params: { id: string } }
+) {
+    const session = await getServerSession(authOptions)
+    if (!session || !['SUPER_ADMIN', 'HOTEL_ADMIN', 'MANAGER'].includes(session.user.role)) {
+        return new NextResponse('Unauthorized', { status: 401 })
+    }
+
+    try {
+        const body = await request.json()
+        const { 
+            name, email, phone, designation, department, 
+            baseSalary, dateOfJoining, employeeId,
+            emergencyContactName, emergencyContactPhone, address,
+            contractType, workShift, managerName, status
+        } = body
+
+        const currentStaff = await prisma.staff.findUnique({
+            where: { id: params.id },
+            select: { userId: true }
+        })
+
+        if (!currentStaff) return new NextResponse('Staff not found', { status: 404 })
+
+        const updatedStaff = await prisma.$transaction([
+            prisma.user.update({
+                where: { id: currentStaff.userId },
+                data: {
+                    ...(name && { name }),
+                    ...(email && { email }),
+                    ...(phone && { phone }),
+                    ...(status && { status }),
+                }
+            }),
+            prisma.staff.update({
+                where: { id: params.id },
+                data: {
+                    ...(designation && { designation }),
+                    ...(department && { department }),
+                    ...(baseSalary && { baseSalary: parseFloat(baseSalary) }),
+                    ...(dateOfJoining && { dateOfJoining: new Date(dateOfJoining) }),
+                    ...(employeeId && { employeeId }),
+                    ...(emergencyContactName && { emergencyContactName }),
+                    ...(emergencyContactPhone && { emergencyContactPhone }),
+                    ...(address && { address }),
+                    ...(contractType && { contractType }),
+                    ...(workShift && { workShift }),
+                    ...(managerName && { managerName }),
+                }
+            })
+        ])
+
+        return NextResponse.json(updatedStaff[1])
+    } catch (error) {
+        console.error('[STAFF_PATCH]', error)
+        return new NextResponse('Internal Error', { status: 500 })
+    }
+}
+
 export async function DELETE(
     request: Request,
     { params }: { params: { id: string } }

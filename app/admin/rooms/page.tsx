@@ -156,9 +156,33 @@ export default function RoomsPage() {
                     <p className="text-[12px] text-gray-400 mt-0.5">Manage all hotel rooms, check status, and update inventory details.</p>
                 </div>
                 <div className="flex items-center gap-2 flex-wrap">
-                    <button onClick={() => toast.success('Export started')}
-                        className="flex items-center gap-1.5 px-3 py-2 bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.08] text-gray-300 text-[12px] font-medium rounded-lg transition-colors">
-                        <Download className="w-3.5 h-3.5" /> Import / Export
+                    <button 
+                        onClick={() => {
+                            const headers = ['Room Number', 'Type', 'Floor', 'Price', 'Capacity', 'Status', 'Amenities']
+                            const rows = filtered.map(r => [
+                                r.roomNumber,
+                                r.type,
+                                r.floor,
+                                r.basePrice,
+                                r.maxOccupancy,
+                                r.status,
+                                (r.amenities || []).join('; ')
+                            ])
+                            const csvContent = "data:text/csv;charset=utf-8," 
+                                + headers.join(",") + "\n" 
+                                + rows.map(e => e.join(",")).join("\n")
+                            const encodedUri = encodeURI(csvContent)
+                            const link = document.createElement("a")
+                            link.setAttribute("href", encodedUri)
+                            link.setAttribute("download", `room_inventory_${new Date().toISOString().split('T')[0]}.csv`)
+                            document.body.appendChild(link)
+                            link.click()
+                            document.body.removeChild(link)
+                            toast.success('Inventory exported successfully')
+                        }}
+                        className="flex items-center gap-1.5 px-3 py-2 bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.08] text-gray-300 text-[12px] font-medium rounded-lg transition-all active:scale-95"
+                    >
+                        <Download className="w-3.5 h-3.5" /> Export Rooms
                     </button>
                     <button onClick={() => setNewModal(true)}
                         className="flex items-center gap-1.5 px-3 py-2 bg-[#4A9EFF] hover:bg-[#3A8EEF] text-white text-[12px] font-semibold rounded-lg transition-colors shadow-lg shadow-[#4A9EFF]/20">
@@ -243,7 +267,7 @@ export default function RoomsPage() {
                                                 <span className="text-[9px] text-gray-600">+{room.amenities.length - 4}</span>
                                             )}
                                             {(!room.amenities || room.amenities.length === 0) && (
-                                                <span className="text-[10px] text-gray-600 italic">None</span>
+                                                <span className="text-[10px] text-gray-600 ">None</span>
                                             )}
                                         </div>
                                     </td>

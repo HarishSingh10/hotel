@@ -53,8 +53,11 @@ export async function middleware(req: NextRequest) {
             if (!allowedAdminRoles.includes(role)) {
                 return NextResponse.redirect(new URL(getHomePath(role), req.url))
             }
-            // Payroll specific
-            if (pathname.startsWith('/admin/payroll') && !['SUPER_ADMIN', 'HOTEL_ADMIN'].includes(role)) {
+            // Payroll specific: ALLOW SUPER_ADMIN, HOTEL_ADMIN, MANAGER, OR ANYONE in ACCOUNTS department
+            const isFinanceUser = token.department === 'ACCOUNTS'
+            const isAuthorizedForPayroll = ['SUPER_ADMIN', 'HOTEL_ADMIN', 'MANAGER'].includes(role) || isFinanceUser
+            
+            if (pathname.startsWith('/admin/payroll') && !isAuthorizedForPayroll) {
                 return NextResponse.redirect(new URL('/admin/dashboard', req.url))
             }
         }

@@ -16,6 +16,7 @@ export default function BulkImportPage() {
     const [importing, setImporting] = useState(false)
     const [step, setStep] = useState(1) // 1: Upload, 2: Mapping, 3: Preview
     const [previewData, setPreviewData] = useState<any[]>([])
+    const [rawData, setRawData] = useState<any[]>([])
     const [stats, setStats] = useState({
         total: 0,
         valid: 0,
@@ -29,41 +30,89 @@ export default function BulkImportPage() {
         const selectedFile = e.target.files?.[0]
         if (selectedFile) {
             setFile(selectedFile)
-            setStats({ total: 1248, valid: 1180, warnings: 42, invalid: 26 })
-            toast.success('File uploaded successfully')
+            const reader = new FileReader()
+            reader.onload = (event) => {
+                const text = event.target?.result as string
+                const lines = text.split('\n').filter(l => l.trim() !== '')
+                const headers = lines[0].split(',').map(h => h.trim().toLowerCase())
+                const rows = lines.slice(1).map(line => {
+                    const values = line.split(',')
+                    const obj: any = {}
+                    headers.forEach((h, i) => {
+                        obj[h] = values[i]?.trim()
+                    })
+                    return obj
+                })
+                
+                setRawData(rows)
+                const validRows = rows.filter(r => r.name && r.phone)
+                setStats({
+                    total: rows.length,
+                    valid: validRows.length,
+                    warnings: rows.length - validRows.length,
+                    invalid: 0
+                })
+                setPreviewData(rows.slice(0, 10).map(r => ({
+                    status: (r.name && r.phone) ? 'Ready' : 'Alert',
+                    name: r.name || 'Unknown',
+                    checkIn: r.checkin || 'N/A',
+                    type: r.roomtype || 'N/A',
+                    source: r.source || 'N/A',
+                    notes: (r.name && r.phone) ? 'No errors' : 'Missing Name/Phone',
+                    typeClass: (r.name && r.phone) ? 'text-emerald-500' : 'text-amber-500'
+                })))
+                toast.success(`File processed: ${rows.length} records found`)
+            }
+            reader.readAsText(selectedFile)
         }
     }
 
-    const runValidation = () => {
-        setValidating(true)
-        setTimeout(() => {
-            setValidating(false)
-            setStep(3)
-            setPreviewData([
-                { status: 'Ready', name: 'Jonathan Wick', checkIn: '2023-11-12', type: 'Deluxe King', source: 'Booking.com', notes: 'No errors', typeClass: 'text-emerald-500' },
-                { status: 'Alert', name: 'Sarah Connor', checkIn: '2023-12-01', type: 'Standard', source: 'Direct', notes: 'Duplicate Email', typeClass: 'text-amber-500' },
-                { status: 'Error', name: 'Ellen Ripley', checkIn: 'INVALID_DATE', type: 'Suite', source: 'Expedia', notes: 'Check-in > Check-out', typeClass: 'text-red-500' },
-                { status: 'Ready', name: 'Bruce Wayne', checkIn: '2024-01-15', type: 'Penthouse', source: 'Luxury Travel', notes: 'No errors', typeClass: 'text-emerald-500' },
-                { status: 'Ready', name: 'Diana Prince', checkIn: '2023-11-20', type: 'Deluxe King', source: 'Direct', notes: 'No errors', typeClass: 'text-emerald-500' },
-                { status: 'Alert', name: 'Peter Parker', checkIn: '2023-11-25', type: 'Budget Twin', source: 'Airbnb', notes: 'Incomplete Address', typeClass: 'text-amber-500' },
-            ])
-            toast.info('Validation complete. Review the results below.')
-        }, 2000)
-    }
+    // Validation is now part of upload, but we can make it manual too if needed
+    const runValidation = () => setStep(3)
 
-    const startImport = () => {
+    const startImport = async () => {
+        if (rawData.length === 0) return;
+        
         setImporting(true)
-        toast.promise(
-            new Promise(resolve => setTimeout(resolve, 3000)),
-            {
-                loading: 'Synchronizing bookings with property calendar...',
-                success: () => {
-                    setImporting(false)
-                    return 'Import successful! 1,180 bookings added.'
-                },
-                error: 'Import failed'
+        try {
+            const validGuests = rawData.filter(r => r.name && r.phone)
+            const res = await fetch('/api/admin/guests/bulk', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ guests: validGuests })
+            })
+
+            if (res.ok) {
+                const data = await res.json()
+                toast.success(`Import successful! ${data.count} bookings added.`)
+                setStep(1)
+                setFile(null)
+                setRawData([])
+                setPreviewData([])
+            } else {
+                toast.error('Import failed')
             }
-        )
+        } catch (error) {
+            toast.error('Something went wrong during import')
+        } finally {
+            setImporting(false)
+        }
+    }
+    
+    const handleDownloadTemplate = () => {
+        const headers = ['name', 'phone', 'email', 'checkIn', 'checkOut', 'roomNumber', 'roomType', 'guestCount', 'source']
+        const sampleData = [
+            'John Doe,9876543210,john@example.com,2024-03-25,2024-03-28,101,DELUXE,2,BOOKING_COM',
+            'Jane Smith,9876543221,jane@example.com,2024-03-26,2024-03-30,202,PREMIUM,1,DIRECT'
+        ]
+        const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...sampleData].join('\n')
+        const link = document.createElement("a")
+        link.setAttribute("href", encodeURI(csvContent))
+        link.setAttribute("download", "bulk_booking_template.csv")
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        toast.success('Template downloaded successfully')
     }
 
     return (
@@ -84,13 +133,16 @@ export default function BulkImportPage() {
                         <p className="text-gray-500 font-medium text-lg">Batch upload guest data and synchronize your property calendar.</p>
                     </div>
                     <div className="flex items-center gap-4">
-                        <button className="flex items-center gap-2 px-6 py-3 bg-[#161b22] border border-white/5 rounded-xl text-sm font-bold text-white hover:bg-white/10 transition-all">
+                        <button 
+                            onClick={handleDownloadTemplate}
+                            className="flex items-center gap-2 px-6 py-3 bg-[#161b22] border border-white/5 rounded-xl text-sm font-bold text-white hover:bg-white/10 transition-all active:scale-[0.98]"
+                        >
                             <Download className="w-4 h-4" /> Download Template
                         </button>
                         <button
                             onClick={startImport}
                             disabled={importing || step < 3}
-                            className="flex items-center gap-2 px-8 py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-30 disabled:cursor-not-allowed text-white text-sm font-black rounded-xl shadow-2xl shadow-blue-600/30 transition-all active:scale-[0.98] uppercase tracking-widest"
+                            className="flex items-center gap-2 px-8 py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-30 disabled:cursor-not-allowed text-white text-sm font-bold rounded-xl shadow-2xl shadow-blue-600/30 transition-all active:scale-[0.98] uppercase tracking-widest"
                         >
                             {importing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Rocket className="w-4 h-4" />}
                             Start Import
@@ -107,11 +159,11 @@ export default function BulkImportPage() {
                         { label: 'Invalid Rows', value: stats.invalid, color: 'border-red-500/20 bg-red-500/5', tagColor: 'text-red-500' },
                     ].map((s, i) => (
                         <div key={i} className={cn("border rounded-2xl p-7 relative transition-all hover:scale-[1.02]", s.color)}>
-                            <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-3">{s.label}</p>
+                            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mb-3">{s.label}</p>
                             <div className="flex items-center gap-4">
-                                <p className="text-4xl font-black text-white">{s.value}</p>
+                                <p className="text-4xl font-bold text-white">{s.value}</p>
                                 {s.tag && (
-                                    <span className={cn("px-2 py-0.5 rounded text-[10px] font-black", s.tagColor)}>{s.tag}</span>
+                                    <span className={cn("px-2 py-0.5 rounded text-[10px] font-bold", s.tagColor)}>{s.tag}</span>
                                 )}
                             </div>
                         </div>
@@ -127,7 +179,7 @@ export default function BulkImportPage() {
                         {/* 1. Upload File */}
                         <div className="bg-[#161b22] border border-white/5 rounded-2xl p-8 shadow-sm">
                             <div className="flex items-center gap-3 mb-8">
-                                <div className="w-8 h-8 rounded-lg bg-blue-600/10 flex items-center justify-center text-blue-500 font-black text-xs">1</div>
+                                <div className="w-8 h-8 rounded-lg bg-blue-600/10 flex items-center justify-center text-blue-500 font-bold text-xs">1</div>
                                 <h3 className="text-lg font-bold text-white">Upload File</h3>
                             </div>
 
@@ -147,7 +199,7 @@ export default function BulkImportPage() {
                                         <p className="text-white font-bold text-lg">Drop your file here</p>
                                         <p className="text-gray-500 text-sm mt-1">Supports CSV, XLSX up to 20MB</p>
                                     </div>
-                                    <button className="mt-2 px-6 py-2.5 bg-[#0d1117] border border-white/5 rounded-xl text-xs font-black text-gray-400 uppercase tracking-widest hover:text-white transition-colors">
+                                    <button className="mt-2 px-6 py-2.5 bg-[#0d1117] border border-white/5 rounded-xl text-xs font-bold text-gray-400 uppercase tracking-widest hover:text-white transition-colors">
                                         Browse files
                                     </button>
                                 </div>
@@ -173,10 +225,10 @@ export default function BulkImportPage() {
                         <div className="bg-[#161b22] border border-white/5 rounded-2xl p-8 shadow-sm">
                             <div className="flex items-center justify-between mb-8">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-lg bg-blue-600/10 flex items-center justify-center text-blue-500 font-black text-xs">2</div>
+                                    <div className="w-8 h-8 rounded-lg bg-blue-600/10 flex items-center justify-center text-blue-500 font-bold text-xs">2</div>
                                     <h3 className="text-lg font-bold text-white">Field Mapping</h3>
                                 </div>
-                                <span className="text-[9px] font-black text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded tracking-tighter uppercase">Auto-Matched</span>
+                                <span className="text-[9px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded tracking-tighter uppercase">Auto-Matched</span>
                             </div>
 
                             <div className="space-y-6">
@@ -187,7 +239,7 @@ export default function BulkImportPage() {
                                     { label: 'Booking Source', placeholder: '- Select Column -', error: true },
                                 ].map((field, i) => (
                                     <div key={i} className="space-y-2">
-                                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest block">{field.label}</label>
+                                        <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest block">{field.label}</label>
                                         <div className="relative">
                                             <select
                                                 className={cn(
@@ -211,7 +263,7 @@ export default function BulkImportPage() {
                                 <button
                                     onClick={runValidation}
                                     disabled={validating || !file}
-                                    className="w-full mt-4 py-4 bg-[#0d1117] border border-white/5 hover:border-blue-500/50 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all shadow-lg active:scale-[0.98] disabled:opacity-20 flex items-center justify-center gap-2"
+                                    className="w-full mt-4 py-4 bg-[#0d1117] border border-white/5 hover:border-blue-500/50 text-white rounded-2xl font-bold text-xs uppercase tracking-[0.2em] transition-all shadow-lg active:scale-[0.98] disabled:opacity-20 flex items-center justify-center gap-2"
                                 >
                                     {validating ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Run Validation'}
                                 </button>
@@ -224,7 +276,7 @@ export default function BulkImportPage() {
                         <div className="bg-[#161b22] border border-white/5 rounded-2xl shadow-sm h-full flex flex-col overflow-hidden">
                             <div className="p-8 border-b border-white/5 flex items-center justify-between">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-lg bg-blue-600/10 flex items-center justify-center text-blue-500 font-black text-xs">3</div>
+                                    <div className="w-8 h-8 rounded-lg bg-blue-600/10 flex items-center justify-center text-blue-500 font-bold text-xs">3</div>
                                     <div>
                                         <h3 className="text-lg font-bold text-white">Validation Preview</h3>
                                         <p className="text-xs text-gray-500 font-medium tracking-tight">Showing first 100 rows of your dataset</p>
@@ -239,7 +291,7 @@ export default function BulkImportPage() {
                             <div className="flex-1 overflow-x-auto">
                                 <table className="w-full text-left">
                                     <thead>
-                                        <tr className="bg-[#0d1117] text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">
+                                        <tr className="bg-[#0d1117] text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em]">
                                             <th className="px-8 py-5">Status</th>
                                             <th className="px-8 py-5">Guest Name</th>
                                             <th className="px-8 py-5">Check-in</th>
@@ -259,14 +311,14 @@ export default function BulkImportPage() {
                                                                 row.status === 'Alert' ? "bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]" :
                                                                     "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]"
                                                         )} />
-                                                        <span className="text-[11px] font-black uppercase tracking-tighter text-gray-300">{row.status}</span>
+                                                        <span className="text-[11px] font-bold uppercase tracking-tighter text-gray-300">{row.status}</span>
                                                     </div>
                                                 </td>
                                                 <td className="px-8 py-6">
                                                     <span className="text-sm font-bold text-white truncate max-w-[150px] block">{row.name}</span>
                                                 </td>
                                                 <td className="px-8 py-6">
-                                                    <span className={cn("text-xs font-black tracking-widest uppercase", row.checkIn === 'INVALID_DATE' ? "text-red-500 bg-red-500/10 px-2 py-1 rounded" : "text-gray-400")}>
+                                                    <span className={cn("text-xs font-bold tracking-widest uppercase", row.checkIn === 'INVALID_DATE' ? "text-red-500 bg-red-500/10 px-2 py-1 rounded" : "text-gray-400")}>
                                                         {row.checkIn}
                                                     </span>
                                                 </td>
@@ -278,7 +330,7 @@ export default function BulkImportPage() {
                                                 </td>
                                                 <td className="px-8 py-6">
                                                     <span className={cn(
-                                                        "px-3 py-1 rounded-md text-[9px] font-black uppercase tracking-widest border transition-all",
+                                                        "px-3 py-1 rounded-md text-[9px] font-bold uppercase tracking-widest border transition-all",
                                                         row.status === 'Ready' ? "border-emerald-500/10 bg-emerald-500/5 text-gray-600" :
                                                             row.status === 'Alert' ? "border-amber-500/20 bg-amber-500/10 text-amber-500" :
                                                                 "border-red-500/20 bg-red-500/10 text-red-500"
@@ -294,8 +346,8 @@ export default function BulkImportPage() {
                                                     <div className="flex flex-col items-center gap-4 opacity-20 group">
                                                         <TableIcon className="w-16 h-16 group-hover:scale-110 transition-transform duration-500" />
                                                         <div className="space-y-1">
-                                                            <p className="text-lg font-black uppercase tracking-[0.3em]">No Preview Data</p>
-                                                            <p className="text-sm font-medium italic">Upload a file and run validation to see results</p>
+                                                            <p className="text-lg font-bold uppercase tracking-[0.3em]">No Preview Data</p>
+                                                            <p className="text-sm font-medium ">Upload a file and run validation to see results</p>
                                                         </div>
                                                     </div>
                                                 </td>
@@ -306,7 +358,7 @@ export default function BulkImportPage() {
                             </div>
 
                             <div className="p-8 border-t border-white/5 flex items-center justify-between bg-[#0d1117]/30">
-                                <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Rows 1-6 of 1,248</p>
+                                <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">Rows 1-6 of 1,248</p>
                                 <div className="flex items-center gap-3">
                                     <button className="p-3 bg-white/5 rounded-xl text-gray-600 cursor-not-allowed border border-white/5 transition-all">
                                         <ChevronDown className="w-4 h-4 rotate-90" />

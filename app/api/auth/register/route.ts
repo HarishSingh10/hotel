@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic'
 export async function POST(req: Request) {
     try {
         const body = await req.json()
-        const { name, email, phone, password, role = 'GUEST', hotelName, hotelAddress, plan = 'GOLD' } = body
+        const { name, email, phone, password, role = 'GUEST', hotelName, hotelAddress, latitude, longitude, plan = 'GOLD' } = body
 
         // Validation
         if (!name || !email || !phone || !password) {
@@ -62,6 +62,8 @@ export async function POST(req: Request) {
                         address: hotelAddress || 'Address not provided',
                         phone: phone,
                         email: email,
+                        latitude: latitude || null,
+                        longitude: longitude || null,
                         plan: 'GOLD', // Always start as GOLD, upgrade after payment
                         features: ["BASIC_OPS", "STAFF_MANAGEMENT"],
                         ownerIds: [user.id] // Link user as owner

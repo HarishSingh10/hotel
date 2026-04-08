@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
+import { performAutoAssignment } from '@/lib/service-utils'
 
 export const dynamic = 'force-dynamic'
 
@@ -24,9 +25,13 @@ export async function POST(req: Request) {
                 priority: (priority as any) || 'NORMAL',
                 guestId: guestId as string,
                 propertyId: property.id,
-                status: 'PENDING'
+                status: 'PENDING',
+                assignedToId: null
             }
         })
+        
+        // Auto-assign immediately
+        await performAutoAssignment(property.id, 0)
 
         return NextResponse.json({ success: true })
     } catch (error) {

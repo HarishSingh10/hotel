@@ -36,12 +36,14 @@ export async function GET(req: NextRequest) {
 
         if (year) where.year = parseInt(year)
 
-        // RBAC
-        if (authResult.user.role === 'STAFF') {
+        // RBAC: ALLOW SUPER_ADMIN, HOTEL_ADMIN, MANAGER, OR ANYONE in ACCOUNTS department
+        const isAuthorized = ['SUPER_ADMIN', 'HOTEL_ADMIN', 'MANAGER'].includes(authResult.user.role) || authResult.user.department === 'ACCOUNTS'
+
+        if (authResult.user.role === 'STAFF' && authResult.user.department !== 'ACCOUNTS') {
             const staff = await prisma.staff.findUnique({ where: { userId: authResult.user.id } })
             if (!staff) return NextResponse.json({ error: 'Staff not found' }, { status: 404 })
             where.staffId = staff.id
-        } else if (['SUPER_ADMIN', 'HOTEL_ADMIN', 'MANAGER'].includes(authResult.user.role)) {
+        } else if (isAuthorized) {
             if (staffId) {
                 where.staffId = staffId
             } else {
@@ -107,8 +109,14 @@ export async function GET(req: NextRequest) {
  */
 export async function POST(req: NextRequest) {
     try {
-        const authResult = await requireAuth(req, ['SUPER_ADMIN', 'HOTEL_ADMIN', 'MANAGER'])
+        const authResult = await requireAuth(req)
         if (authResult instanceof NextResponse) return authResult
+
+        // Custom check for POST: Role or Department
+        const isAuthorizedForPayroll = ['SUPER_ADMIN', 'HOTEL_ADMIN', 'MANAGER'].includes(authResult.user.role) || authResult.user.department === 'ACCOUNTS'
+        if (!isAuthorizedForPayroll) {
+            return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+        }
 
         const body = await req.json()
         const { month, year } = body // Expecting numbers: e.g. month: 2, year: 2026
@@ -120,8 +128,16 @@ export async function POST(req: NextRequest) {
         const calculationDate = new Date(year, month - 1, 1)
         const monthStr = format(calculationDate, 'MMMM')
 
-        // Get all staff
-        const staffList = await prisma.staff.findMany()
+        // Get staff belonging to the current hotel context
+        let staffFilter: any = {}
+        if (authResult.user.role !== 'SUPER_ADMIN') {
+            staffFilter = { propertyId: authResult.user.propertyId }
+        }
+
+        const staffList = await prisma.staff.findMany({
+            where: staffFilter,
+            include: { user: true }
+        })
         const results = []
 
         for (const staff of staffList) {
@@ -187,8 +203,14 @@ export async function POST(req: NextRequest) {
  */
 export async function PATCH(req: NextRequest) {
     try {
-        const authResult = await requireAuth(req, ['SUPER_ADMIN', 'HOTEL_ADMIN', 'MANAGER'])
+        const authResult = await requireAuth(req)
         if (authResult instanceof NextResponse) return authResult
+
+        // Custom check for PATCH: Role or Department
+        const isAuthorizedForPayrollOps = ['SUPER_ADMIN', 'HOTEL_ADMIN', 'MANAGER'].includes(authResult.user.role) || authResult.user.department === 'ACCOUNTS'
+        if (!isAuthorizedForPayrollOps) {
+            return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+        }
 
         const body = await req.json()
         const { id, status } = body

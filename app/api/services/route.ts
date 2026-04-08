@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 import jwt from 'jsonwebtoken';
+import { performAutoAssignment } from '@/lib/service-utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -155,6 +156,7 @@ export async function POST(request: NextRequest) {
                 amount: amount || null,
                 paymentStatus: amount ? 'PENDING' : null,
                 slaMinutes: body.slaMinutes || 30, // Get SLA from body or default
+                assignedToId: null,
             },
             include: {
                 room: {
@@ -178,6 +180,9 @@ export async function POST(request: NextRequest) {
         } catch (smsErr) {
             console.error('Failed to send request confirmation SMS:', smsErr);
         }
+
+        // AUTO-ASSIGN immediately
+        await performAutoAssignment(propertyId, 0);
 
         return NextResponse.json({
             success: true,

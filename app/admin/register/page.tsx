@@ -10,6 +10,9 @@ import { hash } from 'bcryptjs'
 import Input from '@/components/ui/Input'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
+import dynamic from 'next/dynamic'
+
+const MapPicker = dynamic(() => import('@/components/ui/MapPicker'), { ssr: false })
 
 export default function AdminRegisterPage() {
     const router = useRouter()
@@ -24,6 +27,8 @@ export default function AdminRegisterPage() {
         password: '',
         hotelName: '',
         hotelAddress: '',
+        latitude: null as number | null,
+        longitude: null as number | null,
         plan: 'GOLD' as 'GOLD' | 'PLATINUM' | 'DIAMOND'
     })
 
@@ -270,7 +275,18 @@ export default function AdminRegisterPage() {
                                 placeholder="Street, City, Country"
                                 value={formData.hotelAddress}
                                 onChange={(e) => handleChange('hotelAddress', e.target.value)}
+                                className="mb-4"
                             />
+
+                            <div className="mb-4">
+                                <MapPicker 
+                                    latitude={formData.latitude}
+                                    longitude={formData.longitude}
+                                    onChange={(lat, lng) => {
+                                        setFormData(prev => ({ ...prev, latitude: lat, longitude: lng }))
+                                    }}
+                                />
+                            </div>
                         </div>
 
                         {/* Plan Selection */}

@@ -13,7 +13,7 @@ import Button from '@/components/ui/Button'
 import Avatar from '@/components/common/Avatar'
 import { cn, formatCurrency } from '@/lib/utils'
 import {
-  LogIn, LogOut, BedDouble, Plus, Bell, Search, Send, MoreHorizontal, MessageSquare, Sparkles, BarChart3
+  LogIn, LogOut, BedDouble, Plus, Bell, Search, Send, MoreHorizontal, MessageSquare, Sparkles, BarChart3, IndianRupee
 } from 'lucide-react'
 
 export default function AdminDashboard() {
@@ -22,6 +22,7 @@ export default function AdminDashboard() {
 
   const [showCheckInModal, setShowCheckInModal] = useState(false)
   const [showServiceModal, setShowServiceModal] = useState(false)
+  const [drillDown, setDrillDown] = useState<{ type: string | null, title: string, data: any[] }>({ type: null, title: '', data: [] })
   const [rooms, setRooms] = useState<any[]>([])
   const [todayReservations, setTodayReservations] = useState<any[]>([])
   const [searchQuery, setSearchQuery] = useState('')
@@ -107,6 +108,7 @@ export default function AdminDashboard() {
     } catch { toast.error('Something went wrong') }
   }
 
+
   useEffect(() => { if (session) fetchStats() }, [session])
 
   const statusBadge = (status: string) => {
@@ -117,11 +119,44 @@ export default function AdminDashboard() {
     }
     const s = map[status] || map.RESERVED
     return (
-      <span className={cn('px-2.5 py-1 rounded-full text-[11px] font-semibold', s.bg, s.text)}>
+      <span className={cn('px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider', s.bg, s.text)}>
         {s.label}
       </span>
     )
   }
+
+  const DrillDownModal = () => (
+    <Modal
+      isOpen={!!drillDown.type}
+      onClose={() => setDrillDown({ type: null, title: '', data: [] })}
+      title={drillDown.title}
+      size="lg"
+    >
+      <div className="space-y-3 py-2 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+        {drillDown.data.length > 0 ? (
+          drillDown.data.map((item: any) => (
+            <div key={item.id} className="flex items-center justify-between p-4 bg-surface-light rounded-xl border border-border group hover:border-primary/30 transition-all">
+              <div className="flex items-center gap-3">
+                <Avatar name={item.guest} size="md" />
+                <div>
+                  <p className="font-bold text-white text-sm">{item.guest}</p>
+                  <p className="text-xs text-text-tertiary">Room {item.room} · {item.phone}</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{item.roomType}</p>
+                <p className="text-xs font-medium text-primary mt-1">{item.time || item.eta || 'Staying'}</p>
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="py-12 text-center text-text-tertiary">
+            No active records found for this category.
+          </div>
+        )}
+      </div>
+    </Modal>
+  )
 
   if (loading || !stats) {
     return (
@@ -141,52 +176,54 @@ export default function AdminDashboard() {
     <div className="space-y-4 animate-fade-in">
 
       {/* ===== 4 KPI CARDS ===== */}
-      {/* ===== 5 KPI CARDS ===== */}
-      <div data-tour="stats-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      {/* ===== KPI CARDS ===== */}
+      <div data-tour="stats-grid" className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
         {/* Today Revenue */}
-        <div className="relative overflow-hidden bg-gradient-to-br from-[#233648] to-[#1a2b3c] border border-white/[0.08] rounded-2xl p-5 hover:border-[#4A9EFF]/30 transition-all group group-hover:shadow-2xl shadow-[#4A9EFF]/5">
+        <div className="relative overflow-hidden bg-gradient-to-br from-[#233648] to-[#1a2b3c] border border-white/[0.08] rounded-2xl p-5 hover:border-[#4A9EFF]/30 transition-all group shadow-sm">
           <div className="absolute -right-4 -top-4 w-20 h-20 bg-[#4A9EFF]/5 rounded-full blur-2xl group-hover:bg-[#4A9EFF]/10 transition-all" />
           <div className="flex items-start justify-between mb-4 relative z-10">
             <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Today Revenue</p>
             <div className="w-9 h-9 rounded-xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
-              <Sparkles className="w-4 h-4 text-blue-400" />
+              <IndianRupee className="w-4 h-4 text-blue-400" />
             </div>
           </div>
-          <p className="text-2xl font-black text-white mb-1 tracking-tight">{formatCurrency(stats.todayRevenue || 0)}</p>
+          <p className="text-2xl font-bold text-white mb-1 tracking-tight truncate">{formatCurrency(stats.todayRevenue || 0)}</p>
           <div className="flex items-center gap-1.5 mt-2">
              <span className="text-[10px] font-bold text-emerald-400 bg-emerald-400/10 px-1.5 py-0.5 rounded-md">LIVE</span>
-             <p className="text-[10px] text-gray-500 font-medium tracking-wide">Update 1m ago</p>
+             <p className="text-[10px] text-gray-500 font-medium tracking-wide">Updated just now</p>
           </div>
         </div>
 
         {/* Month Revenue */}
-        <div className="bg-[#233648] border border-white/[0.07] rounded-2xl p-5 hover:border-white/[0.12] transition-all hover:scale-[1.02]">
+        <div className="bg-[#233648] border border-white/[0.07] rounded-2xl p-5 hover:border-white/[0.12] transition-all">
           <div className="flex items-start justify-between mb-4">
             <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">MTD Revenue</p>
             <div className="w-9 h-9 rounded-xl bg-purple-500/10 flex items-center justify-center border border-purple-500/20">
-              <BarChart3 className="w-4 h-4 text-purple-400" />
+              <IndianRupee className="w-4 h-4 text-purple-400" />
             </div>
           </div>
-          <p className="text-2xl font-black text-white mb-1 tracking-tight">{formatCurrency(stats.monthRevenue || 0)}</p>
+          <p className="text-2xl font-bold text-white mb-1 tracking-tight truncate">{formatCurrency(stats.monthRevenue || 0)}</p>
           <p className="text-[10px] text-gray-500 font-medium">Month to date performance</p>
         </div>
 
         {/* Occupancy */}
-        <div className="bg-[#233648] border border-white/[0.07] rounded-2xl p-5 hover:border-white/[0.12] transition-all">
+        <div 
+          onClick={() => setDrillDown({ type: 'OCCUPANCY', title: 'Current Occupancy', data: stats?.occupancyGuests || [] })}
+          className="bg-[#233648] border border-white/[0.07] rounded-2xl p-5 hover:border-[#4A9EFF]/30 transition-all cursor-pointer group"
+        >
           <div className="flex items-start justify-between mb-3">
-            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Occupancy</p>
+            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest group-hover:text-white transition-colors">Occupancy</p>
             <div className="w-9 h-9 rounded-xl bg-orange-500/10 flex items-center justify-center border border-orange-500/20">
               <BedDouble className="w-4 h-4 text-orange-400" />
             </div>
           </div>
           <div className="flex items-baseline gap-3 mb-2">
-            <p className="text-2xl font-black text-white">{stats.occupancyRate}%</p>
-            <span className={cn(
-              "text-[10px] font-bold px-1.5 py-0.5 rounded-md",
-              stats.occupancyTrend?.startsWith('+') ? "text-emerald-400 bg-emerald-400/10" : "text-rose-400 bg-rose-400/10"
-            )}>
-              {stats.occupancyTrend}
-            </span>
+            <p className="text-2xl font-bold text-white">{stats.occupancyRate}%</p>
+            <div className="flex flex-col">
+               <span className="text-[9px] font-black text-emerald-400 bg-emerald-400/10 px-1.5 py-0.5 rounded uppercase w-fit">
+                 {stats.avgMonthlyOccupancy}% Monthly Avg
+               </span>
+            </div>
           </div>
           <div className="h-1 bg-white/[0.06] rounded-full overflow-hidden mt-3">
             <div className="h-full bg-orange-500 rounded-full transition-all duration-1000" style={{ width: `${stats.occupancyRate}%` }} />
@@ -194,32 +231,42 @@ export default function AdminDashboard() {
         </div>
 
         {/* Today Check-ins */}
-        <div className="bg-[#233648] border border-white/[0.07] rounded-2xl p-5 hover:border-white/[0.12] transition-all">
+        <div 
+          onClick={() => setDrillDown({ type: 'ARRIVALS', title: 'Today Arrivals', data: stats?.recentCheckIns || [] })}
+          className="bg-[#233648] border border-white/[0.07] rounded-2xl p-5 hover:border-[#4A9EFF]/30 transition-all cursor-pointer group"
+        >
           <div className="flex items-start justify-between mb-4">
-            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Arrivals Today</p>
-            <div className="w-9 h-9 rounded-xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
+            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest group-hover:text-white transition-colors">Total Arrivals</p>
+            <div className="w-9 h-9 rounded-xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 group-hover:bg-emerald-500/20">
               <LogIn className="w-4 h-4 text-emerald-400" />
             </div>
           </div>
-          <p className="text-2xl font-black text-white mb-1 tracking-tight">{stats.todayCheckIns}</p>
-          <p className="text-[10px] text-emerald-400 font-bold">{stats.pendingArrivals} Pending verification</p>
+          <p className="text-2xl font-bold text-white mb-1 tracking-tight">{stats.todayCheckIns}</p>
+          <div className="flex flex-col">
+            <span className="text-[9px] font-black text-emerald-400 bg-emerald-400/10 px-1.5 py-0.5 rounded uppercase w-fit">
+              {stats.pendingArrivals} Pending check-in
+            </span>
+          </div>
         </div>
 
         {/* Today Check-outs */}
-        <div className="bg-[#233648] border border-white/[0.07] rounded-2xl p-5 hover:border-white/[0.12] transition-all">
+        <div 
+          onClick={() => setDrillDown({ type: 'DEPARTURES', title: 'Scheduled Departures', data: stats?.recentDepartures || [] })}
+          className="bg-[#233648] border border-white/[0.07] rounded-2xl p-5 hover:border-[#4A9EFF]/30 transition-all cursor-pointer group sm:col-span-2 md:col-span-1 xl:col-span-1"
+        >
           <div className="flex items-start justify-between mb-4">
-            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Departures</p>
-            <div className="w-9 h-9 rounded-xl bg-rose-500/10 flex items-center justify-center border border-rose-500/20">
+            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest group-hover:text-white transition-colors">Departures</p>
+            <div className="w-9 h-9 rounded-xl bg-rose-500/10 flex items-center justify-center border border-rose-500/20 group-hover:bg-rose-500/20">
               <LogOut className="w-4 h-4 text-rose-400" />
             </div>
           </div>
-          <p className="text-2xl font-black text-white mb-1 tracking-tight">{stats.todayCheckOuts}</p>
-          <p className="text-[10px] text-gray-500 font-medium">{stats.remainingDepartures} Rooms still occupied</p>
+          <p className="text-2xl font-bold text-white mb-1 tracking-tight">{stats.todayCheckOuts}</p>
+          <p className="text-[10px] text-gray-500 font-medium">{stats.remainingDepartures} Rooms remaining</p>
         </div>
       </div>
 
       {/* ===== MAIN GRID ===== */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1.6fr,1fr] gap-4">
+      <div className="grid grid-cols-1 xl:grid-cols-[1.6fr,1.1fr] gap-4">
 
         {/* LEFT COLUMN */}
         <div className="space-y-4">
@@ -231,49 +278,57 @@ export default function AdminDashboard() {
                 <Sparkles className="w-4 h-4 text-amber-400" />
                 <h2 className="text-[14px] font-semibold text-white">Today&apos;s Arrivals</h2>
               </div>
-              <button onClick={() => router.push('/admin/bookings')} className="text-[12px] font-semibold text-blue-400 hover:text-blue-300 transition-colors">
-                View All
+              <button 
+                onClick={() => router.push('/admin/bookings')} 
+                className="text-[12px] font-bold text-blue-400 hover:text-blue-300 transition-colors uppercase tracking-widest"
+              >
+                View Hub
               </button>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[600px]">
+              <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="border-t border-white/[0.06]">
-                    {['GUEST NAME', 'ROOM TYPE', 'ETA', 'STATUS', 'ACTION'].map(h => (
-                      <th key={h} className="text-left px-5 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest">{h}</th>
-                    ))}
+                  <tr className="border-t border-white/[0.06] bg-black/10">
+                    <th className="px-5 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">GUEST NAME</th>
+                    <th className="hidden sm:table-cell px-5 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">ROOM TYPE</th>
+                    <th className="px-5 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">ETA</th>
+                    <th className="hidden xs:table-cell px-5 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">STATUS</th>
+                    <th className="px-5 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">ACTION</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-white/[0.04]">
                   {stats.recentCheckIns?.length > 0 ? stats.recentCheckIns.map((g: any) => (
-                    <tr key={g.id} className="border-t border-white/[0.04] hover:bg-white/[0.02] transition-colors group">
+                    <tr key={g.id} className="hover:bg-white/[0.02] transition-colors group">
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-3">
                           <Avatar name={g.guest} size="sm" src={g.guestAvatar} />
                           <div>
-                            <p className="text-[13px] font-bold text-white leading-none">{g.guest}</p>
-                            <p className="text-[10px] text-gray-500 mt-1 font-medium">{g.guestId || 'GUEST-001'}</p>
+                            <p className="text-[13px] font-bold text-white leading-none mb-1">{g.guest}</p>
+                            <p className="text-[10px] text-gray-500 font-bold tracking-tight uppercase">{g.guestId || 'ZEN-GUEST'}</p>
                           </div>
                         </div>
                       </td>
-                      <td className="px-5 py-4">
+                      <td className="hidden sm:table-cell px-5 py-4">
                         <p className="text-[13px] text-gray-200 font-medium">{g.roomType}</p>
-                        <p className="text-[10px] text-gray-500 mt-0.5">Base Rate Applied</p>
+                        <p className="text-[10px] text-gray-500 mt-0.5">Base Rate</p>
                       </td>
-                      <td className="px-5 py-4 text-[13px] text-gray-400 font-medium">{g.eta}</td>
-                      <td className="px-5 py-4">{statusBadge(g.status)}</td>
-                      <td className="px-5 py-4">
+                      <td className="px-5 py-4 text-[13px] text-gray-400 font-bold text-center">{g.eta}</td>
+                      <td className="hidden xs:table-cell px-5 py-4">{statusBadge(g.status)}</td>
+                      <td className="px-5 py-4 text-right">
                         {g.status === 'RESERVED' ? (
-                          <button onClick={() => handleCheckIn(g.id)} className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500/10 text-blue-400 text-[11px] font-bold rounded-lg hover:bg-blue-500 hover:text-white transition-all">
-                            <LogIn size={12} /> Check-in
+                          <button 
+                            onClick={() => handleCheckIn(g.id)} 
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-500 text-white text-[10px] font-black uppercase tracking-widest rounded-lg shadow-lg shadow-blue-500/20 active:scale-95 transition-all"
+                          >
+                            Check-in
                           </button>
                         ) : (
-                          <button className="p-2 text-gray-600 hover:text-white hover:bg-white/5 rounded-lg transition-all"><MoreHorizontal className="w-4 h-4" /></button>
+                          <button className="p-2 text-gray-600 hover:text-white transition-all"><MoreHorizontal className="w-4 h-4" /></button>
                         )}
                       </td>
                     </tr>
                   )) : (
-                    <tr><td colSpan={5} className="text-center py-8 text-[13px] text-gray-500">No arrivals today.</td></tr>
+                    <tr><td colSpan={5} className="text-center py-10 text-[12px] text-gray-500 font-bold uppercase tracking-widest">Sky is clear - No arrivals</td></tr>
                   )}
                 </tbody>
               </table>
@@ -358,13 +413,16 @@ export default function AdminDashboard() {
             <div className="grid grid-cols-2 gap-3">
               <button
                 data-tour="guest-checkin"
-                onClick={() => { if (requireHotel('Send Check-in Link')) return; toast.info('Check-in link feature coming soon!') }}
-                className="flex flex-col items-center gap-2 p-4 bg-[#182433] hover:bg-[#202e40] border border-white/[0.06] rounded-xl transition-all active:scale-95"
+                onClick={() => { 
+                  if (requireHotel('Check-in Assistant')) return; 
+                  router.push('/admin/checkin')
+                }}
+                className="flex flex-col items-center gap-2 p-4 bg-emerald-500/5 hover:bg-emerald-500/10 border border-emerald-500/10 rounded-xl transition-all active:scale-95 group"
               >
-                <div className="w-9 h-9 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                  <Send className="w-4 h-4 text-blue-400" />
+                <div className="w-9 h-9 rounded-lg bg-emerald-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <MessageSquare className="w-4 h-4 text-emerald-400" />
                 </div>
-                <span className="text-[11px] font-medium text-gray-300 text-center">Send Check-in Link</span>
+                <span className="text-[11px] font-bold text-gray-300 text-center uppercase tracking-tight">Check-in Assistant</span>
               </button>
               <button
                 data-tour="raise-service"
@@ -451,6 +509,7 @@ export default function AdminDashboard() {
         </div>
       </Modal>
 
+
       {/* ===== RAISE SERVICE MODAL ===== */}
       <Modal isOpen={showServiceModal} onClose={() => setShowServiceModal(false)} title="Raise Service Ticket" description="Create a new housekeeping or maintenance request">
         <form onSubmit={handleRaiseService} className="space-y-4 pt-4">
@@ -470,6 +529,7 @@ export default function AdminDashboard() {
           </div>
         </form>
       </Modal>
+      <DrillDownModal />
     </div>
   )
 }

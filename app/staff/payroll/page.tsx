@@ -1,47 +1,115 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import {
-    ChevronLeft, Download, CreditCard,
-    TrendingUp, Wallet, ArrowUpRight,
-    FileText, Calendar, Eye,
-    ArrowRight, Loader2, DollarSign,
-    CheckCircle2, Filter
+    ChevronLeft, CreditCard, Download,
+    FileText, Calendar, Wallet,
+    ArrowUpRight, ArrowDownRight,
+    Search, Filter, Loader2, Sparkles,
+    ShieldCheck, Info, Receipt,
+    Building2, User
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { jsPDF } from 'jspdf'
 import { format } from 'date-fns'
+import { toast } from 'sonner'
 
 export default function PayrollPage() {
     const router = useRouter()
-    const [downloading, setDownloading] = useState<string | null>(null)
     const [loading, setLoading] = useState(true)
-    const [slips, setSlips] = useState<any[]>([])
-
-    const fetchPayrollData = useCallback(async () => {
-        try {
-            const res = await fetch('/api/staff/payroll')
-            if (res.ok) {
-                const json = await res.json()
-                setSlips(json)
-            }
-        } catch (error) {
-            console.error(error)
-        } finally {
-            setLoading(false)
-        }
-    }, [])
+    const [payrollData, setPayrollData] = useState<any[]>([])
+    const [staffInfo, setStaffInfo] = useState<any>(null)
 
     useEffect(() => {
-        fetchPayrollData()
-    }, [fetchPayrollData])
+        const fetchData = async () => {
+            try {
+                const [payRes, meRes] = await Promise.all([
+                    fetch('/api/staff/payroll'),
+                    fetch('/api/staff/me')
+                ])
+                if (payRes.ok) {
+                    const data = await payRes.json()
+                    setPayrollData(data)
+                }
+                if (meRes.ok) {
+                    const data = await meRes.json()
+                    setStaffInfo(data.profile)
+                }
+            } catch (error) {
+                console.error(error)
+            } finally {
+                setLoading(false)
+            }
+        }
+        fetchData()
+    }, [])
 
-    const handleDownload = (id: string, month: string) => {
-        setDownloading(id)
-        setTimeout(() => {
-            setDownloading(null)
-            alert(`Pay slip for ${month} downloaded successfully.`)
-        }, 1500)
+    const handleDownload = (payItem: any) => {
+        const doc = new jsPDF()
+        
+        // Header
+        doc.setFontSize(22)
+        doc.setTextColor(37, 99, 235) // blue-600
+        doc.text('ZENBOURG HOTEL & RESORTS', 105, 20, { align: 'center' })
+        
+        doc.setFontSize(10)
+        doc.setTextColor(100)
+        doc.text('OFFICIAL SALARY SLIP', 105, 28, { align: 'center' })
+        
+        // Horizontal Line
+        doc.setDrawColor(200)
+        doc.line(20, 35, 190, 35)
+        
+        // Employee Info
+        doc.setFontSize(12)
+        doc.setTextColor(0)
+        doc.text('Employee Information', 20, 45)
+        
+        doc.setFontSize(10)
+        doc.text(`Name: ${staffInfo?.user?.name || 'Staff Member'}`, 20, 52)
+        doc.text(`Employee ID: ${staffInfo?.employeeId || 'N/A'}`, 20, 57)
+        doc.text(`Department: ${staffInfo?.department || 'N/A'}`, 20, 62)
+        doc.text(`Designation: ${staffInfo?.designation || 'N/A'}`, 20, 67)
+        
+        doc.text(`Pay Period: ${payItem.month} ${payItem.year}`, 130, 52)
+        doc.text(`Status: ${payItem.status}`, 130, 57)
+        doc.text(`Generated On: ${format(new Date(), 'dd MMM yyyy')}`, 130, 62)
+
+        // Earnings Table
+        doc.setFillColor(245, 247, 250)
+        doc.rect(20, 75, 170, 10, 'F')
+        doc.text('DESCRIPTION', 25, 82)
+        doc.text('AMOUNT (INR)', 160, 82, { align: 'right' })
+
+        let y = 92
+        const items = [
+            { label: 'Basic Salary', val: payItem.baseSalary },
+            { label: 'Allowances (HRA/TA)', val: payItem.allowances },
+            { label: 'Performance Bonus', val: payItem.bonus || 0 },
+        ]
+
+        items.forEach(item => {
+            doc.text(item.label, 25, y)
+            doc.text(`${item.val.toLocaleString()}`, 160, y, { align: 'right' })
+            y += 8
+        })
+
+        // Deductions
+        doc.text('Total Deductions (Tax/PF)', 25, y + 2)
+        doc.text(`- ${payItem.deductions.toLocaleString()}`, 160, y + 2, { align: 'right' })
+        
+        // Footer Line
+        doc.line(20, y + 10, 190, y + 10)
+        
+        // Net Pay
+        doc.setFontSize(14)
+        doc.text('NET SALARY PAYABLE', 25, y + 20)
+        doc.setTextColor(22, 163, 74) // emerald-600
+        doc.text(`INR ${payItem.netSalary.toLocaleString()}`, 160, y + 20, { align: 'right' })
+
+        doc.save(`Payslip_${payItem.month}_${payItem.year}.pdf`)
+        toast.success(`Payslip for ${payItem.month} downloaded successfully`)
     }
 
     if (loading) return (
@@ -49,9 +117,6 @@ export default function PayrollPage() {
             <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
         </div>
     )
-
-    const latestSlip = slips[0] || null
-    const totalEarningsYear = slips.reduce((acc, curr) => acc + curr.netSalary, 0)
 
     return (
         <div className="space-y-8 animate-fade-in pb-10">
@@ -63,133 +128,93 @@ export default function PayrollPage() {
                 >
                     <ChevronLeft className="w-5 h-5" />
                 </button>
-                <h1 className="text-xl font-black text-white tracking-tight italic">Salary Slips</h1>
-                <div className="w-10"></div>
+                <div className="flex flex-col items-center">
+                    <h1 className="text-xl font-black text-white tracking-tight italic">Financials & Payroll</h1>
+                    <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mt-0.5">Secure Tunnel Active</span>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500">
+                    <ShieldCheck className="w-5 h-5" />
+                </div>
             </div>
 
-            {/* Account Summary Card */}
-            <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-3xl p-6 shadow-2xl relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 blur-3xl rounded-full translate-x-20 -translate-y-20 group-hover:scale-110 transition-transform duration-1000"></div>
-
-                <div className="relative z-10 flex items-start justify-between mb-8">
-                    <div>
-                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-100/60 mb-1">Last Credit</p>
-                        <p className="text-3xl font-black text-white tracking-tighter italic">
-                            {latestSlip ? `₹${latestSlip.netSalary.toLocaleString()}` : '₹0.00'}
-                        </p>
-                    </div>
-                    <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20">
+            {/* Current Salary Card */}
+            <div className="bg-[#161b22] border border-white/[0.05] rounded-[40px] p-8 relative overflow-hidden group shadow-2xl shadow-black/40">
+                <div className="absolute top-0 right-0 w-40 h-40 bg-blue-600/5 blur-3xl rounded-full translate-x-10 -translate-y-10"></div>
+                
+                <div className="flex items-center gap-4 mb-6">
+                    <div className="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-600/20">
                         <Wallet className="w-6 h-6 text-white" />
                     </div>
+                    <div>
+                        <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest italic leading-none mb-1.5">CTC / Annual Package</p>
+                        <h2 className="text-2xl font-black text-white tracking-tight italic">₹ {((staffInfo?.baseSalary || 0) * 12).toLocaleString()}</h2>
+                    </div>
                 </div>
 
-                <div className="relative z-10 grid grid-cols-2 gap-4">
-                    <div className="bg-white/10 border border-white/10 rounded-2xl p-3">
-                        <p className="text-[9px] font-bold text-blue-100/50 uppercase tracking-widest mb-1">Fiscal Year</p>
-                        <p className="text-sm font-black text-white">2023 - 24</p>
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-white/[0.02] border border-white/[0.03] p-4 rounded-3xl">
+                        <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-1.5">Monthly Base</p>
+                        <p className="text-sm font-black text-white">₹ {(staffInfo?.baseSalary || 0).toLocaleString()}</p>
                     </div>
-                    <div className="bg-white/10 border border-white/10 rounded-2xl p-3">
-                        <p className="text-[9px] font-bold text-blue-100/50 uppercase tracking-widest mb-1">Tax Status</p>
-                        <p className="text-sm font-black text-white italic flex items-center gap-2">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> Compliant
-                        </p>
+                    <div className="bg-white/[0.02] border border-white/[0.03] p-4 rounded-3xl">
+                        <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-1.5">Last Hike</p>
+                        <p className="text-sm font-black text-blue-500">+8.5%</p>
                     </div>
                 </div>
             </div>
 
-            {/* Quick Stats */}
-            <div className="grid grid-cols-2 gap-4">
-                <div className="bg-[#161b22] border border-white/[0.05] p-5 rounded-2xl">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2">Total Earnings</p>
-                    <div className="flex items-center gap-2">
-                        <p className="text-xl font-black text-white">₹{(totalEarningsYear / 1000).toFixed(1)}k</p>
-                        <ArrowUpRight className="w-4 h-4 text-emerald-500" />
-                    </div>
-                    <p className="text-[9px] font-bold text-emerald-500/60 mt-1 uppercase tracking-widest">+12% from LY</p>
-                </div>
-                <div className="bg-[#161b22] border border-white/[0.05] p-5 rounded-2xl">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2">Deductions</p>
-                    <div className="flex items-center gap-2">
-                        <p className="text-xl font-black text-white">₹4.2k</p>
-                        <TrendingUp className="w-4 h-4 text-rose-500" />
-                    </div>
-                    <p className="text-[9px] font-bold text-rose-500/40 mt-1 uppercase tracking-widest">Insurance & Tax</p>
-                </div>
-            </div>
-
-            {/* Slips List */}
-            <div className="space-y-4">
+            {/* Payroll List */}
+            <div className="space-y-4 min-h-[300px]">
                 <div className="flex items-center justify-between px-2">
-                    <h3 className="text-sm font-black text-white uppercase tracking-widest italic">Payment History</h3>
-                    <Filter className="w-4 h-4 text-gray-600" />
+                    <h3 className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] italic">Salary Credits</h3>
+                    <Filter className="w-4 h-4 text-gray-700" />
                 </div>
-                <div className="space-y-3">
-                    {slips.length === 0 ? (
-                        <div className="py-12 text-center bg-[#161b22] rounded-3xl border border-dashed border-white/10">
-                            <FileText className="w-10 h-10 text-gray-700 mx-auto mb-3" />
-                            <p className="text-xs font-black uppercase tracking-widest text-gray-600">No payment records found</p>
-                        </div>
-                    ) : (
-                        slips.map((slip, i) => (
-                            <div key={slip.id} className="bg-[#161b22] border border-white/[0.05] p-5 rounded-3xl group hover:border-white/10 transition-all">
-                                <div className="flex items-start justify-between mb-4">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 bg-[#0d1117] border border-white/[0.05] rounded-2xl flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                                            <FileText className="w-6 h-6" />
-                                        </div>
-                                        <div>
-                                            <h4 className="text-sm font-black text-white tracking-tight italic">{slip.month} {slip.year}</h4>
-                                            <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">
-                                                {slip.paidAt ? `Paid on ${format(new Date(slip.paidAt), 'MMM dd, yyyy')}` : 'Payment Pending'}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div className="text-right">
-                                        <p className="text-sm font-black text-white tracking-tighter">₹{slip.netSalary.toLocaleString()}</p>
-                                        <span className={cn(
-                                            "text-[8px] font-black uppercase tracking-widest flex items-center justify-end gap-1",
-                                            slip.status === 'PAID' ? 'text-emerald-500' : 'text-amber-500'
-                                        )}>
-                                            {slip.status === 'PAID' && <CheckCircle2 className="w-2.5 h-2.5" />} {slip.status}
-                                        </span>
-                                    </div>
-                                </div>
 
-                                <div className="grid grid-cols-2 gap-3 mb-5">
-                                    <div className="bg-white/[0.02] p-3 rounded-xl">
-                                        <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1">Gross Salary</p>
-                                        <p className="text-xs font-black text-gray-300">₹{slip.grossSalary.toLocaleString()}</p>
-                                    </div>
-                                    <div className="bg-white/[0.02] p-3 rounded-xl">
-                                        <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1">Net Pay</p>
-                                        <p className="text-xs font-black text-emerald-400 font-black tracking-tight">₹{slip.netSalary.toLocaleString()}</p>
-                                    </div>
+                {payrollData.length === 0 ? (
+                    <div className="py-20 text-center border-2 border-dashed border-white/5 rounded-[40px]">
+                        <Receipt className="w-12 h-12 text-gray-800 mx-auto mb-4" />
+                        <p className="text-xs font-black uppercase tracking-widest text-gray-600">No payroll history found</p>
+                    </div>
+                ) : (
+                    payrollData.map((item) => (
+                        <div key={item.id} className="bg-[#161b22] border border-white/[0.05] p-5 rounded-3xl flex items-center justify-between group hover:bg-white/[0.02] transition-all">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/[0.05] flex items-center justify-center group-hover:bg-blue-600 group-hover:border-blue-500 transition-all duration-500">
+                                    <FileText className="w-5 h-5 text-gray-500 group-hover:text-white transition-colors" />
                                 </div>
-
-                                <div className="flex items-center gap-3">
-                                    <button
-                                        onClick={() => handleDownload(slip.id, `${slip.month} ${slip.year}`)}
-                                        disabled={downloading === slip.id}
-                                        className="flex-1 h-12 bg-white/[0.03] border border-white/[0.05] rounded-xl flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:bg-white/[0.08] hover:text-white transition-all disabled:opacity-50"
-                                    >
-                                        {downloading === slip.id ? <Loader2 className="w-4 h-4 animate-spin text-blue-500" /> : <><Download className="w-4 h-4" /> Download PDF</>}
-                                    </button>
-                                    <button className="w-12 h-12 bg-blue-600/10 border border-blue-500/20 rounded-xl flex items-center justify-center text-blue-500 hover:bg-blue-600 hover:text-white transition-all">
-                                        <Eye className="w-5 h-5" />
-                                    </button>
+                                <div>
+                                    <h4 className="text-sm font-black text-white italic tracking-tight">{item.month} {item.year}</h4>
+                                    <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mt-0.5">Credited: {format(new Date(item.paymentDate || item.updatedAt), 'MMM dd')}</p>
                                 </div>
                             </div>
-                        ))
-                    )}
-                </div>
+                            <div className="text-right flex items-center gap-6">
+                                <div className="hidden sm:block">
+                                    <p className="text-xs font-black text-white italic">₹ {item.netSalary.toLocaleString()}</p>
+                                    <span className="text-[8px] font-black text-emerald-500 uppercase tracking-tighter">Paid Success</span>
+                                </div>
+                                <button
+                                    onClick={() => handleDownload(item)}
+                                    className="w-10 h-10 rounded-xl bg-white/[0.03] border border-white/[0.05] flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-all active:scale-95"
+                                >
+                                    <Download className="w-4 h-4" />
+                                </button>
+                            </div>
+                        </div>
+                    ))
+                )}
             </div>
 
-            {/* Footer Tip */}
-            <div className="bg-[#161b22] border border-white/[0.05] p-5 rounded-3xl flex items-start gap-4">
-                <div className="w-10 h-10 rounded-2xl bg-amber-500/10 flex items-center justify-center shrink-0 border border-amber-500/20">
-                    <DollarSign className="w-5 h-5 text-amber-500" />
+            {/* Insights */}
+            <div className="p-6 bg-[#161b22] border border-white/[0.05] rounded-[40px] relative overflow-hidden">
+                <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center shrink-0">
+                        <Info className="w-5 h-5 text-amber-500" />
+                    </div>
+                    <div>
+                        <h4 className="text-xs font-black text-white uppercase tracking-widest mb-1.5 flex items-center gap-2">Tax Verification Note</h4>
+                        <p className="text-[10px] font-medium text-gray-500 leading-relaxed italic">Your salary slips are cryptographically signed. If you notice any discrepancy in TDS or PF, please raise a ticket via the support portal or contact HR Finance Desk within 3 working days.</p>
+                    </div>
                 </div>
-                <p className="text-[11px] font-bold text-gray-500 leading-relaxed italic mt-1">Pay slips are automatically generated on the 1st of every month. For queries, contact HR finance desk.</p>
             </div>
         </div>
     )

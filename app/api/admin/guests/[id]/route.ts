@@ -18,11 +18,19 @@ export async function PATCH(
 
     try {
         const body = await request.json()
-        const { checkInStatus, idType, idNumber, idDocumentFront, idDocumentBack } = body
+        const { 
+            checkInStatus, idType, idNumber, idDocumentFront, idDocumentBack,
+            name, email, phone, address, dateOfBirth 
+        } = body
 
         const guest = await prisma.guest.update({
             where: { id: params.id },
             data: {
+                ...(name && { name }),
+                ...(email && { email }),
+                ...(phone && { phone }),
+                ...(address && { address }),
+                ...(dateOfBirth && { dateOfBirth: new Date(dateOfBirth) }),
                 ...(checkInStatus && { checkInStatus }),
                 ...(idType && { idType }),
                 ...(idNumber && { idNumber }),

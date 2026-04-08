@@ -1,4 +1,6 @@
 'use client'
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useSession } from 'next-auth/react'
@@ -18,7 +20,8 @@ import {
     XCircle,
     AlertCircle,
     Download,
-    Eye
+    Eye,
+    FileText
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { toast } from 'sonner'
@@ -136,23 +139,37 @@ export default function AttendancePage() {
                         type="date"
                         value={filterDate}
                         onChange={(e) => setFilterDate(e.target.value)}
-                        className="bg-surface border border-white/10 rounded-xl px-4 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                        className="bg-surface border border-white/10 rounded-xl px-4 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all [color-scheme:dark]"
                     />
-                    <Button
-                        variant="secondary"
-                        leftIcon={<Download className="w-4 h-4" />}
-                        onClick={() => downloadCSV(filteredAttendance.map(a => ({
-                            Employee: a.staff?.user?.name,
-                            Department: a.staff?.department,
-                            Date: format(new Date(a.date), 'dd-MM-yyyy'),
-                            PunchIn: a.punchIn ? format(new Date(a.punchIn), 'hh:mm a') : 'N/A',
-                            PunchOut: a.punchOut ? format(new Date(a.punchOut), 'hh:mm a') : 'N/A',
-                            Hours: a.hoursWorked,
-                            Status: a.status
-                        })), `Attendance_${filterDate}`)}
-                    >
-                        Export CSV
-                    </Button>
+                    <div className="flex items-center gap-2">
+                        <Button
+                            variant="secondary"
+                            size="sm"
+                            leftIcon={<Download className="w-4 h-4" />}
+                            className="bg-white/5 border-white/5 hover:bg-white/10"
+                            onClick={() => {
+                                if (!filteredAttendance || filteredAttendance.length === 0) {
+                                    toast.error('No records available to export')
+                                    return
+                                }
+                                
+                                const exportData = filteredAttendance.map(a => ({
+                                    Employee: a.staff?.user?.name || 'N/A',
+                                    Department: a.staff?.department || 'N/A',
+                                    Date: a.date ? format(new Date(a.date), 'dd-MM-yyyy') : 'N/A',
+                                    PunchIn: a.punchIn ? format(new Date(a.punchIn), 'hh:mm a') : 'N/A',
+                                    PunchOut: a.punchOut ? format(new Date(a.punchOut), 'hh:mm a') : 'N/A',
+                                    Hours: a.hoursWorked || 0,
+                                    Status: a.status || 'ABSENT'
+                                }))
+
+                                downloadCSV(exportData, `Daily_Attendance_${filterDate}`)
+                                toast.success('Attendance records exported to CSV')
+                            }}
+                        >
+                            Export CSV
+                        </Button>
+                    </div>
                 </div>
             </div>
 
@@ -235,7 +252,7 @@ export default function AttendancePage() {
                         <div className="flex justify-between items-start">
                             <div>
                                 <p className="text-xs font-bold text-text-tertiary uppercase tracking-wider">{item.label}</p>
-                                <p className="text-2xl font-black text-text-primary mt-1">{item.value}</p>
+                                <p className="text-2xl font-bold text-text-primary mt-1">{item.value}</p>
                             </div>
                             <div className={cn("p-2 rounded-lg bg-surface-light", item.color)}>
                                 <item.icon className="w-5 h-5" />
@@ -276,11 +293,11 @@ export default function AttendancePage() {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="border-b border-white/[0.04] bg-white/[0.02]">
-                                <th className="px-6 py-4 text-[10px] font-black text-text-tertiary uppercase tracking-widest">Employee</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-text-tertiary uppercase tracking-widest">Punch In/Out</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-text-tertiary uppercase tracking-widest text-center">Working Hours</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-text-tertiary uppercase tracking-widest">Status</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-text-tertiary uppercase tracking-widest text-right">Action</th>
+                                <th className="px-6 py-4 text-[10px] font-bold text-text-tertiary uppercase tracking-widest">Employee</th>
+                                <th className="px-6 py-4 text-[10px] font-bold text-text-tertiary uppercase tracking-widest">Punch In/Out</th>
+                                <th className="px-6 py-4 text-[10px] font-bold text-text-tertiary uppercase tracking-widest text-center">Working Hours</th>
+                                <th className="px-6 py-4 text-[10px] font-bold text-text-tertiary uppercase tracking-widest">Status</th>
+                                <th className="px-6 py-4 text-[10px] font-bold text-text-tertiary uppercase tracking-widest text-right">Action</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/[0.04]">
@@ -320,7 +337,7 @@ export default function AttendancePage() {
                                         </td>
                                         <td className="px-6 py-4 text-center">
                                             <div className="flex flex-col items-center">
-                                                <div className="text-sm font-black text-text-primary">{record.hoursWorked || 0}h</div>
+                                                <div className="text-sm font-bold text-text-primary">{record.hoursWorked || 0}h</div>
                                                 <div className="flex items-center gap-1 text-[10px] text-text-tertiary mt-1">
                                                     <MapPin className="w-2.5 h-2.5" />
                                                     {record.punchInLocation || 'Main Lobby'}
@@ -329,7 +346,7 @@ export default function AttendancePage() {
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className={cn(
-                                                "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase border",
+                                                "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase border",
                                                 record.status === 'PRESENT' ? "bg-success/10 text-success border-success/20" : "bg-danger/10 text-danger border-danger/20"
                                             )}>
                                                 <div className={cn("w-1 h-1 rounded-full", record.status === 'PRESENT' ? "bg-success" : "bg-danger")} />
@@ -351,7 +368,7 @@ export default function AttendancePage() {
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan={6} className="px-6 py-12 text-center text-text-tertiary italic">
+                                    <td colSpan={6} className="px-6 py-12 text-center text-text-tertiary ">
                                         No records found for this date or criteria.
                                     </td>
                                 </tr>
@@ -382,14 +399,14 @@ export default function AttendancePage() {
                         <div className="grid grid-cols-2 gap-4">
                             <Card className="p-4 flex flex-col items-center border-emerald-500/20 bg-surface">
                                 <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-1">Punched In</p>
-                                <p className="text-2xl font-mono font-black text-text-primary">
+                                <p className="text-2xl font-mono font-bold text-text-primary">
                                     {selectedRecord.punchIn ? format(new Date(selectedRecord.punchIn), 'hh:mm a') : '--:--'}
                                 </p>
                                 <p className="text-[10px] text-text-tertiary mt-2">Location: {selectedRecord.punchInLocation || 'N/A'}</p>
                             </Card>
                             <Card className="p-4 flex flex-col items-center border-rose-500/20 bg-surface">
                                 <p className="text-[10px] font-bold text-rose-500 uppercase tracking-widest mb-1">Punched Out</p>
-                                <p className="text-2xl font-mono font-black text-text-primary">
+                                <p className="text-2xl font-mono font-bold text-text-primary">
                                     {selectedRecord.punchOut ? format(new Date(selectedRecord.punchOut), 'hh:mm a') : '--:--'}
                                 </p>
                                 <p className="text-[10px] text-text-tertiary mt-2">Location: {selectedRecord.punchOutLocation || 'N/A'}</p>
@@ -399,7 +416,7 @@ export default function AttendancePage() {
                         <div className="p-4 bg-surface-light border border-border rounded-2xl flex justify-between items-center">
                             <div>
                                 <p className="text-xs font-bold text-text-tertiary uppercase tracking-wider">Total Time Logged</p>
-                                <p className="text-3xl font-black text-primary mt-1">{selectedRecord.hoursWorked || 0} Hours</p>
+                                <p className="text-3xl font-bold text-primary mt-1">{selectedRecord.hoursWorked || 0} Hours</p>
                             </div>
                             <Badge variant={selectedRecord.status === 'PRESENT' ? 'success' : 'danger'}>
                                 {selectedRecord.status}
@@ -409,7 +426,7 @@ export default function AttendancePage() {
                         {selectedRecord.note && (
                             <div className="p-4 border border-dashed border-border rounded-xl">
                                 <p className="text-xs font-bold text-text-tertiary uppercase mb-2">Internal Note</p>
-                                <p className="text-sm text-text-secondary italic">&quot;{selectedRecord.note}&quot;</p>
+                                <p className="text-sm text-text-secondary ">&quot;{selectedRecord.note}&quot;</p>
                             </div>
                         )}
                     </div>

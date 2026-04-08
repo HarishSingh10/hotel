@@ -17,9 +17,9 @@ export async function GET(request: Request) {
 
         const propertyId = session.user.propertyId || (session.user.role === 'SUPER_ADMIN' && queryPropertyId !== 'ALL' ? queryPropertyId : null)
 
-        // Feature: Auto-assign requests older than 10 seconds if unassigned
+        // Feature: Auto-assign tasks immediately (0s threshold) or retry unassigned ones (5s threshold)
         if (propertyId) {
-            await performAutoAssignment(propertyId, 10) // 10 seconds age threshold
+            await performAutoAssignment(propertyId, 5)
         }
 
         const where: any = {}
@@ -119,9 +119,13 @@ export async function POST(request: Request) {
                 description,
                 status: 'PENDING',
                 priority,
-                slaMinutes
+                slaMinutes,
+                assignedToId: null
             }
         })
+
+        // Trigger auto-assignment immediately
+        await performAutoAssignment(propertyId, 0)
 
         return NextResponse.json(serviceRequest)
     } catch (error: any) {

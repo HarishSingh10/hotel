@@ -90,6 +90,21 @@ export async function GET(request: Request) {
         const completed = allTodayBookings.filter(b => b.status === 'CHECKED_IN').length
         const pending = allTodayBookings.filter(b => b.status === 'RESERVED').length
 
+        // Monthly comparison logic
+        const thirtyDaysAgo = new Date(today)
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+        
+        const lastMonthBookingsCount = await prisma.booking.count({
+            where: {
+                ...whereClause,
+                checkIn: { gte: thirtyDaysAgo, lte: endOfDay },
+                status: { in: ['RESERVED', 'CHECKED_IN'] },
+            }
+        })
+        
+        const monthlyAverage = lastMonthBookingsCount / 30
+        const monthlyChange = monthlyAverage > 0 ? ((completed / monthlyAverage) - 1) * 100 : 0
+
         // Count guests with pending ID verification
         const verificationPending = bookings.filter(b =>
             b.guest.checkInStatus !== 'VERIFIED' && b.guest.checkInStatus !== 'COMPLETED'
@@ -97,6 +112,8 @@ export async function GET(request: Request) {
 
         return NextResponse.json({
             stats: { expected, completed, pending, verificationPending },
+            monthlyAverage,
+            monthlyChange,
             bookings: bookings.map(b => ({
                 id: b.id,
                 guestId: b.guest.id,
