@@ -448,7 +448,7 @@ export default function ProfessionalLandingPage() {
                  <span className="text-lg font-bold tracking-[0.1em] text-white uppercase font-outfit">Zenbourg</span>
               </div>
               <p className="text-sm text-white/30 font-light leading-relaxed">
-                 "Designed for the world’s most breathtaking estates, delivering operational silence and administrative clarity at scale."
+                 &quot;Designed for the world&rsquo;s most breathtaking estates, delivering operational silence and administrative clarity at scale.&quot;
               </p>
             </div>
 

@@ -409,6 +409,9 @@ model Staff {
   sickLeaveBalance   Int @default(10)
   casualLeaveBalance Int @default(7)
 
+  isVerified            Boolean @default(false)
+  verificationRequested Boolean @default(false)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -501,6 +504,7 @@ model LeaveRequest {
   approvedAt DateTime?
 
   rejectionReason String?
+  evidence        String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

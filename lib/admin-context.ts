@@ -12,6 +12,7 @@ export const isGlobalContext = (): boolean => {
 }
 
 export const buildContextUrl = (baseUrl: string, params: Record<string, string | null | undefined> = {}) => {
+    if (typeof window === 'undefined') return baseUrl // Static generation safety
     const { propertyId } = getAdminContext()
     const url = new URL(baseUrl, window.location.origin)
 

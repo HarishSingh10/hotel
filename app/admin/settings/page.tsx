@@ -14,7 +14,7 @@ import {
     HelpCircle, BookOpen, UserCheck, ShieldAlert,
     X, Plus, RefreshCw, Link2, LayoutGrid, List,
     ChevronLeft, Lock, Unlock, Eye, EyeOff, Loader2, Trash2,
-    Copy, Edit3, ClipboardList, Check, Sparkles, Gem, Crown
+    Copy, Edit3, ClipboardList, Check, Sparkles, Gem, Crown, TrendingUp
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
@@ -435,13 +435,13 @@ export default function SettingsOverviewPage() {
     }
 
     const handleSelectAll = (moduleId: string) => {
-        const module = PERMISSIONS_SCHEMA.find(m => m.id === moduleId)
-        if (!module) return
+        const permModule = PERMISSIONS_SCHEMA.find(m => m.id === moduleId)
+        if (!permModule) return
 
-        const allSelected = module.permissions.every(p => permissions[p.id])
+        const allSelected = permModule.permissions.every(p => permissions[p.id])
         const newPermissions = { ...permissions }
 
-        module.permissions.forEach(p => {
+        permModule.permissions.forEach(p => {
             newPermissions[p.id] = !allSelected
         })
 

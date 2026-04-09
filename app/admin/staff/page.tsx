@@ -8,6 +8,7 @@ import Avatar from '@/components/common/Avatar'
 import { Plus, Search, MapPin, Phone, Mail, FileText, XCircle, Filter, Download, Info } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 
+import { cn } from '@/lib/utils'
 import Badge from '@/components/ui/Badge'
 import Modal from '@/components/ui/Modal'
 import Input from '@/components/ui/Input'
