@@ -80,3 +80,25 @@ export const sendSMS = async (to: string, message: string) => {
     }
 };
 
+export const sendWhatsApp = async (to: string, message: string) => {
+    const formattedPhone = formatPhone(to);
+    const fromPhone = process.env.TWILIO_WHATSAPP_NUMBER || '+14155238886'; // Default Twilio sandbox number
+
+    if (accountSid === 'mock' || !accountSid) {
+        console.log(`[TWILIO] Mock WhatsApp to ${formattedPhone}: ${message}`);
+        return { sid: 'mock-whatsapp-sid' };
+    }
+
+    try {
+        const result = await client.messages.create({
+            body: message,
+            from: `whatsapp:${fromPhone}`,
+            to: `whatsapp:${formattedPhone}`
+        });
+        return result;
+    } catch (error) {
+        console.error('Twilio Send WhatsApp Error:', error);
+        throw error;
+    }
+};
+

@@ -293,7 +293,7 @@ export default function PayrollPage() {
                     <div className="flex-1">
                         <p className="text-sm font-bold text-amber-300">All salaries are ₹0 — Razorpay payments will fail</p>
                         <p className="text-xs text-amber-400/80 mt-1">
-                            Staff members were created without a base salary set. Go to <strong>Staff → Edit Staff</strong> and set each person's base salary, then click <strong>"Run Payroll"</strong> again to recalculate.
+                            Staff members were created without a base salary set. Go to <strong>Staff &rarr; Edit Staff</strong> and set each person&apos;s base salary, then click <strong>&quot;Run Payroll&quot;</strong> again to recalculate.
                         </p>
                     </div>
                     <button

@@ -103,8 +103,8 @@ export default function StaffTasksPage() {
                             <div className="absolute inset-0 bg-blue-500/10 blur-2xl animate-pulse"></div>
                         </div>
                         <div className="space-y-2">
-                            <h3 className="text-sm font-black text-white uppercase tracking-widest italic">All Units Operational</h3>
-                            <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest leading-loose">No active tasks assigned to your queue.<br/>New tasks will appear in real-time.</p>
+                            <h3 className="text-sm font-black text-white uppercase tracking-widest italic">Operations Synchronized</h3>
+                            <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest leading-loose">The deployment queue is currently clear.<br/>New dispatches will synchronize in real-time.</p>
                         </div>
                     </div>
                 ) : (
@@ -112,48 +112,56 @@ export default function StaffTasksPage() {
                         <div
                             key={task.id}
                             onClick={() => router.push(`/staff/tasks/${task.id}`)}
-                            className="bg-[#161b22] rounded-[40px] overflow-hidden border border-white/[0.05] group hover:border-white/10 transition-all flex flex-col relative active:scale-[0.98] shadow-2xl shadow-black/40"
+                            className="bg-[#161b22] rounded-[45px] overflow-hidden border border-white/[0.05] group hover:border-blue-500/20 transition-all flex flex-col relative active:scale-[0.98] shadow-3xl shadow-black/60"
                         >
                             <div className={cn(
                                 "absolute top-0 bottom-0 left-0 w-2 transition-all group-hover:w-3",
                                 task.priority === 'URGENT' ? 'bg-rose-500' : 'bg-blue-600'
                             )}></div>
 
-                            {/* Task Info Body */}
-                            <div className="p-8">
-                                <div className="flex items-center justify-between mb-6">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center justify-center group-hover:bg-blue-600/10 transition-all duration-500">
-                                            <LayoutGrid className="w-6 h-6 text-gray-500 group-hover:text-blue-500 transition-colors" />
+                            <div className="p-10">
+                                <div className="flex items-center justify-between mb-8">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-14 h-14 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center justify-center group-hover:bg-blue-600/10 transition-all duration-500 shadow-inner">
+                                            <LayoutGrid className="w-7 h-7 text-gray-600 group-hover:text-blue-500 transition-colors" />
                                         </div>
                                         <div>
-                                            <h4 className="text-base font-black text-white italic tracking-tight">Room {task.room?.roomNumber || 'Gen-Ops'}</h4>
-                                            <div className="flex items-center gap-3 mt-1 underline-offset-4 decoration-white/10">
+                                            <h4 className="text-lg font-black text-white italic tracking-tight leading-none mb-2">Room {task.room?.roomNumber || 'Gen-Ops'}</h4>
+                                            <div className="flex items-center gap-3">
                                                 <span className={cn(
-                                                    "text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded border",
+                                                    "text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-lg border",
                                                     task.priority === 'URGENT' ? 'bg-rose-500/10 border-rose-500/20 text-rose-500' : 'bg-blue-500/10 border-blue-500/20 text-blue-500'
                                                 )}>
-                                                    {task.priority || 'Standard'}
+                                                    Priority: {task.priority || 'Standard'}
                                                 </span>
-                                                <span className="text-[8px] font-black text-gray-600 uppercase tracking-widest">{format(new Date(task.createdAt), 'hh:mm a')}</span>
+                                                <div className="flex items-center gap-1.5 opacity-40">
+                                                    <Clock className="w-3 h-3 text-gray-500" />
+                                                    <span className="text-[8px] font-black text-gray-500 uppercase tracking-widest">{format(new Date(task.createdAt), 'hh:mm a')}</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                    <MoreHorizontal className="w-5 h-5 text-gray-800" />
+                                    <div className="w-10 h-10 rounded-xl bg-white/[0.02] border border-white/5 flex items-center justify-center">
+                                        <MoreHorizontal className="w-5 h-5 text-gray-800" />
+                                    </div>
                                 </div>
                                 
-                                <h3 className="text-xl font-black text-white tracking-tight italic mb-3 group-hover:text-blue-500 transition-colors leading-snug">{task.title}</h3>
-                                <p className="text-[13px] font-medium text-gray-500 leading-relaxed line-clamp-2 italic">{task.description || 'Proceed with standard operating procedures and verify upon completion.'}</p>
+                                <h3 className="text-2xl font-black text-white tracking-tighter italic mb-3 group-hover:text-blue-500 transition-colors leading-tight">{task.title}</h3>
+                                <p className="text-[14px] font-medium text-gray-500 leading-relaxed line-clamp-2 italic mb-10">{task.description || 'Initialize standard operating procedures and verify system integrity upon completion.'}</p>
                                 
-                                <div className="mt-8 flex items-center gap-4">
-                                    <button
-                                        className="flex-1 h-14 bg-white/5 hover:bg-white/10 text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] border border-white/5 transition-all flex items-center justify-center gap-3 active:scale-95"
-                                    >
-                                        <Sparkles className="w-4 h-4 text-blue-500" /> View Directives
-                                    </button>
-                                    <button className="w-14 h-14 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-blue-600/20 transition-all active:scale-[0.85]">
-                                        <ArrowRight className="w-6 h-6" />
-                                    </button>
+                                <div className="flex items-center justify-between border-t border-white/[0.03] pt-8">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-full bg-blue-600/10 flex items-center justify-center border border-blue-500/20">
+                                            <Sparkles className="w-4 h-4 text-blue-500" />
+                                        </div>
+                                        <span className="text-[9px] font-black text-gray-700 uppercase tracking-[0.2em] italic">Directives Ready</span>
+                                    </div>
+                                    <div className="flex items-center gap-3 group/btn">
+                                        <span className="text-[9px] font-black text-white uppercase tracking-widest opacity-0 group-hover/btn:opacity-100 transition-all -translate-x-2 group-hover/btn:translate-x-0">Initiate</span>
+                                        <div className="w-12 h-12 bg-blue-600 group-hover:bg-blue-500 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-blue-600/30 transition-all">
+                                            <ArrowRight className="w-5 h-5" />
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

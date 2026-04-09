@@ -154,11 +154,11 @@ export async function POST(req: NextRequest) {
         const dayStart = new Date(`${istDateStr}T00:00:00+05:30`);
         const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000 - 1);
 
-        // Find existing record for this IST day (using range for robustness with old data)
+        // Find existing record for this IST day
         const existing = await prisma.attendance.findFirst({
             where: {
                 staffId: staff.id,
-                date: { gte: dayStart, lte: dayEnd }
+                date: dayStart // Matching exactly since we normalize now
             }
         })
 
@@ -168,7 +168,7 @@ export async function POST(req: NextRequest) {
             }
 
             const attendance = await prisma.attendance.upsert({
-                where: { id: existing?.id || 'new-record' }, // Use ID if exists to avoid unique constraint error
+                where: { staffId_date: { staffId: staff.id, date: dayStart } },
                 update: {
                     punchIn: new Date(),
                     punchInLocation: location,
@@ -176,7 +176,7 @@ export async function POST(req: NextRequest) {
                 },
                 create: {
                     staffId: staff.id,
-                    date: new Date(), // Use current timestamp but it will be found by range next time
+                    date: dayStart,
                     punchIn: new Date(),
                     punchInLocation: location,
                     status: 'PRESENT'

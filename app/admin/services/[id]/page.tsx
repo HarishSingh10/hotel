@@ -288,7 +288,7 @@ export default function ServiceDetailPage() {
                             <div className="space-y-2">
                                 <label className="text-[10px] text-gray-500 font-black uppercase tracking-[0.2em] block">Description</label>
                                 <div className="bg-[#101922] border border-white/[0.04] rounded-xl p-5 text-gray-400 leading-relaxed text-[13px] font-medium italic shadow-inner">
-                                    "{detail.description || 'No description provided.'}"
+                                    &quot;{detail.description || 'No description provided.'}&quot;
                                 </div>
                             </div>
 

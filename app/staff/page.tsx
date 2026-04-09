@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import {
     Filter, LayoutGrid, Loader2, Sparkles, User, Smartphone, Package,
-    Trophy, TrendingUp, Calendar, MapPin, Search, ShieldCheck, UserCheck
+    Trophy, TrendingUp, Calendar, MapPin, Search, ShieldCheck, UserCheck,
+    Clock, Zap, ArrowRight, CheckCircle2, ShoppingBag, Settings as Tools
 } from 'lucide-react'
 import { format, getHours } from 'date-fns'
 import { cn } from '@/lib/utils'
@@ -96,7 +97,7 @@ export default function StaffDashboard() {
                 </div>
                 <div 
                     onClick={() => router.push('/staff/profile')}
-                    className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-indigo-700 p-[2px] cursor-pointer shadow-xl shadow-blue-500/10 active:scale-90 transition-all border border-white/5"
+                    className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-indigo-700 p-[2px] cursor-pointer shadow-xl shadow-blue-500/10 transition-all border border-white/5"
                 >
                     <div className="w-full h-full rounded-full bg-[#0d1117] flex items-center justify-center overflow-hidden border-4 border-[#161b22]">
                         <img 
@@ -155,12 +156,12 @@ export default function StaffDashboard() {
                     {isPunchedIn && (
                         <div className="mt-8 pt-8 border-t border-white/[0.03] animate-fade-in flex items-center justify-between">
                             <div className="flex items-center gap-4">
-                                <div className="p-3 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
+                                <div className="p-3 bg-emerald-500/10 rounded-xl border border-emerald-500/20 shadow-inner">
                                     <TrendingUp className="w-4 h-4 text-emerald-500" />
                                 </div>
                                 <div>
-                                    <p className="text-[8px] font-black text-gray-600 uppercase tracking-widest">Performance Track</p>
-                                    <p className="text-xs font-black text-white italic">Optimal Efficiency</p>
+                                    <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest">Efficiency Metrics</p>
+                                    <p className="text-[11px] font-black text-white italic">Operational Performance Peak</p>
                                 </div>
                             </div>
                             <ArrowRight className="w-5 h-5 text-gray-800" />
@@ -201,6 +202,15 @@ export default function StaffDashboard() {
                             <Package className="w-6 h-6 text-amber-500 group-hover:text-white transition-colors" />
                         </div>
                         <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 group-hover:text-white transition-colors">Discovery Log</span>
+                    </button>
+                    <button 
+                        onClick={() => router.push('/staff/settings')}
+                        className="p-6 bg-[#161b22] border border-white/[0.05] rounded-[30px] flex flex-col items-center gap-3 group hover:border-slate-500/30 transition-all active:scale-[0.98] shadow-xl shadow-black/20"
+                    >
+                        <div className="w-12 h-12 rounded-2xl bg-slate-500/10 border border-slate-500/20 flex items-center justify-center group-hover:bg-slate-500 group-hover:text-white transition-all shadow-lg shadow-slate-500/5">
+                            <Tools className="w-6 h-6 text-slate-500 group-hover:text-white transition-colors" />
+                        </div>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 group-hover:text-white transition-colors">Configuration</span>
                     </button>
                     <button 
                         onClick={() => router.push('/staff/leave')}
@@ -290,21 +300,22 @@ export default function StaffDashboard() {
                                                 </span>
                                             </div>
                                         </div>
-                                        <div className="bg-white/[0.03] px-2.5 py-1 rounded-lg border border-white/10 text-[9px] font-black text-gray-500 uppercase tracking-widest">
+                                        <div className="bg-white/[0.03] px-3 py-1.5 rounded-lg border border-white/10 text-[9px] font-black text-white uppercase tracking-widest">
                                             {format(new Date(task.createdAt), 'HH:mm')}
                                         </div>
                                     </div>
                                     
-                                    <p className="text-[14px] font-bold text-gray-300 group-hover:text-white transition-colors mb-4 italic leading-snug">{task.title}</p>
+                                    <h3 className="text-xl font-black text-white tracking-tight italic mb-3 group-hover:text-blue-500 transition-colors leading-snug">{task.title}</h3>
+                                    <p className="text-[14px] font-medium text-gray-500 leading-relaxed group-hover:text-gray-400 transition-colors line-clamp-2 italic mb-6">{task.description || 'Proceed with standard operational checks for this unit.'}</p>
                                     
-                                    <div className="flex items-center justify-between border-t border-white/[0.03] pt-4">
+                                    <div className="flex items-center justify-between border-t border-white/[0.05] pt-6 group/footer">
                                         <div className="flex items-center gap-2">
-                                            <div className="w-6 h-6 rounded-full bg-blue-600/10 flex items-center justify-center border border-blue-500/20">
-                                                <TrendingUp className="w-3 h-3 text-blue-500" />
+                                            <div className="w-8 h-8 rounded-full bg-blue-600/10 flex items-center justify-center border border-blue-500/20 shadow-inner group-hover/footer:bg-blue-600 group-hover/footer:border-blue-500 group-hover/footer:text-white transition-all">
+                                                <TrendingUp className="w-4 h-4 text-blue-500 group-hover/footer:text-white transition-colors" />
                                             </div>
-                                            <span className="text-[10px] font-bold text-gray-600 uppercase tracking-wider italic">Assigned via Auto-Routing</span>
+                                            <span className="text-[10px] font-black text-gray-600 uppercase tracking-wider italic">Ops-Route Optimized</span>
                                         </div>
-                                        <ArrowRight className="w-4 h-4 text-gray-700 group-hover:translate-x-1 group-hover:text-blue-500 transition-all" />
+                                        <ArrowRight className="w-5 h-5 text-gray-800 group-hover:translate-x-1 group-hover:text-blue-500 transition-all" />
                                     </div>
                                 </div>
                             ))
