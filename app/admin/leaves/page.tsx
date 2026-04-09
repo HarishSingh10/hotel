@@ -5,7 +5,7 @@ import {
     CheckCircle2, XCircle, Clock,
     Calendar, User, Filter,
     ChevronRight, Search, Loader2,
-    CalendarDays, Umbrella, Stethoscope, Briefcase
+    CalendarDays, Umbrella, Stethoscope, Briefcase, Camera
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
@@ -182,8 +182,17 @@ export default function LeavesManagementPage() {
 
                                         <div className="pt-4 border-t border-white/5">
                                             <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-2">Reason</p>
-                                            <p className="text-xs font-medium text-gray-500 line-clamp-2 leading-relaxed">&ldquo;{req.reason}&rdquo;</p>
+                                            <p className="text-xs font-medium text-gray-400 line-clamp-2 leading-relaxed italic">&ldquo;{req.reason}&rdquo;</p>
                                         </div>
+
+                                        {req.evidence && (
+                                            <div className="pt-4 border-t border-white/5 flex items-center justify-between group/evidence">
+                                                <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">Evidence Attached</p>
+                                                <div className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
+                                                    <Camera className="w-4 h-4 text-blue-500" />
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
 
                                     {req.status === 'PENDING' && (
@@ -239,8 +248,26 @@ export default function LeavesManagementPage() {
                         </div>
                         <div className="pt-3 border-t border-white/5">
                             <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Employee Statement</p>
-                            <p className="text-sm font-medium text-gray-300 leading-relaxed ">&ldquo;{selectedRequest?.reason}&rdquo;</p>
+                            <p className="text-sm font-medium text-gray-300 leading-relaxed italic">&ldquo;{selectedRequest?.reason}&rdquo;</p>
                         </div>
+
+                        {selectedRequest?.evidence && (
+                            <div className="pt-4 border-t border-white/5">
+                                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3">Proof Documentation</p>
+                                <div className="w-full h-48 rounded-2xl overflow-hidden border border-white/10 bg-black/40 relative group">
+                                    <img 
+                                        src={selectedRequest.evidence} 
+                                        className="w-full h-full object-contain cursor-zoom-in transition-transform group-hover:scale-105" 
+                                        alt="evidence" 
+                                        onClick={() => window.open(selectedRequest.evidence, '_blank')}
+                                    />
+                                    <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/80 to-transparent flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <span className="text-[9px] font-black text-white uppercase tracking-widest">Click to enlarge</span>
+                                        <Camera className="w-3.5 h-3.5 text-blue-400" />
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     <div className="space-y-3">

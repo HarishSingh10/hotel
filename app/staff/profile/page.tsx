@@ -38,6 +38,18 @@ export default function StaffProfilePage() {
         fetchProfile()
     }, [fetchProfile])
 
+    const handleRequestVerification = async () => {
+        try {
+            const res = await fetch('/api/staff/verify', { method: 'POST' })
+            if (res.ok) {
+                toast.success("Verification request sent to owner")
+                fetchProfile()
+            }
+        } catch (error) {
+            console.error("Verification request error:", error)
+        }
+    }
+
     const handleToggleDND = async (currentStatus: boolean) => {
         try {
             const res = await fetch('/api/staff/me', {
@@ -85,19 +97,19 @@ export default function StaffProfilePage() {
                 </div>
 
                 <div className="relative mb-6">
-                    <div className="w-32 h-32 rounded-[40px] bg-gradient-to-br from-blue-600 to-indigo-700 p-1 group-hover:rotate-6 transition-all duration-700 shadow-xl shadow-blue-500/20 relative">
-                        <div className="w-full h-full rounded-[38px] bg-[#0d1117] flex items-center justify-center overflow-hidden border-4 border-[#161b22]">
+                    <div className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-600 to-indigo-700 p-1 transition-all duration-300 shadow-xl shadow-blue-500/20 relative">
+                        <div className="w-full h-full rounded-full bg-[#0d1117] flex items-center justify-center overflow-hidden border-4 border-[#161b22]">
                             {profile.profilePhoto ? (
                                 <img
                                     src={profile.profilePhoto}
                                     alt=""
-                                    className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-700 active:scale-105"
+                                    className="w-full h-full object-cover transition-all duration-300"
                                 />
                             ) : (
                                 <User className="w-12 h-12 text-gray-700" />
                             )}
                         </div>
-                        <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-[#161b22] border border-white/10 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                        <div className="absolute bottom-0 right-0 w-10 h-10 bg-[#161b22] border border-white/10 rounded-full flex items-center justify-center shadow-lg">
                             <Star className="w-5 h-5 text-amber-500 fill-amber-500/20" />
                         </div>
                     </div>
@@ -111,12 +123,29 @@ export default function StaffProfilePage() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 w-full mt-10">
-                    <button className="h-14 bg-white/[0.03] border border-white/[0.05] rounded-2xl text-[10px] font-black uppercase tracking-widest text-white hover:bg-white/[0.08] transition-all flex items-center justify-center gap-2 active:scale-95">
-                        <Settings className="w-4 h-4 text-gray-500" /> Configuration
+                    <button 
+                        onClick={() => toast.info("System configuration coming soon")}
+                        className="h-14 bg-white/[0.03] border border-white/[0.05] rounded-2xl text-[10px] font-black uppercase tracking-widest text-white hover:bg-white/[0.08] transition-all flex items-center justify-center gap-2 active:scale-95"
+                    >
+                        <Settings className="w-4 h-4 text-gray-500" /> Settings
                     </button>
-                    <button className="h-14 bg-blue-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-blue-600/20 hover:bg-blue-500 transition-all flex items-center justify-center gap-2 active:scale-95">
-                        <ShieldCheck className="w-4 h-4" /> Identity Verified
-                    </button>
+                    
+                    {profile.isVerified ? (
+                        <div className="h-14 bg-blue-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-blue-600/20 flex items-center justify-center gap-2">
+                            <ShieldCheck className="w-4 h-4" /> Identity Verified
+                        </div>
+                    ) : profile.verificationRequested ? (
+                        <div className="h-14 bg-amber-500/10 border border-amber-500/20 text-amber-500 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2">
+                             Verification Pending
+                        </div>
+                    ) : (
+                        <button 
+                            onClick={handleRequestVerification}
+                            className="h-14 bg-blue-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-blue-600/20 hover:bg-blue-500 transition-all flex items-center justify-center gap-2 active:scale-95"
+                        >
+                            <User className="w-4 h-4" /> Request Verify
+                        </button>
+                    )}
                 </div>
             </div>
 

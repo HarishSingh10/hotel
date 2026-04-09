@@ -44,10 +44,16 @@ export async function GET(req: NextRequest) {
         }
 
         if (dateStr) {
-            const date = new Date(dateStr)
+            // Normalize requested date to IST day range (UTC boundaries)
+            const date = new Date(dateStr) // e.g. 2026-04-10T00:00:00Z
+            // IST (UTC+5:30) starts 5.5 hours BEFORE UTC day
+            const startStr = `${dateStr}T00:00:00+05:30`
+            const start = new Date(startStr)
+            const end = new Date(start.getTime() + 24 * 60 * 60 * 1000 - 1)
+            
             where.date = {
-                gte: startOfDay(date),
-                lte: endOfDay(date)
+                gte: start,
+                lte: end
             }
         }
 
@@ -64,6 +70,52 @@ export async function GET(req: NextRequest) {
                 date: 'desc'
             }
         })
+
+        // If it's a date-specific query for Admin (not general history), 
+        // merge with ALL staff to show who is absent
+        if (dateStr && !staffId && authResult.user.role !== 'STAFF') {
+            const staffWhere: any = {}
+            if (where.staff) {
+                staffWhere.propertyId = where.staff.propertyId
+            }
+
+            const allStaff = await prisma.staff.findMany({
+                where: staffWhere,
+                include: {
+                    user: { select: { name: true } }
+                }
+            })
+
+            const merged = allStaff.map(staff => {
+                const record = attendances.find(a => a.staffId === staff.id)
+                if (record) return record
+
+                return {
+                    id: `absent-${staff.id}`,
+                    staffId: staff.id,
+                    staff: staff,
+                    date: new Date(dateStr),
+                    status: 'ABSENT',
+                    punchIn: null,
+                    punchOut: null,
+                    hoursWorked: 0
+                }
+            })
+
+            // Sort merged: Present first, then alphabetical
+            merged.sort((a, b) => {
+                const aVal = a.status === 'ABSENT' ? 1 : 0
+                const bVal = b.status === 'ABSENT' ? 1 : 0
+                if (aVal !== bVal) return aVal - bVal
+                return (a.staff?.user?.name || '').localeCompare(b.staff?.user?.name || '')
+            })
+
+            return NextResponse.json({
+                success: true,
+                count: merged.length,
+                attendances: merged
+            })
+        }
 
         return NextResponse.json({
             success: true,
@@ -97,20 +149,26 @@ export async function POST(req: NextRequest) {
         const staff = await prisma.staff.findUnique({ where: { userId: authResult.user.id } })
         if (!staff) return NextResponse.json({ error: 'Staff profile not found' }, { status: 404 })
 
-        const today = startOfDay(new Date())
+        // Calculate IST day boundaries for finding "today's" record
+        const istDateStr = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(new Date());
+        const dayStart = new Date(`${istDateStr}T00:00:00+05:30`);
+        const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000 - 1);
+
+        // Find existing record for this IST day (using range for robustness with old data)
+        const existing = await prisma.attendance.findFirst({
+            where: {
+                staffId: staff.id,
+                date: { gte: dayStart, lte: dayEnd }
+            }
+        })
 
         if (action === 'PUNCH_IN') {
-            // Check if already punched in today
-            const existing = await prisma.attendance.findUnique({
-                where: { staffId_date: { staffId: staff.id, date: today } }
-            })
-
             if (existing && existing.punchIn) {
                 return NextResponse.json({ error: 'Already punched in for today' }, { status: 400 })
             }
 
             const attendance = await prisma.attendance.upsert({
-                where: { staffId_date: { staffId: staff.id, date: today } },
+                where: { id: existing?.id || 'new-record' }, // Use ID if exists to avoid unique constraint error
                 update: {
                     punchIn: new Date(),
                     punchInLocation: location,
@@ -118,7 +176,7 @@ export async function POST(req: NextRequest) {
                 },
                 create: {
                     staffId: staff.id,
-                    date: today,
+                    date: new Date(), // Use current timestamp but it will be found by range next time
                     punchIn: new Date(),
                     punchInLocation: location,
                     status: 'PRESENT'
@@ -128,10 +186,6 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ success: true, attendance, message: 'Punched in successfully' })
         } else {
             // PUNCH_OUT
-            const existing = await prisma.attendance.findUnique({
-                where: { staffId_date: { staffId: staff.id, date: today } }
-            })
-
             if (!existing || !existing.punchIn) {
                 return NextResponse.json({ error: 'Cannot punch out without punching in' }, { status: 400 })
             }
@@ -150,7 +204,7 @@ export async function POST(req: NextRequest) {
                     punchOut: punchOutTime,
                     punchOutLocation: location,
                     hoursWorked: parseFloat(hoursWorked.toFixed(2)),
-                    overtimeHours: Math.max(0, hoursWorked - 8) // Overtime calculation based on 8hr shift
+                    overtimeHours: Math.max(0, hoursWorked - 8)
                 }
             })
 

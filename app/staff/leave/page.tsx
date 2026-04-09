@@ -19,6 +19,7 @@ export default function LeavePage() {
     const [reason, setReason] = useState('')
     const [startDate, setStartDate] = useState('')
     const [endDate, setEndDate] = useState('')
+    const [evidence, setEvidence] = useState('')
     const [data, setData] = useState<any>({ balances: {}, history: [] })
 
     const fetchLeaveData = useCallback(async () => {
@@ -64,7 +65,8 @@ export default function LeavePage() {
                     startDate,
                     endDate,
                     totalDays,
-                    reason
+                    reason,
+                    evidence
                 })
             })
 
@@ -73,6 +75,7 @@ export default function LeavePage() {
                 setReason('')
                 setStartDate('')
                 setEndDate('')
+                setEvidence('')
                 fetchLeaveData()
             } else {
                 toast.error('Failed to submit request')
@@ -200,6 +203,44 @@ export default function LeavePage() {
                         placeholder="Provide detailed context for operational absence..."
                         className="w-full bg-[#0d1117] border border-white/[0.05] rounded-[25px] px-6 py-6 text-xs text-white outline-none focus:border-blue-500/50 transition-all font-black placeholder:text-gray-800 resize-none italic"
                     ></textarea>
+                </div>
+
+                <div className="space-y-4">
+                    <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 ml-4 font-mono">Evidence Capture (Optional)</label>
+                    <div className="flex items-center gap-6 p-6 bg-[#0d1117] border border-white/[0.05] rounded-[30px] shadow-inner relative overflow-hidden group">
+                        <div className="w-20 h-20 bg-[#161b22] border border-white/[0.05] rounded-2xl overflow-hidden flex items-center justify-center relative shrink-0 transition-all group-hover:border-blue-500/30">
+                            {evidence ? (
+                                <img src={evidence} className="w-full h-full object-cover" alt="preview" />
+                            ) : (
+                                <Briefcase className="w-8 h-8 text-gray-800" />
+                            )}
+                        </div>
+                        <div className="flex-1">
+                            <input
+                                type="file"
+                                id="leave-evidence"
+                                className="hidden"
+                                accept="image/*"
+                                onChange={(e) => {
+                                    const file = e.target.files?.[0]
+                                    if (file) {
+                                        const reader = new FileReader()
+                                        reader.onloadend = () => {
+                                            setEvidence(reader.result as string)
+                                        }
+                                        reader.readAsDataURL(file)
+                                    }
+                                }}
+                            />
+                            <label 
+                                htmlFor="leave-evidence"
+                                className="inline-flex items-center gap-3 px-6 py-3 bg-blue-600/10 border border-blue-600/20 text-blue-500 text-[10px] font-black uppercase tracking-widest rounded-xl cursor-pointer hover:bg-blue-600 hover:text-white transition-all active:scale-95 shadow-lg shadow-blue-500/5"
+                            >
+                                <Zap className="w-4 h-4" /> Upload Proof
+                            </label>
+                            <p className="text-[9px] text-gray-700 mt-2.5 font-black uppercase tracking-[0.2em] ml-1">Medical/Legal Attachments</p>
+                        </div>
+                    </div>
                 </div>
 
                 {startDate && endDate && totalDays > 0 && (
