@@ -48,11 +48,7 @@ export async function POST(request: Request) {
         if (!staff) return new NextResponse('Staff Profile Not Found', { status: 404 })
 
         const body = await request.json()
-        const { leaveType, startDate, endDate, totalDays, reason } = body
-
-        // Validate basic balance check (optional but recommended)
-        // For simplicity, we'll just create the request
-
+        const { leaveType, startDate, endDate, totalDays, reason, evidence } = body
         const newRequest = await prisma.leaveRequest.create({
             data: {
                 staffId: staff.id,
@@ -61,6 +57,7 @@ export async function POST(request: Request) {
                 endDate: new Date(endDate),
                 totalDays: totalDays,
                 reason: reason,
+                evidence: evidence,
                 status: 'PENDING'
             }
         })

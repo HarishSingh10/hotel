@@ -12594,6 +12594,8 @@ export namespace Prisma {
     annualLeaveBalance: number | null
     sickLeaveBalance: number | null
     casualLeaveBalance: number | null
+    isVerified: boolean | null
+    verificationRequested: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -12621,6 +12623,8 @@ export namespace Prisma {
     annualLeaveBalance: number | null
     sickLeaveBalance: number | null
     casualLeaveBalance: number | null
+    isVerified: boolean | null
+    verificationRequested: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -12649,6 +12653,8 @@ export namespace Prisma {
     annualLeaveBalance: number
     sickLeaveBalance: number
     casualLeaveBalance: number
+    isVerified: number
+    verificationRequested: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -12692,6 +12698,8 @@ export namespace Prisma {
     annualLeaveBalance?: true
     sickLeaveBalance?: true
     casualLeaveBalance?: true
+    isVerified?: true
+    verificationRequested?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -12719,6 +12727,8 @@ export namespace Prisma {
     annualLeaveBalance?: true
     sickLeaveBalance?: true
     casualLeaveBalance?: true
+    isVerified?: true
+    verificationRequested?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -12747,6 +12757,8 @@ export namespace Prisma {
     annualLeaveBalance?: true
     sickLeaveBalance?: true
     casualLeaveBalance?: true
+    isVerified?: true
+    verificationRequested?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -12862,6 +12874,8 @@ export namespace Prisma {
     annualLeaveBalance: number
     sickLeaveBalance: number
     casualLeaveBalance: number
+    isVerified: boolean
+    verificationRequested: boolean
     createdAt: Date
     updatedAt: Date
     _count: StaffCountAggregateOutputType | null
@@ -12909,6 +12923,8 @@ export namespace Prisma {
     annualLeaveBalance?: boolean
     sickLeaveBalance?: boolean
     casualLeaveBalance?: boolean
+    isVerified?: boolean
+    verificationRequested?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -12947,6 +12963,8 @@ export namespace Prisma {
     annualLeaveBalance?: boolean
     sickLeaveBalance?: boolean
     casualLeaveBalance?: boolean
+    isVerified?: boolean
+    verificationRequested?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
@@ -12999,6 +13017,8 @@ export namespace Prisma {
       annualLeaveBalance: number
       sickLeaveBalance: number
       casualLeaveBalance: number
+      isVerified: boolean
+      verificationRequested: boolean
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["staff"]>
@@ -13424,6 +13444,8 @@ export namespace Prisma {
     readonly annualLeaveBalance: FieldRef<"Staff", 'Int'>
     readonly sickLeaveBalance: FieldRef<"Staff", 'Int'>
     readonly casualLeaveBalance: FieldRef<"Staff", 'Int'>
+    readonly isVerified: FieldRef<"Staff", 'Boolean'>
+    readonly verificationRequested: FieldRef<"Staff", 'Boolean'>
     readonly createdAt: FieldRef<"Staff", 'DateTime'>
     readonly updatedAt: FieldRef<"Staff", 'DateTime'>
   }
@@ -14973,6 +14995,7 @@ export namespace Prisma {
     approvedBy: string | null
     approvedAt: Date | null
     rejectionReason: string | null
+    evidence: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -14989,6 +15012,7 @@ export namespace Prisma {
     approvedBy: string | null
     approvedAt: Date | null
     rejectionReason: string | null
+    evidence: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -15005,6 +15029,7 @@ export namespace Prisma {
     approvedBy: number
     approvedAt: number
     rejectionReason: number
+    evidence: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -15031,6 +15056,7 @@ export namespace Prisma {
     approvedBy?: true
     approvedAt?: true
     rejectionReason?: true
+    evidence?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -15047,6 +15073,7 @@ export namespace Prisma {
     approvedBy?: true
     approvedAt?: true
     rejectionReason?: true
+    evidence?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -15063,6 +15090,7 @@ export namespace Prisma {
     approvedBy?: true
     approvedAt?: true
     rejectionReason?: true
+    evidence?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -15166,6 +15194,7 @@ export namespace Prisma {
     approvedBy: string | null
     approvedAt: Date | null
     rejectionReason: string | null
+    evidence: string | null
     createdAt: Date
     updatedAt: Date
     _count: LeaveRequestCountAggregateOutputType | null
@@ -15201,6 +15230,7 @@ export namespace Prisma {
     approvedBy?: boolean
     approvedAt?: boolean
     rejectionReason?: boolean
+    evidence?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     staff?: boolean | StaffDefaultArgs<ExtArgs>
@@ -15219,6 +15249,7 @@ export namespace Prisma {
     approvedBy?: boolean
     approvedAt?: boolean
     rejectionReason?: boolean
+    evidence?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
@@ -15244,6 +15275,7 @@ export namespace Prisma {
       approvedBy: string | null
       approvedAt: Date | null
       rejectionReason: string | null
+      evidence: string | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["leaveRequest"]>
@@ -15650,6 +15682,7 @@ export namespace Prisma {
     readonly approvedBy: FieldRef<"LeaveRequest", 'String'>
     readonly approvedAt: FieldRef<"LeaveRequest", 'DateTime'>
     readonly rejectionReason: FieldRef<"LeaveRequest", 'String'>
+    readonly evidence: FieldRef<"LeaveRequest", 'String'>
     readonly createdAt: FieldRef<"LeaveRequest", 'DateTime'>
     readonly updatedAt: FieldRef<"LeaveRequest", 'DateTime'>
   }
@@ -36068,6 +36101,8 @@ export namespace Prisma {
     annualLeaveBalance: 'annualLeaveBalance',
     sickLeaveBalance: 'sickLeaveBalance',
     casualLeaveBalance: 'casualLeaveBalance',
+    isVerified: 'isVerified',
+    verificationRequested: 'verificationRequested',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -36106,6 +36141,7 @@ export namespace Prisma {
     approvedBy: 'approvedBy',
     approvedAt: 'approvedAt',
     rejectionReason: 'rejectionReason',
+    evidence: 'evidence',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -37730,6 +37766,8 @@ export namespace Prisma {
     annualLeaveBalance?: IntFilter<"Staff"> | number
     sickLeaveBalance?: IntFilter<"Staff"> | number
     casualLeaveBalance?: IntFilter<"Staff"> | number
+    isVerified?: BoolFilter<"Staff"> | boolean
+    verificationRequested?: BoolFilter<"Staff"> | boolean
     createdAt?: DateTimeFilter<"Staff"> | Date | string
     updatedAt?: DateTimeFilter<"Staff"> | Date | string
     user?: XOR<UserRelationFilter, UserWhereInput>
@@ -37766,6 +37804,8 @@ export namespace Prisma {
     annualLeaveBalance?: SortOrder
     sickLeaveBalance?: SortOrder
     casualLeaveBalance?: SortOrder
+    isVerified?: SortOrder
+    verificationRequested?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     user?: UserOrderByWithRelationInput
@@ -37805,6 +37845,8 @@ export namespace Prisma {
     annualLeaveBalance?: IntFilter<"Staff"> | number
     sickLeaveBalance?: IntFilter<"Staff"> | number
     casualLeaveBalance?: IntFilter<"Staff"> | number
+    isVerified?: BoolFilter<"Staff"> | boolean
+    verificationRequested?: BoolFilter<"Staff"> | boolean
     createdAt?: DateTimeFilter<"Staff"> | Date | string
     updatedAt?: DateTimeFilter<"Staff"> | Date | string
     user?: XOR<UserRelationFilter, UserWhereInput>
@@ -37841,6 +37883,8 @@ export namespace Prisma {
     annualLeaveBalance?: SortOrder
     sickLeaveBalance?: SortOrder
     casualLeaveBalance?: SortOrder
+    isVerified?: SortOrder
+    verificationRequested?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: StaffCountOrderByAggregateInput
@@ -37877,6 +37921,8 @@ export namespace Prisma {
     annualLeaveBalance?: IntWithAggregatesFilter<"Staff"> | number
     sickLeaveBalance?: IntWithAggregatesFilter<"Staff"> | number
     casualLeaveBalance?: IntWithAggregatesFilter<"Staff"> | number
+    isVerified?: BoolWithAggregatesFilter<"Staff"> | boolean
+    verificationRequested?: BoolWithAggregatesFilter<"Staff"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"Staff"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Staff"> | Date | string
   }
@@ -37994,6 +38040,7 @@ export namespace Prisma {
     approvedBy?: StringNullableFilter<"LeaveRequest"> | string | null
     approvedAt?: DateTimeNullableFilter<"LeaveRequest"> | Date | string | null
     rejectionReason?: StringNullableFilter<"LeaveRequest"> | string | null
+    evidence?: StringNullableFilter<"LeaveRequest"> | string | null
     createdAt?: DateTimeFilter<"LeaveRequest"> | Date | string
     updatedAt?: DateTimeFilter<"LeaveRequest"> | Date | string
     staff?: XOR<StaffRelationFilter, StaffWhereInput>
@@ -38011,6 +38058,7 @@ export namespace Prisma {
     approvedBy?: SortOrder
     approvedAt?: SortOrder
     rejectionReason?: SortOrder
+    evidence?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     staff?: StaffOrderByWithRelationInput
@@ -38031,6 +38079,7 @@ export namespace Prisma {
     approvedBy?: StringNullableFilter<"LeaveRequest"> | string | null
     approvedAt?: DateTimeNullableFilter<"LeaveRequest"> | Date | string | null
     rejectionReason?: StringNullableFilter<"LeaveRequest"> | string | null
+    evidence?: StringNullableFilter<"LeaveRequest"> | string | null
     createdAt?: DateTimeFilter<"LeaveRequest"> | Date | string
     updatedAt?: DateTimeFilter<"LeaveRequest"> | Date | string
     staff?: XOR<StaffRelationFilter, StaffWhereInput>
@@ -38048,6 +38097,7 @@ export namespace Prisma {
     approvedBy?: SortOrder
     approvedAt?: SortOrder
     rejectionReason?: SortOrder
+    evidence?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: LeaveRequestCountOrderByAggregateInput
@@ -38072,6 +38122,7 @@ export namespace Prisma {
     approvedBy?: StringNullableWithAggregatesFilter<"LeaveRequest"> | string | null
     approvedAt?: DateTimeNullableWithAggregatesFilter<"LeaveRequest"> | Date | string | null
     rejectionReason?: StringNullableWithAggregatesFilter<"LeaveRequest"> | string | null
+    evidence?: StringNullableWithAggregatesFilter<"LeaveRequest"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"LeaveRequest"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"LeaveRequest"> | Date | string
   }
@@ -40643,6 +40694,8 @@ export namespace Prisma {
     annualLeaveBalance?: number
     sickLeaveBalance?: number
     casualLeaveBalance?: number
+    isVerified?: boolean
+    verificationRequested?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutStaffProfileInput
@@ -40679,6 +40732,8 @@ export namespace Prisma {
     annualLeaveBalance?: number
     sickLeaveBalance?: number
     casualLeaveBalance?: number
+    isVerified?: boolean
+    verificationRequested?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     attendances?: AttendanceUncheckedCreateNestedManyWithoutStaffInput
@@ -40710,6 +40765,8 @@ export namespace Prisma {
     annualLeaveBalance?: IntFieldUpdateOperationsInput | number
     sickLeaveBalance?: IntFieldUpdateOperationsInput | number
     casualLeaveBalance?: IntFieldUpdateOperationsInput | number
+    isVerified?: BoolFieldUpdateOperationsInput | boolean
+    verificationRequested?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutStaffProfileNestedInput
@@ -40745,6 +40802,8 @@ export namespace Prisma {
     annualLeaveBalance?: IntFieldUpdateOperationsInput | number
     sickLeaveBalance?: IntFieldUpdateOperationsInput | number
     casualLeaveBalance?: IntFieldUpdateOperationsInput | number
+    isVerified?: BoolFieldUpdateOperationsInput | boolean
+    verificationRequested?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     attendances?: AttendanceUncheckedUpdateManyWithoutStaffNestedInput
@@ -40779,6 +40838,8 @@ export namespace Prisma {
     annualLeaveBalance?: number
     sickLeaveBalance?: number
     casualLeaveBalance?: number
+    isVerified?: boolean
+    verificationRequested?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -40804,6 +40865,8 @@ export namespace Prisma {
     annualLeaveBalance?: IntFieldUpdateOperationsInput | number
     sickLeaveBalance?: IntFieldUpdateOperationsInput | number
     casualLeaveBalance?: IntFieldUpdateOperationsInput | number
+    isVerified?: BoolFieldUpdateOperationsInput | boolean
+    verificationRequested?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -40831,6 +40894,8 @@ export namespace Prisma {
     annualLeaveBalance?: IntFieldUpdateOperationsInput | number
     sickLeaveBalance?: IntFieldUpdateOperationsInput | number
     casualLeaveBalance?: IntFieldUpdateOperationsInput | number
+    isVerified?: BoolFieldUpdateOperationsInput | boolean
+    verificationRequested?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -40953,6 +41018,7 @@ export namespace Prisma {
     approvedBy?: string | null
     approvedAt?: Date | string | null
     rejectionReason?: string | null
+    evidence?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     staff: StaffCreateNestedOneWithoutLeaveRequestsInput
@@ -40970,6 +41036,7 @@ export namespace Prisma {
     approvedBy?: string | null
     approvedAt?: Date | string | null
     rejectionReason?: string | null
+    evidence?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -40984,6 +41051,7 @@ export namespace Prisma {
     approvedBy?: NullableStringFieldUpdateOperationsInput | string | null
     approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    evidence?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     staff?: StaffUpdateOneRequiredWithoutLeaveRequestsNestedInput
@@ -41000,6 +41068,7 @@ export namespace Prisma {
     approvedBy?: NullableStringFieldUpdateOperationsInput | string | null
     approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    evidence?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -41016,6 +41085,7 @@ export namespace Prisma {
     approvedBy?: string | null
     approvedAt?: Date | string | null
     rejectionReason?: string | null
+    evidence?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -41030,6 +41100,7 @@ export namespace Prisma {
     approvedBy?: NullableStringFieldUpdateOperationsInput | string | null
     approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    evidence?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -41045,6 +41116,7 @@ export namespace Prisma {
     approvedBy?: NullableStringFieldUpdateOperationsInput | string | null
     approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    evidence?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -43898,6 +43970,8 @@ export namespace Prisma {
     annualLeaveBalance?: SortOrder
     sickLeaveBalance?: SortOrder
     casualLeaveBalance?: SortOrder
+    isVerified?: SortOrder
+    verificationRequested?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -43932,6 +44006,8 @@ export namespace Prisma {
     annualLeaveBalance?: SortOrder
     sickLeaveBalance?: SortOrder
     casualLeaveBalance?: SortOrder
+    isVerified?: SortOrder
+    verificationRequested?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -43959,6 +44035,8 @@ export namespace Prisma {
     annualLeaveBalance?: SortOrder
     sickLeaveBalance?: SortOrder
     casualLeaveBalance?: SortOrder
+    isVerified?: SortOrder
+    verificationRequested?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -44091,6 +44169,7 @@ export namespace Prisma {
     approvedBy?: SortOrder
     approvedAt?: SortOrder
     rejectionReason?: SortOrder
+    evidence?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -44111,6 +44190,7 @@ export namespace Prisma {
     approvedBy?: SortOrder
     approvedAt?: SortOrder
     rejectionReason?: SortOrder
+    evidence?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -44127,6 +44207,7 @@ export namespace Prisma {
     approvedBy?: SortOrder
     approvedAt?: SortOrder
     rejectionReason?: SortOrder
+    evidence?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -48533,6 +48614,8 @@ export namespace Prisma {
     annualLeaveBalance?: number
     sickLeaveBalance?: number
     casualLeaveBalance?: number
+    isVerified?: boolean
+    verificationRequested?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     property: PropertyCreateNestedOneWithoutStaffInput
@@ -48567,6 +48650,8 @@ export namespace Prisma {
     annualLeaveBalance?: number
     sickLeaveBalance?: number
     casualLeaveBalance?: number
+    isVerified?: boolean
+    verificationRequested?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     attendances?: AttendanceUncheckedCreateNestedManyWithoutStaffInput
@@ -48746,6 +48831,8 @@ export namespace Prisma {
     annualLeaveBalance?: IntFieldUpdateOperationsInput | number
     sickLeaveBalance?: IntFieldUpdateOperationsInput | number
     casualLeaveBalance?: IntFieldUpdateOperationsInput | number
+    isVerified?: BoolFieldUpdateOperationsInput | boolean
+    verificationRequested?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     property?: PropertyUpdateOneRequiredWithoutStaffNestedInput
@@ -48779,6 +48866,8 @@ export namespace Prisma {
     annualLeaveBalance?: IntFieldUpdateOperationsInput | number
     sickLeaveBalance?: IntFieldUpdateOperationsInput | number
     casualLeaveBalance?: IntFieldUpdateOperationsInput | number
+    isVerified?: BoolFieldUpdateOperationsInput | boolean
+    verificationRequested?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     attendances?: AttendanceUncheckedUpdateManyWithoutStaffNestedInput
@@ -49711,6 +49800,8 @@ export namespace Prisma {
     annualLeaveBalance?: number
     sickLeaveBalance?: number
     casualLeaveBalance?: number
+    isVerified?: boolean
+    verificationRequested?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutStaffProfileInput
@@ -49745,6 +49836,8 @@ export namespace Prisma {
     annualLeaveBalance?: number
     sickLeaveBalance?: number
     casualLeaveBalance?: number
+    isVerified?: boolean
+    verificationRequested?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     attendances?: AttendanceUncheckedCreateNestedManyWithoutStaffInput
@@ -50347,6 +50440,8 @@ export namespace Prisma {
     annualLeaveBalance?: IntFilter<"Staff"> | number
     sickLeaveBalance?: IntFilter<"Staff"> | number
     casualLeaveBalance?: IntFilter<"Staff"> | number
+    isVerified?: BoolFilter<"Staff"> | boolean
+    verificationRequested?: BoolFilter<"Staff"> | boolean
     createdAt?: DateTimeFilter<"Staff"> | Date | string
     updatedAt?: DateTimeFilter<"Staff"> | Date | string
   }
@@ -51647,6 +51742,8 @@ export namespace Prisma {
     annualLeaveBalance?: number
     sickLeaveBalance?: number
     casualLeaveBalance?: number
+    isVerified?: boolean
+    verificationRequested?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutStaffProfileInput
@@ -51682,6 +51779,8 @@ export namespace Prisma {
     annualLeaveBalance?: number
     sickLeaveBalance?: number
     casualLeaveBalance?: number
+    isVerified?: boolean
+    verificationRequested?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     attendances?: AttendanceUncheckedCreateNestedManyWithoutStaffInput
@@ -51978,6 +52077,8 @@ export namespace Prisma {
     annualLeaveBalance?: IntFieldUpdateOperationsInput | number
     sickLeaveBalance?: IntFieldUpdateOperationsInput | number
     casualLeaveBalance?: IntFieldUpdateOperationsInput | number
+    isVerified?: BoolFieldUpdateOperationsInput | boolean
+    verificationRequested?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutStaffProfileNestedInput
@@ -52012,6 +52113,8 @@ export namespace Prisma {
     annualLeaveBalance?: IntFieldUpdateOperationsInput | number
     sickLeaveBalance?: IntFieldUpdateOperationsInput | number
     casualLeaveBalance?: IntFieldUpdateOperationsInput | number
+    isVerified?: BoolFieldUpdateOperationsInput | boolean
+    verificationRequested?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     attendances?: AttendanceUncheckedUpdateManyWithoutStaffNestedInput
@@ -52238,6 +52341,7 @@ export namespace Prisma {
     approvedBy?: string | null
     approvedAt?: Date | string | null
     rejectionReason?: string | null
+    evidence?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -52253,6 +52357,7 @@ export namespace Prisma {
     approvedBy?: string | null
     approvedAt?: Date | string | null
     rejectionReason?: string | null
+    evidence?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -52660,6 +52765,7 @@ export namespace Prisma {
     approvedBy?: StringNullableFilter<"LeaveRequest"> | string | null
     approvedAt?: DateTimeNullableFilter<"LeaveRequest"> | Date | string | null
     rejectionReason?: StringNullableFilter<"LeaveRequest"> | string | null
+    evidence?: StringNullableFilter<"LeaveRequest"> | string | null
     createdAt?: DateTimeFilter<"LeaveRequest"> | Date | string
     updatedAt?: DateTimeFilter<"LeaveRequest"> | Date | string
   }
@@ -52789,6 +52895,8 @@ export namespace Prisma {
     annualLeaveBalance?: number
     sickLeaveBalance?: number
     casualLeaveBalance?: number
+    isVerified?: boolean
+    verificationRequested?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutStaffProfileInput
@@ -52824,6 +52932,8 @@ export namespace Prisma {
     annualLeaveBalance?: number
     sickLeaveBalance?: number
     casualLeaveBalance?: number
+    isVerified?: boolean
+    verificationRequested?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     leaveRequests?: LeaveRequestUncheckedCreateNestedManyWithoutStaffInput
@@ -52870,6 +52980,8 @@ export namespace Prisma {
     annualLeaveBalance?: IntFieldUpdateOperationsInput | number
     sickLeaveBalance?: IntFieldUpdateOperationsInput | number
     casualLeaveBalance?: IntFieldUpdateOperationsInput | number
+    isVerified?: BoolFieldUpdateOperationsInput | boolean
+    verificationRequested?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutStaffProfileNestedInput
@@ -52904,6 +53016,8 @@ export namespace Prisma {
     annualLeaveBalance?: IntFieldUpdateOperationsInput | number
     sickLeaveBalance?: IntFieldUpdateOperationsInput | number
     casualLeaveBalance?: IntFieldUpdateOperationsInput | number
+    isVerified?: BoolFieldUpdateOperationsInput | boolean
+    verificationRequested?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     leaveRequests?: LeaveRequestUncheckedUpdateManyWithoutStaffNestedInput
@@ -52935,6 +53049,8 @@ export namespace Prisma {
     annualLeaveBalance?: number
     sickLeaveBalance?: number
     casualLeaveBalance?: number
+    isVerified?: boolean
+    verificationRequested?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutStaffProfileInput
@@ -52970,6 +53086,8 @@ export namespace Prisma {
     annualLeaveBalance?: number
     sickLeaveBalance?: number
     casualLeaveBalance?: number
+    isVerified?: boolean
+    verificationRequested?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     attendances?: AttendanceUncheckedCreateNestedManyWithoutStaffInput
@@ -53016,6 +53134,8 @@ export namespace Prisma {
     annualLeaveBalance?: IntFieldUpdateOperationsInput | number
     sickLeaveBalance?: IntFieldUpdateOperationsInput | number
     casualLeaveBalance?: IntFieldUpdateOperationsInput | number
+    isVerified?: BoolFieldUpdateOperationsInput | boolean
+    verificationRequested?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutStaffProfileNestedInput
@@ -53050,6 +53170,8 @@ export namespace Prisma {
     annualLeaveBalance?: IntFieldUpdateOperationsInput | number
     sickLeaveBalance?: IntFieldUpdateOperationsInput | number
     casualLeaveBalance?: IntFieldUpdateOperationsInput | number
+    isVerified?: BoolFieldUpdateOperationsInput | boolean
+    verificationRequested?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     attendances?: AttendanceUncheckedUpdateManyWithoutStaffNestedInput
@@ -53081,6 +53203,8 @@ export namespace Prisma {
     annualLeaveBalance?: number
     sickLeaveBalance?: number
     casualLeaveBalance?: number
+    isVerified?: boolean
+    verificationRequested?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutStaffProfileInput
@@ -53116,6 +53240,8 @@ export namespace Prisma {
     annualLeaveBalance?: number
     sickLeaveBalance?: number
     casualLeaveBalance?: number
+    isVerified?: boolean
+    verificationRequested?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     attendances?: AttendanceUncheckedCreateNestedManyWithoutStaffInput
@@ -53162,6 +53288,8 @@ export namespace Prisma {
     annualLeaveBalance?: IntFieldUpdateOperationsInput | number
     sickLeaveBalance?: IntFieldUpdateOperationsInput | number
     casualLeaveBalance?: IntFieldUpdateOperationsInput | number
+    isVerified?: BoolFieldUpdateOperationsInput | boolean
+    verificationRequested?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutStaffProfileNestedInput
@@ -53196,6 +53324,8 @@ export namespace Prisma {
     annualLeaveBalance?: IntFieldUpdateOperationsInput | number
     sickLeaveBalance?: IntFieldUpdateOperationsInput | number
     casualLeaveBalance?: IntFieldUpdateOperationsInput | number
+    isVerified?: BoolFieldUpdateOperationsInput | boolean
+    verificationRequested?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     attendances?: AttendanceUncheckedUpdateManyWithoutStaffNestedInput
@@ -53443,6 +53573,8 @@ export namespace Prisma {
     annualLeaveBalance?: number
     sickLeaveBalance?: number
     casualLeaveBalance?: number
+    isVerified?: boolean
+    verificationRequested?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutStaffProfileInput
@@ -53478,6 +53610,8 @@ export namespace Prisma {
     annualLeaveBalance?: number
     sickLeaveBalance?: number
     casualLeaveBalance?: number
+    isVerified?: boolean
+    verificationRequested?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     attendances?: AttendanceUncheckedCreateNestedManyWithoutStaffInput
@@ -53524,6 +53658,8 @@ export namespace Prisma {
     annualLeaveBalance?: IntFieldUpdateOperationsInput | number
     sickLeaveBalance?: IntFieldUpdateOperationsInput | number
     casualLeaveBalance?: IntFieldUpdateOperationsInput | number
+    isVerified?: BoolFieldUpdateOperationsInput | boolean
+    verificationRequested?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutStaffProfileNestedInput
@@ -53558,6 +53694,8 @@ export namespace Prisma {
     annualLeaveBalance?: IntFieldUpdateOperationsInput | number
     sickLeaveBalance?: IntFieldUpdateOperationsInput | number
     casualLeaveBalance?: IntFieldUpdateOperationsInput | number
+    isVerified?: BoolFieldUpdateOperationsInput | boolean
+    verificationRequested?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     attendances?: AttendanceUncheckedUpdateManyWithoutStaffNestedInput
@@ -54234,6 +54372,8 @@ export namespace Prisma {
     annualLeaveBalance?: number
     sickLeaveBalance?: number
     casualLeaveBalance?: number
+    isVerified?: boolean
+    verificationRequested?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutStaffProfileInput
@@ -54269,6 +54409,8 @@ export namespace Prisma {
     annualLeaveBalance?: number
     sickLeaveBalance?: number
     casualLeaveBalance?: number
+    isVerified?: boolean
+    verificationRequested?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     attendances?: AttendanceUncheckedCreateNestedManyWithoutStaffInput
@@ -54550,6 +54692,8 @@ export namespace Prisma {
     annualLeaveBalance?: IntFieldUpdateOperationsInput | number
     sickLeaveBalance?: IntFieldUpdateOperationsInput | number
     casualLeaveBalance?: IntFieldUpdateOperationsInput | number
+    isVerified?: BoolFieldUpdateOperationsInput | boolean
+    verificationRequested?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutStaffProfileNestedInput
@@ -54584,6 +54728,8 @@ export namespace Prisma {
     annualLeaveBalance?: IntFieldUpdateOperationsInput | number
     sickLeaveBalance?: IntFieldUpdateOperationsInput | number
     casualLeaveBalance?: IntFieldUpdateOperationsInput | number
+    isVerified?: BoolFieldUpdateOperationsInput | boolean
+    verificationRequested?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     attendances?: AttendanceUncheckedUpdateManyWithoutStaffNestedInput
@@ -56737,6 +56883,8 @@ export namespace Prisma {
     annualLeaveBalance?: number
     sickLeaveBalance?: number
     casualLeaveBalance?: number
+    isVerified?: boolean
+    verificationRequested?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -57140,6 +57288,8 @@ export namespace Prisma {
     annualLeaveBalance?: IntFieldUpdateOperationsInput | number
     sickLeaveBalance?: IntFieldUpdateOperationsInput | number
     casualLeaveBalance?: IntFieldUpdateOperationsInput | number
+    isVerified?: BoolFieldUpdateOperationsInput | boolean
+    verificationRequested?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutStaffProfileNestedInput
@@ -57173,6 +57323,8 @@ export namespace Prisma {
     annualLeaveBalance?: IntFieldUpdateOperationsInput | number
     sickLeaveBalance?: IntFieldUpdateOperationsInput | number
     casualLeaveBalance?: IntFieldUpdateOperationsInput | number
+    isVerified?: BoolFieldUpdateOperationsInput | boolean
+    verificationRequested?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     attendances?: AttendanceUncheckedUpdateManyWithoutStaffNestedInput
@@ -57205,6 +57357,8 @@ export namespace Prisma {
     annualLeaveBalance?: IntFieldUpdateOperationsInput | number
     sickLeaveBalance?: IntFieldUpdateOperationsInput | number
     casualLeaveBalance?: IntFieldUpdateOperationsInput | number
+    isVerified?: BoolFieldUpdateOperationsInput | boolean
+    verificationRequested?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -58087,6 +58241,7 @@ export namespace Prisma {
     approvedBy?: string | null
     approvedAt?: Date | string | null
     rejectionReason?: string | null
+    evidence?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -58223,6 +58378,7 @@ export namespace Prisma {
     approvedBy?: NullableStringFieldUpdateOperationsInput | string | null
     approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    evidence?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -58237,6 +58393,7 @@ export namespace Prisma {
     approvedBy?: NullableStringFieldUpdateOperationsInput | string | null
     approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    evidence?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -58251,6 +58408,7 @@ export namespace Prisma {
     approvedBy?: NullableStringFieldUpdateOperationsInput | string | null
     approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    evidence?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

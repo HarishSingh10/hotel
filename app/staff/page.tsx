@@ -4,11 +4,8 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import {
-    Clock, CheckCircle2, AlertCircle,
-    ArrowRight, Bell, Zap,
-    ClipboardList, ShoppingBag,
-    Filter, LayoutGrid, Loader2, Sparkles, User, Smartphone,
-    Trophy, TrendingUp, Calendar, MapPin
+    Filter, LayoutGrid, Loader2, Sparkles, User, Smartphone, Package,
+    Trophy, TrendingUp, Calendar, MapPin, Search, ShieldCheck, UserCheck
 } from 'lucide-react'
 import { format, getHours } from 'date-fns'
 import { cn } from '@/lib/utils'
@@ -90,21 +87,18 @@ export default function StaffDashboard() {
     return (
         <div className="space-y-8 animate-fade-in pb-12">
             {/* Header / Greeting */}
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between px-2">
                 <div>
-                    <h1 className="text-2xl font-black text-white tracking-tight italic">
+                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500 mb-1 italic opacity-80">Operational Intelligence</p>
+                    <h1 className="text-3xl font-black text-white tracking-tighter italic leading-none">
                         {getGreeting()}, <span className="text-blue-500">{data.profile?.user?.name ? data.profile.user.name.split(' ')[0] : 'Staff'}</span>
                     </h1>
-                    <div className="flex items-center gap-2 mt-1.5 px-2 py-1 bg-white/[0.03] border border-white/[0.05] rounded-lg w-fit">
-                        <MapPin className="w-3 h-3 text-gray-500" />
-                        <span className="text-[9px] font-black uppercase tracking-widest text-gray-500">{data.profile?.department || 'Operations'} • Phase II</span>
-                    </div>
                 </div>
                 <div 
                     onClick={() => router.push('/staff/profile')}
-                    className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 p-[1px] cursor-pointer active:scale-95 transition-transform"
+                    className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-indigo-700 p-[2px] cursor-pointer shadow-xl shadow-blue-500/10 active:scale-90 transition-all border border-white/5"
                 >
-                    <div className="w-full h-full rounded-[15px] bg-[#0d1117] flex items-center justify-center overflow-hidden">
+                    <div className="w-full h-full rounded-full bg-[#0d1117] flex items-center justify-center overflow-hidden border-4 border-[#161b22]">
                         <img 
                             src={data.profile?.profilePhoto || `https://api.dicebear.com/7.x/avataaars/svg?seed=${data.profile?.user?.name || 'staff'}`} 
                             alt="" 
@@ -117,59 +111,61 @@ export default function StaffDashboard() {
             <PWAInstall />
 
             {/* Shift Information Card */}
-            <div className="bg-[#161b22] border border-white/[0.05] rounded-[40px] p-8 shadow-2xl relative overflow-hidden group">
-                {/* Background Decor */}
-                <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/5 blur-[80px] rounded-full translate-x-32 -translate-y-32"></div>
+            <div className="bg-[#161b22] border border-white/[0.05] rounded-[45px] p-10 shadow-3xl relative overflow-hidden group shadow-black/60">
+                {/* Advanced Background Flair */}
+                <div className="absolute top-0 right-0 w-80 h-80 bg-blue-600/5 blur-[100px] rounded-full translate-x-32 -translate-y-32 group-hover:bg-blue-600/10 transition-colors"></div>
+                <div className="absolute bottom-0 left-0 w-40 h-40 bg-indigo-600/5 blur-[80px] rounded-full -translate-x-16 translate-y-16"></div>
                 
                 <div className="relative z-10">
-                    <div className="flex items-start justify-between mb-8">
+                    <div className="flex items-start justify-between mb-10">
                         <div>
-                            <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-1">Current Session</p>
-                            <h2 className="text-xl font-black text-white tracking-tight italic">
-                                {isPunchedIn ? 'Shift in Progress' : 'Ready for Duty'}
+                            <div className="flex items-center gap-2 mb-2">
+                                <div className={cn("w-2 h-2 rounded-full animate-pulse", isPunchedIn ? "bg-emerald-500" : "bg-gray-500")}></div>
+                                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 italic">Deployment Status</p>
+                            </div>
+                            <h2 className="text-3xl font-black text-white tracking-tighter italic">
+                                {isPunchedIn ? 'Shift Active' : 'Off-Duty'}
                             </h2>
                         </div>
-                        <div className="w-10 h-10 rounded-xl bg-blue-600/10 flex items-center justify-center border border-blue-500/20">
-                            <Clock className="w-5 h-5 text-blue-500" />
+                        <div className="w-14 h-14 rounded-[20px] bg-white/[0.03] border border-white/[0.05] flex items-center justify-center shadow-inner group-hover:border-blue-500/30 transition-all">
+                            <Clock className="w-7 h-7 text-gray-600 group-hover:text-blue-500 transition-colors" />
                         </div>
                     </div>
-
-                    {/* Progress Bar (Only visible if punched in) */}
-                    {isPunchedIn && (
-                        <div className="space-y-2 mb-8 animate-fade-in-up">
-                            <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-gray-500">
-                                <span>Shift Start</span>
-                                <span className="text-blue-500">Log time correctly</span>
-                                <span>Shift End</span>
-                            </div>
-                            <div className="h-1.5 w-full bg-white/[0.03] rounded-full overflow-hidden border border-white/[0.05]">
-                                <div 
-                                    className="h-full bg-gradient-to-r from-blue-600 to-indigo-500 rounded-full transition-all duration-1000 shadow-[0_0_15px_rgba(37,99,235,0.3)]"
-                                    style={{ width: `${shiftProgress}%` }}
-                                ></div>
-                            </div>
-                        </div>
-                    )}
 
                     <button
                         onClick={handlePunch}
                         disabled={punchLoading}
                         className={cn(
-                            "w-full h-16 rounded-2xl flex items-center justify-center gap-4 font-black text-xs uppercase tracking-[0.2em] transition-all active:scale-[0.98] disabled:opacity-50 border",
+                            "w-full h-20 rounded-[28px] flex items-center justify-center gap-5 font-black text-[11px] uppercase tracking-[0.3em] transition-all active:scale-[0.97] disabled:opacity-50 border shadow-2xl italic",
                             isPunchedIn 
-                                ? "bg-rose-500 text-white shadow-xl shadow-rose-500/20 border-rose-400/20" 
-                                : "bg-blue-600 text-white shadow-xl shadow-blue-500/20 border-blue-400/20"
+                                ? "bg-rose-500 text-white shadow-rose-500/20 border-rose-400/20 hover:bg-rose-600" 
+                                : "bg-blue-600 text-white shadow-blue-500/20 border-blue-400/20 hover:bg-blue-700"
                         )}
                     >
                         {punchLoading ? (
-                            <Loader2 className="w-5 h-5 animate-spin" />
+                            <Loader2 className="w-6 h-6 animate-spin" />
                         ) : (
                             <>
-                                <Zap className={cn("w-5 h-5", isPunchedIn ? "fill-white" : "fill-white/30")} />
-                                <span>{isPunchedIn ? 'Punch Out & Logout' : 'Punch In to Start'}</span>
+                                <Zap className={cn("w-6 h-6", isPunchedIn ? "fill-white" : "fill-white/30")} />
+                                <span>{isPunchedIn ? 'Terminate Shift' : 'Initiate Shift Logout'}</span>
                             </>
                         )}
                     </button>
+
+                    {isPunchedIn && (
+                        <div className="mt-8 pt-8 border-t border-white/[0.03] animate-fade-in flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
+                                    <TrendingUp className="w-4 h-4 text-emerald-500" />
+                                </div>
+                                <div>
+                                    <p className="text-[8px] font-black text-gray-600 uppercase tracking-widest">Performance Track</p>
+                                    <p className="text-xs font-black text-white italic">Optimal Efficiency</p>
+                                </div>
+                            </div>
+                            <ArrowRight className="w-5 h-5 text-gray-800" />
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -189,6 +185,51 @@ export default function StaffDashboard() {
                         </div>
                     </div>
                 ))}
+            </div>
+
+            {/* Quick Actions */}
+            <div className="space-y-4">
+                <div className="flex items-center justify-between px-2">
+                    <h3 className="text-xs font-black text-white uppercase tracking-[0.3em] italic">System Actions</h3>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                    <button 
+                        onClick={() => router.push('/staff/lost-found')}
+                        className="p-6 bg-[#161b22] border border-white/[0.05] rounded-[30px] flex flex-col items-center gap-3 group hover:border-blue-500/30 transition-all active:scale-[0.98] shadow-xl shadow-black/20"
+                    >
+                        <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center group-hover:bg-amber-500 group-hover:text-white transition-all shadow-lg shadow-amber-500/5">
+                            <Package className="w-6 h-6 text-amber-500 group-hover:text-white transition-colors" />
+                        </div>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 group-hover:text-white transition-colors">Discovery Log</span>
+                    </button>
+                    <button 
+                        onClick={() => router.push('/staff/leave')}
+                        className="p-6 bg-[#161b22] border border-white/[0.05] rounded-[30px] flex flex-col items-center gap-3 group hover:border-blue-500/30 transition-all active:scale-[0.98] shadow-xl shadow-black/20"
+                    >
+                        <div className="w-12 h-12 rounded-2xl bg-blue-600/10 border border-blue-600/20 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-all shadow-lg shadow-blue-500/5">
+                            <Calendar className="w-6 h-6 text-blue-500 group-hover:text-white transition-colors" />
+                        </div>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 group-hover:text-white transition-colors">Leave Portal</span>
+                    </button>
+                </div>
+                
+                {!data.profile?.isVerified && (
+                    <div 
+                        onClick={() => router.push('/staff/profile')}
+                        className="bg-amber-500/5 border border-amber-500/10 rounded-2xl p-4 flex items-center justify-between group cursor-pointer hover:bg-amber-500/10 transition-all animate-pulse"
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center">
+                                <ShieldCheck className="w-4 h-4 text-amber-500" />
+                            </div>
+                            <div>
+                                <p className="text-[9px] font-black text-amber-500 uppercase tracking-widest">Identity Not Verified</p>
+                                <p className="text-[8px] font-bold text-gray-600 uppercase tracking-widest leading-none mt-1">Verification protocols required for full access</p>
+                            </div>
+                        </div>
+                        <ArrowRight className="w-4 h-4 text-amber-500 opacity-50 group-hover:translate-x-1 group-hover:opacity-100 transition-all" />
+                    </div>
+                )}
             </div>
 
             {/* My Active Queue */}

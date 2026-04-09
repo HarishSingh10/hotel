@@ -31,6 +31,7 @@ export default function StaffPage() {
     // Filtering States
     const [searchQuery, setSearchQuery] = useState('')
     const [filterDept, setFilterDept] = useState('ALL')
+    const [activeTab, setActiveTab] = useState<'ALL' | 'VERIFICATION'>('ALL')
 
     // Form State for Add/Edit
     const [formData, setFormData] = useState({
@@ -67,12 +68,13 @@ export default function StaffPage() {
     const filteredStaff = useMemo(() => {
         return staffList.filter(s => {
             const matchesSearch = s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                s.role.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                s.department.toLowerCase().includes(searchQuery.toLowerCase());
+                (s.role || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+                (s.department || '').toLowerCase().includes(searchQuery.toLowerCase());
             const matchesDept = filterDept === 'ALL' || s.department === filterDept;
-            return matchesSearch && matchesDept;
+            const matchesTab = activeTab === 'ALL' || (activeTab === 'VERIFICATION' && s.verificationRequested);
+            return matchesSearch && matchesDept && matchesTab;
         });
-    }, [staffList, searchQuery, filterDept]);
+    }, [staffList, searchQuery, filterDept, activeTab]);
 
     const handleAddStaff = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -140,6 +142,22 @@ export default function StaffPage() {
         })), 'Staff_Directory');
         toast.success('Staff list exported to CSV');
     };
+
+    const handleVerifyAction = async (staffId: string, action: 'APPROVE' | 'REJECT') => {
+        try {
+            const res = await fetch('/api/admin/staff/verify', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ staffId, action })
+            })
+            if (res.ok) {
+                toast.success(`Staff verification ${action === 'APPROVE' ? 'approved' : 'rejected'}`)
+                fetchStaff()
+            }
+        } catch (error) {
+            toast.error('Failed to verify staff')
+        }
+    }
 
     const viewStaffDetails = (staff: any) => {
         router.push(`/admin/staff/${staff.id}`);
@@ -251,7 +269,32 @@ export default function StaffPage() {
 
 
             {/* Staff List */}
-            <Card className="bg-surface border-white/[0.08]">
+            <Card className="bg-surface border-white/[0.08] overflow-hidden">
+                <div className="flex gap-4 border-b border-white/[0.08] bg-white/[0.02]">
+                    <button
+                        onClick={() => setActiveTab('ALL')}
+                        className={cn(
+                            "px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] transition-all relative",
+                            activeTab === 'ALL' ? "text-primary border-b-2 border-primary" : "text-text-tertiary hover:text-text-secondary"
+                        )}
+                    >
+                        Full Roster
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('VERIFICATION')}
+                        className={cn(
+                            "px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] transition-all relative flex items-center gap-2",
+                            activeTab === 'VERIFICATION' ? "text-primary border-b-2 border-primary" : "text-text-tertiary hover:text-text-secondary"
+                        )}
+                    >
+                        Verification Tasks
+                        {staffList.filter(s => s.verificationRequested).length > 0 && (
+                            <span className="w-5 h-5 bg-blue-600 text-white text-[10px] rounded-full flex items-center justify-center animate-pulse">
+                                {staffList.filter(s => s.verificationRequested).length}
+                            </span>
+                        )}
+                    </button>
+                </div>
                 <div className="p-4 border-b border-white/[0.08] flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="relative w-full md:w-72">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary" />
@@ -304,6 +347,8 @@ export default function StaffPage() {
                                         <div className="flex items-center gap-2 mt-1">
                                             <span className="text-[10px] uppercase tracking-wider bg-primary/10 text-primary px-2 py-0.5 rounded-md font-bold">{staff.department}</span>
                                             <span className="text-xs text-text-tertiary">• {staff.role}</span>
+                                            {staff.isVerified && <Badge variant="success" className="text-[8px] h-4">Verified</Badge>}
+                                            {staff.verificationRequested && <Badge variant="warning" className="text-[8px] h-4">Requested</Badge>}
                                         </div>
                                     </div>
                                 </div>
@@ -344,7 +389,26 @@ export default function StaffPage() {
                                         </div>
                                     )}
 
-                                    <div className="w-20 flex justify-end opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0 gap-2">
+                                    <div className="w-48 flex justify-end opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0 gap-2">
+                                        {staff.verificationRequested && (
+                                            <>
+                                                <Button
+                                                    size="sm"
+                                                    className="h-8 bg-emerald-600/10 text-emerald-500 hover:bg-emerald-600 hover:text-white border-emerald-500/20 text-[10px]"
+                                                    onClick={(e) => { e.stopPropagation(); handleVerifyAction(staff.id, 'APPROVE') }}
+                                                >
+                                                    Approve
+                                                </Button>
+                                                <Button
+                                                    size="sm"
+                                                    variant="secondary"
+                                                    className="h-8 bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white border-rose-500/20 text-[10px]"
+                                                    onClick={(e) => { e.stopPropagation(); handleVerifyAction(staff.id, 'REJECT') }}
+                                                >
+                                                    Reject
+                                                </Button>
+                                            </>
+                                        )}
                                         <Button
                                             variant="ghost"
                                             size="sm"

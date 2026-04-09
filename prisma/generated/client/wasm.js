@@ -265,6 +265,8 @@ exports.Prisma.StaffScalarFieldEnum = {
   annualLeaveBalance: 'annualLeaveBalance',
   sickLeaveBalance: 'sickLeaveBalance',
   casualLeaveBalance: 'casualLeaveBalance',
+  isVerified: 'isVerified',
+  verificationRequested: 'verificationRequested',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -297,6 +299,7 @@ exports.Prisma.LeaveRequestScalarFieldEnum = {
   approvedBy: 'approvedBy',
   approvedAt: 'approvedAt',
   rejectionReason: 'rejectionReason',
+  evidence: 'evidence',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
