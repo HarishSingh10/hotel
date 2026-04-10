@@ -15,7 +15,6 @@ import { format, differenceInDays, isAfter } from 'date-fns'
 export default function LeavePage() {
     const router = useRouter()
     const [submitting, setSubmitting] = useState(false)
-    const [loading, setLoading] = useState(true)
     const [leaveType, setLeaveType] = useState('ANNUAL')
     const [reason, setReason] = useState('')
     const [startDate, setStartDate] = useState('')
