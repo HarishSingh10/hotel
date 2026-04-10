@@ -7,11 +7,13 @@ import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 
 export default function PWAInstall() {
+    const [mounted, setMounted] = useState(false)
     const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
     const [isVisible, setIsVisible] = useState(false)
     const [isStandalone, setIsStandalone] = useState(false)
 
     useEffect(() => {
+        setMounted(true)
         const isStandaloneMatch = window.matchMedia('(display-mode: standalone)').matches
             || (window.navigator as any).standalone
             || document.referrer.includes('android-app://')
@@ -19,8 +21,16 @@ export default function PWAInstall() {
         setIsStandalone(isStandaloneMatch)
         if (isStandaloneMatch) return
 
-        const dismissedAt = localStorage.getItem('staff-pwa-dismissed-at')
-        const isRecentlyDismissed = dismissedAt && (Date.now() - parseInt(dismissedAt) < 1000 * 60 * 60 * 24 * 3) // 3 days for staff
+        let isRecentlyDismissed = false
+        try {
+            const dismissedAt = localStorage.getItem('staff-pwa-dismissed-at')
+            if (dismissedAt) {
+                const time = parseInt(dismissedAt)
+                isRecentlyDismissed = !isNaN(time) && (Date.now() - time < 1000 * 60 * 60 * 24 * 3)
+            }
+        } catch (e) {
+            console.error("Storage access failed", e)
+        }
 
         const handler = (e: any) => {
             e.preventDefault()
@@ -47,17 +57,23 @@ export default function PWAInstall() {
     const handleInstall = async () => {
         if (!deferredPrompt) return
         setIsVisible(false)
-        deferredPrompt.prompt()
-        const { outcome } = await deferredPrompt.userChoice
-        if (outcome === 'accepted') setDeferredPrompt(null)
+        try {
+            deferredPrompt.prompt()
+            const { outcome } = await deferredPrompt.userChoice
+            if (outcome === 'accepted') setDeferredPrompt(null)
+        } catch (err) {
+            console.error("Installation sequence failed", err)
+        }
     }
 
     const handleDismiss = () => {
         setIsVisible(false)
-        localStorage.setItem('staff-pwa-dismissed-at', Date.now().toString())
+        try {
+            localStorage.setItem('staff-pwa-dismissed-at', Date.now().toString())
+        } catch (e) {}
     }
 
-    if (isStandalone || !isVisible || !deferredPrompt) return null
+    if (!mounted || isStandalone || !isVisible || !deferredPrompt) return null
 
     return (
         <AnimatePresence>

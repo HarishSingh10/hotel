@@ -410,7 +410,7 @@ export default function SettingsOverviewPage() {
                                                     <div className="h-px flex-1 bg-white/5" />
                                                 </div>
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                    {module.permissions.map(perm => (
+                                                    {(module.permissions || []).map(perm => (
                                                         <div key={perm.id} className="group p-5 bg-black/40 border border-white/5 rounded-3xl flex items-center justify-between hover:border-white/10 transition-all">
                                                             <div className="flex items-start gap-4">
                                                                 <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-slate-600 group-hover:text-blue-500 transition-colors shrink-0">
@@ -422,7 +422,7 @@ export default function SettingsOverviewPage() {
                                                                 </div>
                                                             </div>
                                                             <Switch 
-                                                                checked={permissions[perm.id]} 
+                                                                checked={!!(permissions || {})[perm.id]} 
                                                                 onChange={() => handleTogglePermission(perm.id)} 
                                                             />
                                                         </div>
@@ -543,7 +543,7 @@ export default function SettingsOverviewPage() {
                                     <div className="space-y-6">
                                         <h3 className="text-[10px] font-black text-slate-600 uppercase tracking-[0.4em] italic">Active Gateways</h3>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            {paymentSettings.gateways.map(gw => (
+                                            {(paymentSettings.gateways || []).map(gw => (
                                                 <div key={gw.id} className="p-6 bg-black/40 border border-white/5 rounded-[28px] flex items-center justify-between group">
                                                     <div className="flex items-center gap-5">
                                                         <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-white/40 group-hover:text-white transition-all">
@@ -564,7 +564,103 @@ export default function SettingsOverviewPage() {
                                     </div>
                                 </div>
                             </div>
+                        ) : view === 'OPS' ? (
+                            <div className="flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                <div className="bg-[#0B0F17] border border-white/5 rounded-[40px] p-8 md:p-12 shadow-3xl space-y-12">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-14 h-14 rounded-2xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-500">
+                                            <Smartphone className="w-7 h-7" />
+                                        </div>
+                                        <div>
+                                            <h2 className="text-2xl font-black text-white italic tracking-tighter uppercase">Operational Protocols</h2>
+                                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Notification & Automation Matrix</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-10">
+                                        <div className="space-y-6">
+                                            <h4 className="text-[11px] font-black text-slate-600 uppercase tracking-[0.4em] italic">Alert Distribution</h4>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                {[
+                                                    { id: 'smsAlerts', label: 'SMS Gateway Enabled', icon: Bell },
+                                                    { id: 'pushNotifications', label: 'Push Protocol Enabled', icon: Zap },
+                                                    { id: 'slackLogs', label: 'Slack Webhook Sync', icon: Database },
+                                                ].map(n => (
+                                                    <div key={n.id} className="p-6 bg-black/40 border border-white/5 rounded-3xl flex items-center justify-between group hover:border-white/10 transition-all">
+                                                        <div className="flex items-center gap-4">
+                                                            <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-slate-600 group-hover:text-blue-500 transition-colors">
+                                                                <n.icon className="w-5 h-5" />
+                                                            </div>
+                                                            <span className="text-sm font-black text-white uppercase italic tracking-tight">{n.label}</span>
+                                                        </div>
+                                                        <Switch 
+                                                            checked={!!(opsSettings.notifications as any)[n.id]} 
+                                                            onChange={() => setOpsSettings({
+                                                                ...opsSettings, 
+                                                                notifications: { ...opsSettings.notifications, [n.id]: !(opsSettings.notifications as any)[n.id] }
+                                                            })} 
+                                                        />
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : view === 'SUBSCRIPTION' ? (
+                            <div className="flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                <div className="bg-[#0B0F17] border border-white/5 rounded-[40px] p-8 md:p-12 shadow-3xl space-y-12">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-500">
+                                                <Sparkles className="w-7 h-7" />
+                                            </div>
+                                            <div>
+                                                <h2 className="text-2xl font-black text-white italic tracking-tighter uppercase">Plan Ecosystem</h2>
+                                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Current License & Feature Access</p>
+                                            </div>
+                                        </div>
+                                        <Badge variant="blue" className="px-5 py-2 text-[10px] font-black uppercase tracking-[0.2em] italic">{hotelInfo.plan || 'No Plan'}</Badge>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                                        <div className="p-8 bg-black/40 border border-white/5 rounded-[32px] space-y-4">
+                                            <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Renewal Date</p>
+                                            <div className="flex items-center gap-4">
+                                                <Calendar className="w-8 h-8 text-blue-500" />
+                                                <span className="text-2xl font-black text-white italic tracking-tighter uppercase">{hotelInfo.planExpiresAt || 'Perpetual'}</span>
+                                            </div>
+                                        </div>
+                                        <div className="p-8 bg-black/40 border border-white/5 rounded-[32px] space-y-4">
+                                            <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Protocol Version</p>
+                                            <div className="flex items-center gap-4">
+                                                <Cpu className="w-8 h-8 text-emerald-500" />
+                                                <span className="text-2xl font-black text-white italic tracking-tighter uppercase">Zenbourg v2.4</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-6">
+                                        <h4 className="text-[11px] font-black text-slate-600 uppercase tracking-[0.4em] italic">Active Feature Modules</h4>
+                                        <div className="grid grid-cols-1 gap-4">
+                                            {(hotelInfo.features || []).length > 0 ? (hotelInfo.features || []).map(f => (
+                                                <div key={f} className="flex items-center gap-4 p-4 bg-[#0B0F17] border border-white/5 rounded-2xl group hover:border-blue-500/20 transition-all">
+                                                    <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-500">
+                                                        <Check className="w-4 h-4" />
+                                                    </div>
+                                                    <span className="text-[13px] font-bold text-slate-400 group-hover:text-white transition-colors">{f.replace(/_/g, ' ')}</span>
+                                                </div>
+                                            )) : (
+                                                <div className="py-8 text-center bg-white/[0.01] border border-dashed border-white/5 rounded-2xl">
+                                                    <p className="text-[11px] font-bold text-slate-600 uppercase tracking-widest">No Premium Protocols Active</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         ) : null}
+
                     </div>
 
                     {/* RIGHT SIDEBAR (4/12) */}

@@ -314,7 +314,7 @@ export default function StaffDashboard() {
 
                 <div className="space-y-4">
                     {activeTab === 'TASKS' ? (
-                        data.tasks.length === 0 ? (
+                        (data.tasks || []).length === 0 ? (
                             <div className="py-24 text-center bg-[#161b22] rounded-[40px] border border-dashed border-white/5 space-y-4">
                                 <div className="w-16 h-16 bg-white/[0.02] border border-white/5 rounded-full flex items-center justify-center mx-auto opacity-20">
                                     <CheckCircle2 className="w-8 h-8" />
@@ -322,7 +322,7 @@ export default function StaffDashboard() {
                                 <p className="text-xs font-black uppercase tracking-widest text-gray-700 italic">Clear skies! All tasks complete.</p>
                             </div>
                         ) : (
-                            data.tasks.slice(0, 5).map((task: any) => (
+                            (data.tasks || []).slice(0, 5).map((task: any) => (
                                 <div
                                     key={task.id}
                                     onClick={() => router.push(`/staff/tasks/${task.id}`)}
@@ -349,7 +349,7 @@ export default function StaffDashboard() {
                                             </div>
                                         </div>
                                         <div className="bg-white/[0.03] px-3 py-1.5 rounded-lg border border-white/10 text-[9px] font-black text-white uppercase tracking-widest">
-                                            {format(new Date(task.createdAt), 'HH:mm')}
+                                            {task.createdAt && format(new Date(task.createdAt), 'HH:mm')}
                                         </div>
                                     </div>
                                     
