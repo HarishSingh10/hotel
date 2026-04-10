@@ -55,8 +55,6 @@ const AVAILABLE_FEATURES = [
 ]
 
 export default function PropertiesPage() {
-    const [properties, setProperties] = useState<PropertyHierarchy[]>([])
-    const [loading, setLoading] = useState(true)
     const [expandedProperties, setExpandedProperties] = useState<string[]>([])
 
     // Add Property Modal State
