@@ -10,13 +10,27 @@ export async function GET(request: Request) {
     if (!session) return new NextResponse('Unauthorized', { status: 401 })
 
     try {
-        // Fetch direct messages where user is sender or receiver
+        const staff = await prisma.staff.findUnique({
+            where: { userId: session.user.id },
+            select: { id: true }
+        })
+
         const messages = await prisma.message.findMany({
             where: {
                 OR: [
                     { senderId: session.user.id },
-                    { receiverId: session.user.id }
+                    { receiverId: session.user.id },
+                    {
+                        serviceRequest: {
+                            assignedToId: staff?.id || 'NO-ID'
+                        }
+                    }
                 ]
+            },
+            include: {
+                serviceRequest: {
+                    select: { title: true, room: { select: { roomNumber: true } } }
+                }
             },
             orderBy: { createdAt: 'desc' }
         })
@@ -44,8 +58,31 @@ export async function POST(request: Request) {
                 content,
                 category: category || 'CHAT',
                 type: type || 'TEXT'
+            },
+            include: {
+                serviceRequest: {
+                    include: { property: { select: { ownerIds: true } } }
+                }
             }
         })
+
+        // Notify Owners if it's a service request message
+        if (newMessage.serviceRequest?.property?.ownerIds) {
+            try {
+                const notifications = newMessage.serviceRequest.property.ownerIds.map(ownerId => ({
+                    userId: ownerId,
+                    title: 'New Service Message',
+                    description: `Staff update on "${newMessage.serviceRequest?.title}": ${content.slice(0, 50)}...`,
+                    type: 'INFO'
+                }))
+
+                await prisma.inAppNotification.createMany({
+                    data: notifications
+                })
+            } catch (noteErr) {
+                console.error("Owner notification error:", noteErr)
+            }
+        }
 
         return NextResponse.json(newMessage)
     } catch (error) {

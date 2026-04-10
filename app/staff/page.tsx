@@ -6,7 +6,7 @@ import { toast } from 'sonner'
 import {
     Filter, LayoutGrid, Loader2, Sparkles, User, Smartphone, Package,
     Trophy, TrendingUp, Calendar, MapPin, Search, ShieldCheck, UserCheck,
-    Clock, Zap, ArrowRight, CheckCircle2, ShoppingBag, Settings as Tools
+    Clock, Zap, ArrowRight, CheckCircle2, ShoppingBag, ClipboardList, Settings as Tools
 } from 'lucide-react'
 import { format, getHours } from 'date-fns'
 import { cn } from '@/lib/utils'
@@ -69,15 +69,43 @@ export default function StaffDashboard() {
     const isPunchedIn = data.attendance?.punchIn && !data.attendance?.punchOut
     const isPunchedOutToday = !!data.attendance?.punchOut
 
+    const [currentTime, setCurrentTime] = useState(new Date())
+
+    useEffect(() => {
+        if (isPunchedIn) {
+            const timer = setInterval(() => setCurrentTime(new Date()), 60000)
+            return () => clearInterval(timer)
+        }
+    }, [isPunchedIn])
+
+    const getShiftTimes = () => {
+        if (!data.attendance?.punchIn) return { start: '--:--', end: '--:--', progress: 0 }
+        
+        const start = new Date(data.attendance.punchIn)
+        const formatTime = (d: Date) => format(d, 'HH:mm')
+        
+        // Progress calculation (Assuming 9-hour shift = 540 mins)
+        const diffMs = currentTime.getTime() - start.getTime()
+        const diffMins = Math.floor(diffMs / 60000)
+        const progress = Math.min(Math.max((diffMins / 540) * 100, 0), 100)
+
+        const estimatedEnd = new Date(start.getTime() + 9 * 60 * 60 * 1000)
+
+        return {
+            start: formatTime(start),
+            end: data.attendance.punchOut ? formatTime(new Date(data.attendance.punchOut)) : formatTime(estimatedEnd),
+            progress
+        }
+    }
+
+    const { start, end, progress } = getShiftTimes()
+
     const getGreeting = () => {
         const hour = getHours(new Date())
         if (hour < 12) return 'Good Morning'
         if (hour < 17) return 'Good Afternoon'
         return 'Good Evening'
     }
-
-    // Mock shift progress for visual excellence
-    const shiftProgress = isPunchedIn ? 45 : 0 // 45% through shift
 
     const perfScore = data.performanceScore?.overallScore 
         ? `${data.performanceScore.overallScore.toFixed(0)}%` 
@@ -114,41 +142,61 @@ export default function StaffDashboard() {
             {/* Shift Information Card */}
             <div className="bg-[#161b22] border border-white/[0.05] rounded-[45px] p-10 shadow-3xl relative overflow-hidden group shadow-black/60">
                 {/* Advanced Background Flair */}
-                <div className="absolute top-0 right-0 w-80 h-80 bg-blue-600/5 blur-[100px] rounded-full translate-x-32 -translate-y-32 group-hover:bg-blue-600/10 transition-colors"></div>
-                <div className="absolute bottom-0 left-0 w-40 h-40 bg-indigo-600/5 blur-[80px] rounded-full -translate-x-16 translate-y-16"></div>
+                <div className="absolute top-0 right-0 w-80 h-80 bg-blue-600/5 blur-[100px] rounded-full translate-x-32 -translate-y-32 group-hover:bg-blue-600/10 transition-colors pointer-events-none"></div>
                 
                 <div className="relative z-10">
-                    <div className="flex items-start justify-between mb-10">
+                    <div className="flex items-start justify-between mb-8">
                         <div>
                             <div className="flex items-center gap-2 mb-2">
-                                <div className={cn("w-2 h-2 rounded-full animate-pulse", isPunchedIn ? "bg-emerald-500" : "bg-gray-500")}></div>
-                                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 italic">Deployment Status</p>
+                                <div className={cn("w-2 h-2 rounded-full animate-pulse", isPunchedIn ? "bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" : "bg-gray-600")}></div>
+                                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 italic">Deployment Matrix</p>
                             </div>
-                            <h2 className="text-3xl font-black text-white tracking-tighter italic">
-                                {isPunchedIn ? 'Shift Active' : 'Off-Duty'}
+                            <h2 className="text-4xl font-black text-white tracking-tighter italic uppercase underline underline-offset-8 decoration-blue-500/20">
+                                {isPunchedIn ? 'Shift In Progress' : 'Neutral Status'}
                             </h2>
                         </div>
-                        <div className="w-14 h-14 rounded-[20px] bg-white/[0.03] border border-white/[0.05] flex items-center justify-center shadow-inner group-hover:border-blue-500/30 transition-all">
-                            <Clock className="w-7 h-7 text-gray-600 group-hover:text-blue-500 transition-colors" />
+                        <div className="w-16 h-16 rounded-[24px] bg-white/[0.03] border border-white/[0.05] flex items-center justify-center shadow-inner group-hover:border-blue-500/30 transition-all">
+                            <Clock className={cn("w-8 h-8 transition-colors", isPunchedIn ? "text-blue-500" : "text-gray-700")} />
                         </div>
                     </div>
+
+                    {/* Dynamic Timeline Integration */}
+                    {isPunchedIn && (
+                        <div className="mb-10 space-y-4 animate-in slide-in-from-top duration-700">
+                            <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-[0.2em] italic">
+                                <span className="text-blue-400">P-In {start}</span>
+                                <span className="text-gray-600">Sync Status: Real-time</span>
+                                <span className="text-gray-400">Est. End {end}</span>
+                            </div>
+                            <div className="h-2 w-full bg-black/40 rounded-full overflow-hidden border border-white/[0.03] shadow-inner">
+                                <div 
+                                    className="h-full bg-gradient-to-r from-blue-600 via-indigo-500 to-blue-400 rounded-full transition-all duration-1000 relative"
+                                    style={{ width: `${progress}%` }}
+                                >
+                                    <div className="absolute right-0 top-0 bottom-0 w-4 bg-white/20 blur-sm"></div>
+                                </div>
+                            </div>
+                            <p className="text-center text-[9px] font-black text-blue-500/40 uppercase tracking-[0.5em]">System Runtime: {Math.floor(progress)}%</p>
+                        </div>
+                    )}
 
                     <button
                         onClick={handlePunch}
                         disabled={punchLoading}
                         className={cn(
-                            "w-full h-20 rounded-[28px] flex items-center justify-center gap-5 font-black text-[11px] uppercase tracking-[0.3em] transition-all active:scale-[0.97] disabled:opacity-50 border shadow-2xl italic",
+                            "w-full h-20 rounded-[30px] flex items-center justify-center gap-5 font-black text-[12px] uppercase tracking-[0.3em] transition-all active:scale-[0.97] disabled:opacity-50 border shadow-2xl italic group/btn overflow-hidden relative",
                             isPunchedIn 
-                                ? "bg-rose-500 text-white shadow-rose-500/20 border-rose-400/20 hover:bg-rose-600" 
-                                : "bg-blue-600 text-white shadow-blue-500/20 border-blue-400/20 hover:bg-blue-700"
+                                ? "bg-rose-500 text-white border-rose-400/20 hover:bg-rose-600" 
+                                : "bg-blue-600 text-white border-blue-400/20 hover:bg-blue-700 shadow-blue-500/20"
                         )}
                     >
                         {punchLoading ? (
                             <Loader2 className="w-6 h-6 animate-spin" />
                         ) : (
                             <>
-                                <Zap className={cn("w-6 h-6", isPunchedIn ? "fill-white" : "fill-white/30")} />
-                                <span>{isPunchedIn ? 'Terminate Shift' : 'Initiate Shift Logout'}</span>
+                                <Zap className={cn("w-6 h-6 z-10", isPunchedIn ? "fill-white" : "fill-white/30")} />
+                                <span className="z-10">{isPunchedIn ? 'Punch Out & Logout' : 'Initiate Shift Sequence'}</span>
+                                <div className="absolute inset-0 bg-white/10 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300"></div>
                             </>
                         )}
                     </button>

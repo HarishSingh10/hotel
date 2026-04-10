@@ -46,70 +46,7 @@ export default function PayrollPage() {
     }, [])
 
     const handleDownload = (payItem: any) => {
-        const doc = new jsPDF()
-        
-        // Header
-        doc.setFontSize(22)
-        doc.setTextColor(37, 99, 235) // blue-600
-        doc.text('ZENBOURG HOTEL & RESORTS', 105, 20, { align: 'center' })
-        
-        doc.setFontSize(10)
-        doc.setTextColor(100)
-        doc.text('OFFICIAL SALARY SLIP', 105, 28, { align: 'center' })
-        
-        // Horizontal Line
-        doc.setDrawColor(200)
-        doc.line(20, 35, 190, 35)
-        
-        // Employee Info
-        doc.setFontSize(12)
-        doc.setTextColor(0)
-        doc.text('Employee Information', 20, 45)
-        
-        doc.setFontSize(10)
-        doc.text(`Name: ${staffInfo?.user?.name || 'Staff Member'}`, 20, 52)
-        doc.text(`Employee ID: ${staffInfo?.employeeId || 'N/A'}`, 20, 57)
-        doc.text(`Department: ${staffInfo?.department || 'N/A'}`, 20, 62)
-        doc.text(`Designation: ${staffInfo?.designation || 'N/A'}`, 20, 67)
-        
-        doc.text(`Pay Period: ${payItem.month} ${payItem.year}`, 130, 52)
-        doc.text(`Status: ${payItem.status}`, 130, 57)
-        doc.text(`Generated On: ${format(new Date(), 'dd MMM yyyy')}`, 130, 62)
-
-        // Earnings Table
-        doc.setFillColor(245, 247, 250)
-        doc.rect(20, 75, 170, 10, 'F')
-        doc.text('DESCRIPTION', 25, 82)
-        doc.text('AMOUNT (INR)', 160, 82, { align: 'right' })
-
-        let y = 92
-        const items = [
-            { label: 'Basic Salary', val: payItem.baseSalary },
-            { label: 'Allowances (HRA/TA)', val: payItem.allowances },
-            { label: 'Performance Bonus', val: payItem.bonus || 0 },
-        ]
-
-        items.forEach(item => {
-            doc.text(item.label, 25, y)
-            doc.text(`${item.val.toLocaleString()}`, 160, y, { align: 'right' })
-            y += 8
-        })
-
-        // Deductions
-        doc.text('Total Deductions (Tax/PF)', 25, y + 2)
-        doc.text(`- ${payItem.deductions.toLocaleString()}`, 160, y + 2, { align: 'right' })
-        
-        // Footer Line
-        doc.line(20, y + 10, 190, y + 10)
-        
-        // Net Pay
-        doc.setFontSize(14)
-        doc.text('NET SALARY PAYABLE', 25, y + 20)
-        doc.setTextColor(22, 163, 74) // emerald-600
-        doc.text(`INR ${payItem.netSalary.toLocaleString()}`, 160, y + 20, { align: 'right' })
-
-        doc.save(`Payslip_${payItem.month}_${payItem.year}.pdf`)
-        toast.success(`Payslip for ${payItem.month} downloaded successfully`)
+        router.push(`/staff/payroll/${payItem.id}`)
     }
 
     if (loading) return (

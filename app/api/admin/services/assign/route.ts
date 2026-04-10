@@ -67,12 +67,27 @@ export async function POST(request: Request) {
             }
 
             if (message && updated.guest?.phone) {
-                // Formatting phone to E.164 if needed, usually +91 for India
                 const targetPhone = updated.guest.phone.startsWith('+') ? updated.guest.phone : `+91${updated.guest.phone}`;
                 await sendSMS(targetPhone, message);
             }
         } catch (smsErr) {
             console.error('Failed to send SMS notification:', smsErr);
+        }
+
+        // NEW: Create In-App Notification for Staff
+        if (assignedToId && (status === 'ACCEPTED' || !status)) {
+            try {
+                await prisma.inAppNotification.create({
+                    data: {
+                        userId: updated.assignedTo!.userId,
+                        title: 'New Task Dispatch',
+                        description: `You have been assigned: ${updated.title} for Room ${updated.room?.roomNumber || 'Gen-Ops'}`,
+                        type: 'TASK'
+                    }
+                })
+            } catch (noteErr) {
+                console.error('Failed to create staff notification:', noteErr)
+            }
         }
 
         return NextResponse.json(updated)
