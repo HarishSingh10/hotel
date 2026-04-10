@@ -23,8 +23,6 @@ export default function AdminDashboard() {
   const [showCheckInModal, setShowCheckInModal] = useState(false)
   const [showServiceModal, setShowServiceModal] = useState(false)
   const [drillDown, setDrillDown] = useState<{ type: string | null, title: string, data: any[] }>({ type: null, title: '', data: [] })
-  const [rooms, setRooms] = useState<any[]>([])
-  const [todayReservations, setTodayReservations] = useState<any[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [serviceForm, setServiceForm] = useState({
     roomId: '', type: 'HOUSEKEEPING', title: '', description: '', priority: 'NORMAL',
