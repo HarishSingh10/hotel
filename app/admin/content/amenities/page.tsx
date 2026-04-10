@@ -1,5 +1,6 @@
 'use client'
 
+import { useSession } from 'next-auth/react'
 import { useState, useEffect } from 'react'
 import { Plus, Edit2, Trash2, Wifi, Coffee, Dumbbell, Car, Tv, Utensils } from 'lucide-react'
 import Card from '@/components/ui/Card'
@@ -15,6 +16,7 @@ const IconMap: any = {
 }
 
 export default function AmenitiesPage() {
+    const { data: session } = useSession()
     const [amenities, setAmenities] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
     const [showForm, setShowForm] = useState(false)
@@ -22,7 +24,12 @@ export default function AmenitiesPage() {
 
     const fetchAmenities = async () => {
         try {
-            const res = await fetch(buildContextUrl('/api/admin/content/amenities'))
+            let pid = getAdminContext().propertyId
+            if (session?.user?.role !== 'SUPER_ADMIN') {
+                pid = (session?.user as any)?.propertyId
+            }
+            
+            const res = await fetch(`/api/admin/content/amenities?propertyId=${pid}`)
             if (res.ok) {
                 const data = await res.json()
                 setAmenities(data)
@@ -35,12 +42,18 @@ export default function AmenitiesPage() {
     }
 
     useEffect(() => {
-        fetchAmenities()
-    }, [])
+        if (session) fetchAmenities()
+    }, [session])
 
     const handleSubmit = async () => {
         if (!formData.name) return toast.error('Name is required')
-        const { propertyId } = getAdminContext()
+        
+        // Get context from localStorage (for Super Admin) or session (for Hotel Admin/Staff)
+        let { propertyId } = getAdminContext()
+        if (session?.user?.role !== 'SUPER_ADMIN') {
+            propertyId = (session?.user as any)?.propertyId
+        }
+
         if (!propertyId || propertyId === 'ALL') return toast.error('Please select a specific hotel first')
 
         try {
