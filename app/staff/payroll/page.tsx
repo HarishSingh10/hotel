@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import useSWR from 'swr'
 import {
     ChevronLeft, CreditCard, Download,
     FileText, Calendar, Wallet,
@@ -17,33 +18,33 @@ import { toast } from 'sonner'
 
 export default function PayrollPage() {
     const router = useRouter()
-    const [loading, setLoading] = useState(true)
-    const [payrollData, setPayrollData] = useState<any[]>([])
-    const [staffInfo, setStaffInfo] = useState<any>(null)
+    const { data: payRaw, isValidating: loading } = useSWR('/api/staff/payroll', (url) => fetch(url).then(res => res.json()), {
+        revalidateOnFocus: true,
+        dedupingInterval: 5000
+    })
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const [payRes, meRes] = await Promise.all([
-                    fetch('/api/staff/payroll'),
-                    fetch('/api/staff/me')
-                ])
-                if (payRes.ok) {
-                    const data = await payRes.json()
-                    setPayrollData(data)
-                }
-                if (meRes.ok) {
-                    const data = await meRes.json()
-                    setStaffInfo(data.profile)
-                }
-            } catch (error) {
-                console.error(error)
-            } finally {
-                setLoading(false)
-            }
-        }
-        fetchData()
-    }, [])
+    const { data: meRaw } = useSWR('/api/staff/me', (url) => fetch(url).then(res => res.json()), {
+        revalidateOnFocus: false,
+        dedupingInterval: 10000
+    })
+
+    const payrollData = Array.isArray(payRaw) ? payRaw : []
+    const staffInfo = meRaw?.profile || null
+
+    if (!payRaw && loading) return (
+        <div className="space-y-8 animate-pulse px-4 pb-10">
+            <div className="flex justify-between items-center">
+                <div className="h-10 w-10 bg-white/5 rounded-xl" />
+                <div className="h-10 w-48 bg-white/5 rounded-xl" />
+                <div className="h-10 w-10 bg-white/5 rounded-xl" />
+            </div>
+            <div className="h-44 w-full bg-white/5 rounded-[40px]" />
+            <div className="space-y-4">
+                <div className="h-4 w-32 bg-white/5 rounded-full" />
+                {[1, 2, 3].map(i => <div key={i} className="h-20 w-full bg-white/5 rounded-3xl" />)}
+            </div>
+        </div>
+    )
 
     const handleDownload = (payItem: any) => {
         router.push(`/staff/payroll/${payItem.id}`)

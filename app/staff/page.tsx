@@ -16,6 +16,10 @@ const PWAInstall = dynamic(() => import('@/components/common/PWAInstall'), { ssr
 
 export default function StaffDashboard() {
     const router = useRouter()
+    const [punchLoading, setPunchLoading] = useState(false)
+    const [activeTab, setActiveTab] = useState<'TASKS' | 'ORDERS'>('TASKS')
+    const [currentTime, setCurrentTime] = useState(new Date())
+
     const { data, mutate, isValidating: loading } = useSWR('/api/staff/me', (url) => fetch(url).then(res => res.json()), {
         revalidateOnFocus: true,
         dedupingInterval: 2000

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import useSWR from 'swr'
 import {
     AlertCircle, CheckCircle2, Clock,
     ChevronLeft, Filter, Search,
@@ -15,31 +16,27 @@ import { format } from 'date-fns'
 
 export default function StaffTasksPage() {
     const router = useRouter()
-    const [loading, setLoading] = useState(true)
-    const [tasks, setTasks] = useState<any[]>([])
     const [filter, setFilter] = useState('ALL')
+    const { data: meData, mutate, isValidating: loading } = useSWR('/api/staff/me', (url) => fetch(url).then(res => res.json()), {
+        revalidateOnFocus: true,
+        dedupingInterval: 2000
+    })
 
-    const fetchTasks = useCallback(async () => {
-        try {
-            const res = await fetch('/api/staff/me')
-            if (res.ok) {
-                const json = await res.json()
-                setTasks(json.tasks)
-            }
-        } catch (error) {
-            console.error(error)
-        } finally {
-            setLoading(false)
-        }
-    }, [])
+    const tasks = Array.isArray(meData?.tasks) ? meData.tasks : []
 
-    useEffect(() => {
-        fetchTasks()
-    }, [fetchTasks])
+    const fetchTasks = () => mutate()
 
-    if (loading) return (
-        <div className="flex flex-col items-center justify-center min-h-[60vh]">
-            <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+    if (!meData && loading) return (
+        <div className="space-y-8 animate-pulse px-4">
+            <div className="flex justify-between items-center">
+                <div className="h-10 w-10 bg-white/5 rounded-xl" />
+                <div className="h-10 w-48 bg-white/5 rounded-xl text-center" />
+                <div className="h-10 w-10 bg-white/5 rounded-xl" />
+            </div>
+            <div className="h-14 w-full bg-white/5 rounded-2xl" />
+            {[1, 2, 3].map(i => (
+                <div key={i} className="h-64 w-full bg-white/5 rounded-[45px]" />
+            ))}
         </div>
     )
 

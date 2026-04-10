@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
+import useSWR from 'swr'
 import {
     Calendar, ChevronLeft, ChevronRight,
     CheckCircle2, XCircle, Clock,
@@ -20,36 +21,35 @@ import {
 export default function AttendancePage() {
     const router = useRouter()
     const [view, setView] = useState<'HISTORY' | 'ROSTER'>('HISTORY')
-    const [loading, setLoading] = useState(true)
-    const [attendanceData, setAttendanceData] = useState<any[]>([])
-    const [staffInfo, setStaffInfo] = useState<any>(null)
     const [currentMonth] = useState(new Date())
+    const { data: attRaw, isValidating: loading } = useSWR('/api/staff/attendance', (url) => fetch(url).then(res => res.json()), {
+        revalidateOnFocus: true,
+        dedupingInterval: 2000
+    })
+    
+    const { data: meRaw } = useSWR('/api/staff/me', (url) => fetch(url).then(res => res.json()), {
+        revalidateOnFocus: false,
+        dedupingInterval: 10000
+    })
 
-    const fetchData = useCallback(async () => {
-        try {
-            const [attRes, meRes] = await Promise.all([
-                fetch('/api/staff/attendance'),
-                fetch('/api/staff/me')
-            ])
-            
-            if (attRes.ok) {
-                const data = await attRes.json()
-                setAttendanceData(data)
-            }
-            if (meRes.ok) {
-                const data = await meRes.json()
-                setStaffInfo(data.profile)
-            }
-        } catch (error) {
-            console.error(error)
-        } finally {
-            setLoading(false)
-        }
-    }, [])
+    const attendanceData = Array.isArray(attRaw) ? attRaw : []
+    const staffInfo = meRaw?.profile || null
 
-    useEffect(() => {
-        fetchData()
-    }, [fetchData])
+    const fetchData = () => {}
+
+    if (!attRaw && loading) return (
+        <div className="space-y-10 animate-pulse px-4 pb-16">
+            <div className="flex justify-between items-center">
+                <div className="h-12 w-12 bg-white/5 rounded-[22px]" />
+                <div className="h-10 w-48 bg-white/5 rounded-xl" />
+                <div className="h-12 w-12 bg-white/5 rounded-[22px]" />
+            </div>
+            <div className="h-64 w-full bg-white/5 rounded-[45px]" />
+            <div className="grid grid-cols-3 gap-4">
+                {[1, 2, 3].map(i => <div key={i} className="h-32 bg-white/5 rounded-[35px]" />)}
+            </div>
+        </div>
+    )
 
     const monthName = format(currentMonth, 'MMMM yyyy')
 

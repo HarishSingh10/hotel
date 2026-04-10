@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
+import useSWR from 'swr'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Avatar from '@/components/common/Avatar'
@@ -22,8 +23,6 @@ export default function StaffPage() {
     const { data: session } = useSession()
     const userRole = session?.user?.role || 'STAFF'
 
-    const [staffList, setStaffList] = useState<any[]>([])
-    const [loading, setLoading] = useState(true)
     const [showAddModal, setShowAddModal] = useState(false)
     const [showDetailModal, setShowDetailModal] = useState(false)
     const [selectedStaff, setSelectedStaff] = useState<any>(null)
@@ -46,24 +45,14 @@ export default function StaffPage() {
         userRole: 'STAFF'
     })
 
-    const fetchStaff = async () => {
-        setLoading(true)
-        try {
-            const res = await fetch(buildContextUrl('/api/admin/staff'))
-            if (res.ok) {
-                const data = await res.json()
-                setStaffList(data)
-            }
-        } catch (error) {
-            console.error(error)
-        } finally {
-            setLoading(false)
-        }
-    }
+    const { data: rawStaff, mutate, isValidating: loading } = useSWR(buildContextUrl('/api/admin/staff'), (url) => fetch(url).then(res => res.json()), {
+        revalidateOnFocus: true,
+        dedupingInterval: 5000
+    })
 
-    useEffect(() => {
-        fetchStaff()
-    }, [])
+    const staffList = Array.isArray(rawStaff) ? rawStaff : []
+
+    const fetchStaff = () => mutate()
 
     // Derived filtered list
     const filteredStaff = useMemo(() => {
