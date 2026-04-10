@@ -19,6 +19,7 @@ export default function StaffDashboard() {
     const [data, setData] = useState<any>(null)
     const [punchLoading, setPunchLoading] = useState(false)
     const [activeTab, setActiveTab] = useState<'TASKS' | 'ORDERS'>('TASKS')
+    const [currentTime, setCurrentTime] = useState(new Date())
 
     const fetchData = useCallback(async () => {
         try {
@@ -41,6 +42,14 @@ export default function StaffDashboard() {
     useEffect(() => {
         fetchData()
     }, [fetchData])
+
+    useEffect(() => {
+        const isPunchedIn = data?.attendance?.punchIn && !data?.attendance?.punchOut
+        if (isPunchedIn) {
+            const timer = setInterval(() => setCurrentTime(new Date()), 60000)
+            return () => clearInterval(timer)
+        }
+    }, [data?.attendance?.punchIn, data?.attendance?.punchOut])
 
     const handlePunch = async () => {
         setPunchLoading(true)
@@ -65,19 +74,12 @@ export default function StaffDashboard() {
             <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
         </div>
     )
+
     if (!data) return <div className="p-8 text-center text-rose-500 font-bold">Error loading profile</div>
 
     const isPunchedIn = data.attendance?.punchIn && !data.attendance?.punchOut
     const isPunchedOutToday = !!data.attendance?.punchOut
 
-    const [currentTime, setCurrentTime] = useState(new Date())
-
-    useEffect(() => {
-        if (isPunchedIn) {
-            const timer = setInterval(() => setCurrentTime(new Date()), 60000)
-            return () => clearInterval(timer)
-        }
-    }, [isPunchedIn])
 
     const getShiftTimes = () => {
         if (!data.attendance?.punchIn) return { start: '--:--', end: '--:--', progress: 0 }
