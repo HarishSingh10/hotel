@@ -923,9 +923,9 @@ export default function StaffDetailPage() {
             </div>
             {/* EDIT STAFF MODAL */}
             {isEditModalOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-black/90 backdrop-blur-md" onClick={() => setEditModalOpen(false)} />
-                    <Card className="relative w-full max-w-2xl bg-[#101922] border-white/10 rounded-[2.5rem] overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+                <div className="fixed inset-0 z-[100] flex items-start justify-center p-4 overflow-y-auto bg-black/40 backdrop-blur-sm">
+                    <div className="absolute inset-0 bg-[#0a0f14]/80" onClick={() => setEditModalOpen(false)} />
+                    <Card className="relative w-full max-w-2xl bg-[#101922] border-white/10 rounded-[2.5rem] overflow-hidden shadow-2xl animate-in slide-in-from-top-10 duration-300 my-8">
                         <div className="p-8 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
                             <div>
                                 <h2 className="text-xl font-bold text-white">Update Personnel Record</h2>
