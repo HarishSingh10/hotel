@@ -1,8 +1,9 @@
 'use client'
 
 import { SessionProvider } from 'next-auth/react'
-
+import { SWRConfig } from 'swr'
 import { useEffect } from 'react'
+import { Toaster } from 'sonner'
 
 export function Providers({ children }: { children: React.ReactNode }) {
     useEffect(() => {
@@ -20,7 +21,18 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
     return (
         <SessionProvider>
-            {children}
+            <SWRConfig 
+                value={{
+                    fetcher: (resource, init) => fetch(resource, init).then(res => res.json()),
+                    revalidateOnFocus: false,
+                    revalidateIfStale: true,
+                    dedupingInterval: 5000
+                }}
+            >
+                {children}
+                <Toaster richColors position="top-right" theme="dark" />
+            </SWRConfig>
         </SessionProvider>
     )
 }
+

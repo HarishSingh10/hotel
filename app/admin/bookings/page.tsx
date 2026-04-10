@@ -186,101 +186,78 @@ export default function BookingsPage() {
   return (
     <div className="h-[calc(100vh-4rem)] flex flex-col gap-0 bg-[#101922] text-white">
       {/* === TOP NAV BAR === */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.07] bg-[#233648] shrink-0">
-        {/* Left: hamburger + title */}
-        <div className="flex items-center gap-3">
-          <div className="flex flex-col gap-1 cursor-pointer opacity-60 hover:opacity-100 transition-opacity p-1">
-            <span className="w-5 h-[2px] bg-white rounded-full" />
-            <span className="w-4 h-[2px] bg-white rounded-full" />
-            <span className="w-5 h-[2px] bg-white rounded-full" />
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between px-4 py-3 gap-3 border-b border-white/[0.07] bg-[#233648] shrink-0">
+        {/* Left: title + Today */}
+        <div className="flex items-center justify-between sm:justify-start gap-4">
+          <div className="flex items-center gap-3">
+            <div className="hidden sm:flex flex-col gap-1 cursor-pointer opacity-60 hover:opacity-100 transition-opacity p-1">
+              <span className="w-5 h-[2px] bg-white rounded-full" />
+              <span className="w-4 h-[2px] bg-white rounded-full" />
+              <span className="w-5 h-[2px] bg-white rounded-full" />
+            </div>
+            <span className="text-base font-bold text-white uppercase tracking-tight">Calendar</span>
           </div>
-          <span className="text-base font-semibold text-white">Calendar</span>
+          
+          <div className="flex items-center gap-1 bg-black/20 rounded-lg p-1">
+            <button onClick={handlePrev} className="p-1.5 hover:bg-white/10 rounded-md transition-colors">
+              <ChevronLeft className="w-3.5 h-3.5 text-gray-400" />
+            </button>
+            <span className="text-[11px] font-black text-white min-w-[100px] text-center uppercase tracking-widest">{monthLabel}</span>
+            <button onClick={handleNext} className="p-1.5 hover:bg-white/10 rounded-md transition-colors">
+              <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
+            </button>
+          </div>
         </div>
 
-        {/* Center: nav + today + filters */}
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handlePrev}
-            className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-white/10 transition-colors"
-          >
-            <ChevronLeft className="w-4 h-4 text-gray-400" />
-          </button>
-          <span className="text-sm font-medium text-white min-w-[120px] text-center">{monthLabel}</span>
-          <button
-            onClick={handleNext}
-            className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-white/10 transition-colors"
-          >
-            <ChevronRight className="w-4 h-4 text-gray-400" />
-          </button>
+        {/* Center/Actions: Filters and View Toggle */}
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 sm:pb-0">
           <button
             onClick={handleToday}
-            className="px-3 py-1 text-xs font-medium text-[#4A9EFF] hover:bg-[#4A9EFF]/10 rounded-md transition-colors border border-[#4A9EFF]/30"
+            className="px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-[#4A9EFF] hover:bg-[#4A9EFF]/10 rounded-lg transition-colors border border-[#4A9EFF]/30 shrink-0"
           >
             Today
           </button>
 
-          {/* Room Filter */}
-          <select
-            value={roomFilter}
-            onChange={e => setRoomFilter(e.target.value)}
-            className="px-3 py-1.5 text-xs bg-[#182433] border border-white/[0.1] rounded-md text-white focus:outline-none focus:ring-1 focus:ring-[#4A9EFF]/50 cursor-pointer"
-          >
-            <option>All Rooms</option>
-            {rooms.map(r => <option key={r.id}>Room {r.roomNumber}</option>)}
-          </select>
+          <div className="h-4 w-px bg-white/10 shrink-0 mx-1" />
 
-          {/* Floor Filter */}
-          <select
-            value={floorFilter}
-            onChange={e => setFloorFilter(e.target.value)}
-            className="px-3 py-1.5 text-xs bg-[#182433] border border-white/[0.1] rounded-md text-white focus:outline-none focus:ring-1 focus:ring-[#4A9EFF]/50 cursor-pointer"
-          >
-            <option>All Floors</option>
-            {floors.map(f => <option key={f}>{f}</option>)}
-          </select>
-        </div>
-
-        {/* Right: view toggle + new booking */}
-        <div className="flex items-center gap-2">
-          <div className="flex items-center bg-[#182433] border border-white/[0.1] rounded-lg p-0.5">
+          {/* View Toggle */}
+          <div className="flex items-center bg-[#182433] border border-white/[0.1] rounded-xl p-0.5 shrink-0">
             {(['day', 'week', 'month'] as const).map(mode => (
               <button
                 key={mode}
                 onClick={() => setViewMode(mode)}
                 className={cn(
-                  'px-3 py-1.5 text-xs font-medium rounded-md capitalize transition-all',
+                  'px-3 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all',
                   viewMode === mode
-                    ? 'bg-[#243047] text-white shadow-sm'
-                    : 'text-gray-400 hover:text-white'
+                    ? 'bg-[#243047] text-white shadow-lg'
+                    : 'text-gray-500 hover:text-white'
                 )}
               >
-                {mode.charAt(0).toUpperCase() + mode.slice(1)}
+                {mode}
               </button>
             ))}
           </div>
+
+          <div className="h-4 w-px bg-white/10 shrink-0 mx-1" />
+
+          {/* New Booking - Always visible as primary action */}
           <button
             onClick={() => window.location.href = '/admin/bookings/new'}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#4A9EFF] hover:bg-[#3A8EEF] text-white text-xs font-semibold rounded-lg transition-colors shadow-lg shadow-[#4A9EFF]/20"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#4A9EFF] hover:bg-[#3A8EEF] text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-colors shadow-lg shadow-[#4A9EFF]/20 shrink-0"
           >
             <Plus className="w-3.5 h-3.5" />
-            New Booking
+            <span className="hidden xs:inline">Booking</span>
           </button>
+
           <button
-            onClick={() => downloadCSV(bookings.map(b => ({
-              Guest: b.guest,
-              Room: b.room,
-              CheckIn: format(b.startDate, 'dd-MM-yyyy'),
-              CheckOut: format(b.endDate, 'dd-MM-yyyy'),
-              Nights: b.nights,
-              Status: b.status
-            })), 'Bookings_Report')}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#182433] hover:bg-[#243047] text-gray-300 text-xs font-medium rounded-lg border border-white/[0.1] transition-colors"
+            onClick={() => downloadCSV(bookings, 'Bookings_Export')}
+            className="p-1.5 bg-[#182433] border border-white/[0.1] rounded-xl text-gray-400 hover:text-white shrink-0"
           >
-            <Download className="w-3.5 h-3.5" />
-            Export
+            <Download className="w-4 h-4" />
           </button>
         </div>
       </div>
+
 
       {/* === CALENDAR GRID (Desktop) / LIST (Mobile) === */}
       <div className="flex-1 flex flex-col overflow-hidden bg-[#101922] relative">

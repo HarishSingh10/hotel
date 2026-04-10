@@ -152,33 +152,37 @@ export default function SettingsOverviewPage() {
             : session?.user?.propertyId
     }, [session])
 
-    const fetchAll = useCallback(async () => {
+    const fetchPropertyInfo = useCallback(async () => {
         if (!currentPropertyId || currentPropertyId === 'ALL') return
-        setLoading(true)
         try {
-            // Mock parallel fetching logic
-            const resProperty = await fetch(buildContextUrl(`/api/admin/settings/property?propertyId=${currentPropertyId}`))
-            const dataProperty = await resProperty.json()
-            if (dataProperty.success) setHotelInfo(dataProperty.property)
+            const res = await fetch(buildContextUrl(`/api/admin/settings/property?propertyId=${currentPropertyId}`))
+            const data = await res.json()
+            if (data.success) setHotelInfo(data.property)
+        } catch (e) { console.error(e) }
+    }, [currentPropertyId])
 
-            // Roles
-            const resRoles = await fetch(buildContextUrl('/api/admin/settings/roles'))
-            const dataRoles = await resRoles.json()
-            if (dataRoles.success) {
-                setRolePermissions(dataRoles.rolePermissions || [])
-                const current = dataRoles.rolePermissions.find((rp: any) => rp.role === selectedRole)
+    const fetchRoles = useCallback(async () => {
+        if (!currentPropertyId || currentPropertyId === 'ALL') return
+        try {
+            const res = await fetch(buildContextUrl('/api/admin/settings/roles'))
+            const data = await res.json()
+            if (data.success) {
+                setRolePermissions(data.rolePermissions || [])
+                const current = data.rolePermissions.find((rp: any) => rp.role === selectedRole)
                 if (current) setPermissions(current.permissions || {})
             }
-        } catch (e) {
-            console.error(e)
-        } finally {
-            setLoading(false)
-        }
+        } catch (e) { console.error(e) }
     }, [currentPropertyId, selectedRole])
 
     useEffect(() => {
-        fetchAll()
-    }, [fetchAll])
+        setLoading(true)
+        Promise.all([fetchPropertyInfo(), fetchRoles()]).finally(() => setLoading(false))
+    }, [currentPropertyId]) // Fetch all on property change
+
+    useEffect(() => {
+        // Only fetch roles when role selection changes, to save resources
+        fetchRoles()
+    }, [selectedRole, fetchRoles])
 
     const handleSave = async () => {
         setSaving(true)
@@ -272,44 +276,41 @@ export default function SettingsOverviewPage() {
             </div>
 
             {/* ── MAIN CONTAINER ── */}
-            <div className="relative max-w-[1600px] mx-auto px-6 md:px-10 py-10 md:py-16">
+            <div className="relative max-w-[1600px] mx-auto px-4 md:px-10 py-6 md:py-16">
                 
                 {/* ── BREADCRUMBS & OVERVIEW SEARCH ── */}
                 {view === 'OVERVIEW' && (
-                    <div className="mb-16 space-y-10">
-                        <div className="relative group max-w-4xl">
-                            <div className="absolute -inset-1 bg-gradient-to-r from-blue-600/20 to-indigo-600/20 rounded-[32px] blur opacity-0 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
+                    <div className="mb-8 md:mb-16 space-y-6 md:space-y-10">
+                        <div className="relative group w-full">
+                            <div className="absolute -inset-1 bg-gradient-to-r from-blue-600/20 to-indigo-600/20 rounded-[20px] md:rounded-[32px] blur opacity-0 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
                             <div className="relative">
-                                <Search className="absolute left-7 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-600" />
+                                <Search className="absolute left-5 md:left-7 top-1/2 -translate-y-1/2 w-5 h-5 md:w-6 md:h-6 text-slate-600" />
                                 <input 
                                     type="text" 
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    placeholder="Search for security protocols, billing, or access keys..."
-                                    className="w-full bg-[#0B0F17] border border-white/5 rounded-[28px] pl-16 pr-10 py-7 text-lg text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/40 transition-all shadow-2xl"
+                                    placeholder="Search protocols..."
+                                    className="w-full bg-[#0B0F17] border border-white/5 rounded-[20px] md:rounded-[28px] pl-14 md:pl-16 pr-6 md:pr-10 py-5 md:py-7 text-sm md:text-lg text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/40 transition-all shadow-2xl"
                                 />
-                                <div className="absolute right-6 top-1/2 -translate-y-1/2 hidden md:flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black text-slate-500 tracking-widest uppercase">
-                                    <Command className="w-3 h-3" /> K
-                                </div>
                             </div>
                         </div>
 
                         {/* Quick Stats Grid */}
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                             {[
-                                { label: 'System Uptime', value: '99.98%', icon: Activity, color: 'text-emerald-500' },
-                                { label: 'API Latency', value: '42ms', icon: Zap, color: 'text-blue-500' },
-                                { label: 'Encryption', value: 'AES-256', icon: ShieldCheck, color: 'text-indigo-500' },
-                                { label: 'Sync Status', value: 'Global', icon: RefreshCw, color: 'text-amber-500' },
+                                { label: 'Uptime', value: '99.98%', icon: Activity, color: 'text-emerald-500' },
+                                { label: 'Latency', value: '42ms', icon: Zap, color: 'text-blue-500' },
+                                { label: 'Security', value: 'AES-256', icon: ShieldCheck, color: 'text-indigo-500' },
+                                { label: 'Sync', value: 'Ready', icon: RefreshCw, color: 'text-amber-500' },
                             ].map((s, i) => (
-                                <div key={i} className="p-6 bg-white/[0.02] border border-white/5 rounded-3xl hover:bg-white/[0.04] transition-all">
-                                    <div className="flex items-center gap-3 mb-3">
-                                        <div className={cn("p-2 rounded-lg bg-black/40", s.color)}>
-                                            <s.icon className="w-4 h-4" />
+                                <div key={i} className="p-4 md:p-6 bg-white/[0.02] border border-white/5 rounded-2xl md:rounded-3xl hover:bg-white/[0.04] transition-all">
+                                    <div className="flex items-center gap-2 md:gap-3 mb-2 md:mb-3">
+                                        <div className={cn("p-1.5 rounded-lg bg-black/40", s.color)}>
+                                            <s.icon className="w-3.5 h-3.5 md:w-4 md:h-4" />
                                         </div>
-                                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{s.label}</span>
+                                        <span className="text-[8px] md:text-[10px] font-bold text-slate-500 uppercase tracking-widest">{s.label}</span>
                                     </div>
-                                    <div className="text-2xl font-black text-white italic tracking-tighter">{s.value}</div>
+                                    <div className="text-lg md:text-2xl font-black text-white italic tracking-tighter">{s.value}</div>
                                 </div>
                             ))}
                         </div>
@@ -317,10 +318,10 @@ export default function SettingsOverviewPage() {
                 )}
 
                 {/* ── VIEWS ── */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-10">
                     
                     {/* LEFT CONTENT (8/12) */}
-                    <div className="lg:col-span-8 flex flex-col gap-10">
+                    <div className="order-2 lg:order-1 lg:col-span-8 flex flex-col gap-6 md:gap-10">
                         {view === 'OVERVIEW' ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
                                 {filteredConfig.map((item) => (
@@ -664,7 +665,7 @@ export default function SettingsOverviewPage() {
                     </div>
 
                     {/* RIGHT SIDEBAR (4/12) */}
-                    <div className="lg:col-span-4 flex flex-col gap-8">
+                    <div className="order-1 lg:order-2 lg:col-span-4 flex flex-col gap-6 md:gap-8">
                         {/* ROLES SELECTOR SIDEBAR */}
                         {view === 'ROLES' ? (
                             <div className="bg-[#0B0F17] border border-white/5 rounded-[40px] p-8 shadow-3xl">
