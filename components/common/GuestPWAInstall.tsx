@@ -1,128 +1,126 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { X, Share, PlusSquare, Download } from 'lucide-react'
+import { X, Smartphone, Download, Zap, CheckCircle2 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { toast } from 'sonner'
+import { cn } from '@/lib/utils'
 
 export default function GuestPWAInstall() {
     const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
     const [isVisible, setIsVisible] = useState(false)
     const [isStandalone, setIsStandalone] = useState(false)
-    const [platform, setPlatform] = useState<'ios' | 'android' | 'other'>('other')
 
     useEffect(() => {
-        // Detect Platform
-        const userAgent = window.navigator.userAgent.toLowerCase()
-        if (/iphone|ipad|ipod/.test(userAgent)) setPlatform('ios')
-        else if (/android/.test(userAgent)) setPlatform('android')
-
-        // Detect if already installed/standalone
+        // 1. Detect if already installed/standalone
         const isStandaloneMatch = window.matchMedia('(display-mode: standalone)').matches
             || (window.navigator as any).standalone
             || document.referrer.includes('android-app://')
 
         setIsStandalone(isStandaloneMatch)
 
-        // Check if user dismissed recently
-        const dismissedAt = localStorage.getItem('pwa-dismissed-at')
-        const isRecentlyDismissed = dismissedAt && (Date.now() - parseInt(dismissedAt) < 1000 * 60 * 60 * 24) // 24h
+        if (isStandaloneMatch) return
 
+        // 2. Check dismissal history
+        const dismissedAt = localStorage.getItem('pwa-prompt-dismissed-at')
+        const isRecentlyDismissed = dismissedAt && (Date.now() - parseInt(dismissedAt) < 1000 * 60 * 60 * 24 * 7) // 7 days
+
+        // 3. Capture Install Prompt
         const handler = (e: any) => {
             e.preventDefault()
             setDeferredPrompt(e)
-            if (!isStandaloneMatch && !isRecentlyDismissed) {
-                setTimeout(() => setIsVisible(true), 3000) // Delay for better UX
+            
+            // Show prompt only if not dismissed recently
+            if (!isRecentlyDismissed) {
+                setTimeout(() => setIsVisible(true), 6000) // Tactical delay
             }
         }
 
         window.addEventListener('beforeinstallprompt', handler)
 
-        // For iOS, beforeinstallprompt doesn't fire, so we show it manually if not standalone
-        if (platform === 'ios' && !isStandaloneMatch && !isRecentlyDismissed) {
-             setTimeout(() => setIsVisible(true), 4000)
-        }
+        // 4. Track successful install
+        window.addEventListener('appinstalled', () => {
+            setIsStandalone(true)
+            setIsVisible(false)
+            setDeferredPrompt(null)
+            toast.success("System Optimized", {
+                description: "Native Terminal successfully deployed to your home screen."
+            })
+        })
 
         return () => window.removeEventListener('beforeinstallprompt', handler)
-    }, [platform])
+    }, [])
 
     const handleInstall = async () => {
         if (!deferredPrompt) return
+        
+        setIsVisible(false)
         deferredPrompt.prompt()
+        
         const { outcome } = await deferredPrompt.userChoice
         if (outcome === 'accepted') {
             setDeferredPrompt(null)
-            setIsVisible(false)
+            localStorage.removeItem('pwa-prompt-dismissed-at')
         }
     }
 
     const handleDismiss = () => {
         setIsVisible(false)
-        localStorage.setItem('pwa-dismissed-at', Date.now().toString())
+        localStorage.setItem('pwa-prompt-dismissed-at', Date.now().toString())
     }
 
-    if (isStandalone || !isVisible) return null
+    if (isStandalone || !isVisible || !deferredPrompt) return null
 
     return (
         <AnimatePresence>
             <motion.div 
-                initial={{ y: 100, opacity: 0, x: '-50%' }}
-                animate={{ y: 0, opacity: 1, x: '-50%' }}
-                exit={{ y: 100, opacity: 0, x: '-50%' }}
-                className="fixed bottom-6 left-1/2 z-[100] w-[92%] max-w-md"
+                initial={{ y: 150, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: 150, opacity: 0 }}
+                className="fixed bottom-6 left-4 right-4 md:left-auto md:right-10 md:w-[400px] z-[300]"
             >
-                <div className="relative overflow-hidden bg-[#0d1117]/80 backdrop-blur-2xl border border-white/10 rounded-3xl p-4 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
-                    {/* Background Glow */}
-                    <div className="absolute -right-10 -top-10 w-32 h-32 bg-[#4A9EFF]/10 rounded-full blur-3xl opacity-50" />
+                <div className="relative overflow-hidden bg-[#0d1117] border border-blue-500/20 rounded-[32px] p-6 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.8)] backdrop-blur-xl">
+                    {/* Visual Flair */}
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/10 blur-[60px] rounded-full translate-x-10 -translate-y-10" />
                     
-                    <div className="flex items-start gap-4">
-                        {/* App Icon */}
-                        <div className="w-14 h-14 bg-gradient-to-br from-[#4A9EFF] to-[#2D5BFF] rounded-2xl flex items-center justify-center shrink-0 shadow-lg shadow-[#4A9EFF]/20 border border-white/10">
-                            <PlusSquare className="w-7 h-7 text-white" />
+                    <div className="flex justify-between items-start mb-6">
+                        <div className="w-14 h-14 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl flex items-center justify-center shadow-2xl shadow-blue-600/30 border border-white/10 shrink-0">
+                            <Zap className="w-8 h-8 text-white fill-white" />
                         </div>
-                        
-                        <div className="flex-1 min-w-0 pr-6">
-                            <h3 className="text-[16px] font-bold text-white leading-tight mb-1">
-                                Install Zenbourg Hotel
-                            </h3>
-                            <p className="text-[12px] text-gray-400 font-medium leading-relaxed">
-                                {platform === 'ios' 
-                                    ? "Tap 'Share' then 'Add to Home Screen' for a premium app experience."
-                                    : "Install our lightning-fast app for the best management experience."
-                                }
-                            </p>
-                        </div>
-
                         <button 
                             onClick={handleDismiss}
-                            className="absolute top-3 right-3 p-1 text-gray-500 hover:text-white transition-colors"
+                            className="p-2 hover:bg-white/5 rounded-xl transition-all text-gray-600 hover:text-white"
                         >
-                            <X className="w-4 h-4" />
+                            <X className="w-5 h-5" />
                         </button>
                     </div>
 
-                    <div className="mt-4 flex items-center gap-3">
-                        {platform === 'ios' ? (
-                            <div className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-xl border border-white/10 w-full">
-                                <Share className="w-4 h-4 text-[#4A9EFF]" />
-                                <span className="text-[11px] font-bold text-gray-300 uppercase tracking-widest">Share → Add to Home Screen</span>
-                            </div>
-                        ) : (
-                            <>
-                                <button
-                                    onClick={handleInstall}
-                                    className="flex-1 px-6 py-2.5 bg-[#4A9EFF] hover:bg-[#3A8EEF] text-white rounded-xl transition-all shadow-lg shadow-[#4A9EFF]/20 flex items-center justify-center gap-2 group"
-                                >
-                                    <Download className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                                    <span className="text-[13px] font-black uppercase tracking-wider">Install Now</span>
-                                </button>
-                                <button
-                                    onClick={handleDismiss}
-                                    className="px-5 py-2.5 bg-white/5 hover:bg-white/10 text-gray-400 font-bold text-[12px] uppercase rounded-xl transition-all"
-                                >
-                                    Not Now
-                                </button>
-                            </>
-                        )}
+                    <div className="space-y-2 mb-8">
+                        <h3 className="text-xl font-black text-white italic tracking-tighter uppercase leading-none">
+                            Zenbourg Native Access
+                        </h3>
+                        <p className="text-[12px] text-gray-500 font-bold uppercase tracking-widest leading-relaxed">
+                            Upgrade to the tactical terminal. Eliminate browser latency and unlock full-screen performance.
+                        </p>
+                    </div>
+
+                    <div className="flex gap-4">
+                        <button
+                            onClick={handleInstall}
+                            className="flex-1 h-14 bg-white text-black rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-all active:scale-95 shadow-xl hover:bg-gray-100"
+                        >
+                            <Download className="w-4 h-4" />
+                            Install Now
+                        </button>
+                        <div className="hidden sm:flex items-center gap-2 px-5 py-4 bg-white/5 rounded-2xl border border-white/5 shrink-0">
+                            <Smartphone className="w-4 h-4 text-blue-500" />
+                            <span className="text-[10px] font-black uppercase tracking-widest opacity-40">System v2</span>
+                        </div>
+                    </div>
+
+                    <div className="mt-6 pt-4 border-t border-white/5 flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.3em] text-gray-700 italic">
+                        <CheckCircle2 size={12} className="text-emerald-500/40" />
+                        Verified Direct Deployment Secure
                     </div>
                 </div>
             </motion.div>
