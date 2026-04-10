@@ -86,6 +86,8 @@ export async function GET(request: Request) {
                 userRole: s.user.role,
                 status: s.user.status,
                 dutyStatus: dutyStatus,
+                isVerified: s.isVerified,
+                verificationRequested: s.verificationRequested,
                 salary: ['SUPER_ADMIN', 'HOTEL_ADMIN', 'MANAGER'].includes(session.user.role) ? s.baseSalary : '***',
                 location: 'Main Property'
             }

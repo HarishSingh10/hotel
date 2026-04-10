@@ -1,11 +1,10 @@
-const CACHE_NAME = 'zenbourg-staff-v1';
+const CACHE_NAME = 'zenbourg-v2';
 const ASSETS = [
-    '/staff',
+    '/',
     '/manifest.json'
 ];
 
 self.addEventListener('install', (event) => {
-    // Force the waiting service worker to become the active service worker.
     self.skipWaiting();
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
@@ -15,7 +14,6 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('activate', (event) => {
-    // Clear old caches
     event.waitUntil(
         caches.keys().then((cacheNames) => {
             return Promise.all(
@@ -30,12 +28,8 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-    // Skip caching for development (localhost) or API calls
-    const url = new URL(event.request.url);
-    if (url.hostname === 'localhost' || url.pathname.startsWith('/api/') || url.pathname.includes('_next')) {
-        return;
-    }
-
+    // For PWA eligibility, we MUST call event.respondWith
+    // We can still choose NOT to cache certain things, but the handler must exist.
     event.respondWith(
         caches.match(event.request).then((response) => {
             return response || fetch(event.request);
