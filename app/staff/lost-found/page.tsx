@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import useSWR from 'swr'
 import { 
     Package, Camera, MapPin, 
     Send, ChevronLeft, Loader2,
@@ -14,9 +15,6 @@ import { toast } from 'sonner'
 export default function StaffLostFoundPage() {
     const router = useRouter()
     const [submitting, setSubmitting] = useState(false)
-    const [loading, setLoading] = useState(true)
-    const [rooms, setRooms] = useState<any[]>([])
-    const [history, setHistory] = useState<any[]>([])
     
     // Form State
     const [name, setName] = useState('')
@@ -26,24 +24,21 @@ export default function StaffLostFoundPage() {
     const [description, setDescription] = useState('')
     const [image, setImage] = useState('')
 
-    useEffect(() => {
-        fetchInitialData()
-    }, [])
+    const { data: roomsData, isValidating: roomsLoading } = useSWR('/api/rooms', (url) => fetch(url).then(res => res.json()), {
+        revalidateOnFocus: false,
+        dedupingInterval: 10000
+    })
 
-    const fetchInitialData = async () => {
-        try {
-            const [roomsRes, historyRes] = await Promise.all([
-                fetch('/api/rooms'), // Assuming this exists or returns user's property rooms
-                fetch('/api/staff/lost-found')
-            ])
-            
-            if (roomsRes.ok) setRooms(await roomsRes.json())
-            if (historyRes.ok) setHistory(await historyRes.json())
-        } catch (error) {
-            console.error(error)
-        } finally {
-            setLoading(false)
-        }
+    const { data: historyData, mutate: mutateHistory, isValidating: historyLoading } = useSWR('/api/staff/lost-found', (url) => fetch(url).then(res => res.json()), {
+        revalidateOnFocus: true,
+        dedupingInterval: 2000
+    })
+
+    const rooms = Array.isArray(roomsData) ? roomsData : (roomsData?.rooms || roomsData?.data || [])
+    const history = Array.isArray(historyData) ? historyData : (historyData?.history || historyData?.items || [])
+
+    const fetchInitialData = () => {
+        mutateHistory()
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -86,9 +81,14 @@ export default function StaffLostFoundPage() {
         }
     }
 
-    if (loading) return (
-        <div className="flex flex-col items-center justify-center min-h-[60vh]">
-            <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+    if (!roomsData && roomsLoading) return (
+        <div className="space-y-10 animate-pulse px-4">
+            <div className="h-10 w-48 bg-white/5 rounded-xl mx-auto" />
+            <div className="h-96 w-full bg-white/5 rounded-[45px]" />
+            <div className="space-y-4">
+                <div className="h-4 w-32 bg-white/5 rounded-full" />
+                <div className="h-24 w-full bg-white/5 rounded-[35px]" />
+            </div>
         </div>
     )
 
