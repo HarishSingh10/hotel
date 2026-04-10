@@ -9018,12 +9018,14 @@ export namespace Prisma {
     floor: number | null
     maxOccupancy: number | null
     basePrice: number | null
+    weekendSurcharge: number | null
   }
 
   export type RoomSumAggregateOutputType = {
     floor: number | null
     maxOccupancy: number | null
     basePrice: number | null
+    weekendSurcharge: number | null
   }
 
   export type RoomMinAggregateOutputType = {
@@ -9035,6 +9037,11 @@ export namespace Prisma {
     type: string | null
     maxOccupancy: number | null
     basePrice: number | null
+    weekendSurcharge: number | null
+    visibleOnline: boolean | null
+    petFriendly: boolean | null
+    smokingAllowed: boolean | null
+    adaCompliant: boolean | null
     description: string | null
     status: $Enums.RoomStatus | null
     createdAt: Date | null
@@ -9050,6 +9057,11 @@ export namespace Prisma {
     type: string | null
     maxOccupancy: number | null
     basePrice: number | null
+    weekendSurcharge: number | null
+    visibleOnline: boolean | null
+    petFriendly: boolean | null
+    smokingAllowed: boolean | null
+    adaCompliant: boolean | null
     description: string | null
     status: $Enums.RoomStatus | null
     createdAt: Date | null
@@ -9065,6 +9077,11 @@ export namespace Prisma {
     type: number
     maxOccupancy: number
     basePrice: number
+    weekendSurcharge: number
+    visibleOnline: number
+    petFriendly: number
+    smokingAllowed: number
+    adaCompliant: number
     amenities: number
     images: number
     description: number
@@ -9079,12 +9096,14 @@ export namespace Prisma {
     floor?: true
     maxOccupancy?: true
     basePrice?: true
+    weekendSurcharge?: true
   }
 
   export type RoomSumAggregateInputType = {
     floor?: true
     maxOccupancy?: true
     basePrice?: true
+    weekendSurcharge?: true
   }
 
   export type RoomMinAggregateInputType = {
@@ -9096,6 +9115,11 @@ export namespace Prisma {
     type?: true
     maxOccupancy?: true
     basePrice?: true
+    weekendSurcharge?: true
+    visibleOnline?: true
+    petFriendly?: true
+    smokingAllowed?: true
+    adaCompliant?: true
     description?: true
     status?: true
     createdAt?: true
@@ -9111,6 +9135,11 @@ export namespace Prisma {
     type?: true
     maxOccupancy?: true
     basePrice?: true
+    weekendSurcharge?: true
+    visibleOnline?: true
+    petFriendly?: true
+    smokingAllowed?: true
+    adaCompliant?: true
     description?: true
     status?: true
     createdAt?: true
@@ -9126,6 +9155,11 @@ export namespace Prisma {
     type?: true
     maxOccupancy?: true
     basePrice?: true
+    weekendSurcharge?: true
+    visibleOnline?: true
+    petFriendly?: true
+    smokingAllowed?: true
+    adaCompliant?: true
     amenities?: true
     images?: true
     description?: true
@@ -9230,6 +9264,11 @@ export namespace Prisma {
     type: string
     maxOccupancy: number
     basePrice: number
+    weekendSurcharge: number
+    visibleOnline: boolean
+    petFriendly: boolean
+    smokingAllowed: boolean
+    adaCompliant: boolean
     amenities: string[]
     images: string[]
     description: string | null
@@ -9266,6 +9305,11 @@ export namespace Prisma {
     type?: boolean
     maxOccupancy?: boolean
     basePrice?: boolean
+    weekendSurcharge?: boolean
+    visibleOnline?: boolean
+    petFriendly?: boolean
+    smokingAllowed?: boolean
+    adaCompliant?: boolean
     amenities?: boolean
     images?: boolean
     description?: boolean
@@ -9290,6 +9334,11 @@ export namespace Prisma {
     type?: boolean
     maxOccupancy?: boolean
     basePrice?: boolean
+    weekendSurcharge?: boolean
+    visibleOnline?: boolean
+    petFriendly?: boolean
+    smokingAllowed?: boolean
+    adaCompliant?: boolean
     amenities?: boolean
     images?: boolean
     description?: boolean
@@ -9325,6 +9374,11 @@ export namespace Prisma {
       type: string
       maxOccupancy: number
       basePrice: number
+      weekendSurcharge: number
+      visibleOnline: boolean
+      petFriendly: boolean
+      smokingAllowed: boolean
+      adaCompliant: boolean
       amenities: string[]
       images: string[]
       description: string | null
@@ -9736,6 +9790,11 @@ export namespace Prisma {
     readonly type: FieldRef<"Room", 'String'>
     readonly maxOccupancy: FieldRef<"Room", 'Int'>
     readonly basePrice: FieldRef<"Room", 'Float'>
+    readonly weekendSurcharge: FieldRef<"Room", 'Float'>
+    readonly visibleOnline: FieldRef<"Room", 'Boolean'>
+    readonly petFriendly: FieldRef<"Room", 'Boolean'>
+    readonly smokingAllowed: FieldRef<"Room", 'Boolean'>
+    readonly adaCompliant: FieldRef<"Room", 'Boolean'>
     readonly amenities: FieldRef<"Room", 'String[]'>
     readonly images: FieldRef<"Room", 'String[]'>
     readonly description: FieldRef<"Room", 'String'>
@@ -36016,6 +36075,11 @@ export namespace Prisma {
     type: 'type',
     maxOccupancy: 'maxOccupancy',
     basePrice: 'basePrice',
+    weekendSurcharge: 'weekendSurcharge',
+    visibleOnline: 'visibleOnline',
+    petFriendly: 'petFriendly',
+    smokingAllowed: 'smokingAllowed',
+    adaCompliant: 'adaCompliant',
     amenities: 'amenities',
     images: 'images',
     description: 'description',
@@ -37358,6 +37422,11 @@ export namespace Prisma {
     type?: StringFilter<"Room"> | string
     maxOccupancy?: IntFilter<"Room"> | number
     basePrice?: FloatFilter<"Room"> | number
+    weekendSurcharge?: FloatFilter<"Room"> | number
+    visibleOnline?: BoolFilter<"Room"> | boolean
+    petFriendly?: BoolFilter<"Room"> | boolean
+    smokingAllowed?: BoolFilter<"Room"> | boolean
+    adaCompliant?: BoolFilter<"Room"> | boolean
     amenities?: StringNullableListFilter<"Room">
     images?: StringNullableListFilter<"Room">
     description?: StringNullableFilter<"Room"> | string | null
@@ -37380,6 +37449,11 @@ export namespace Prisma {
     type?: SortOrder
     maxOccupancy?: SortOrder
     basePrice?: SortOrder
+    weekendSurcharge?: SortOrder
+    visibleOnline?: SortOrder
+    petFriendly?: SortOrder
+    smokingAllowed?: SortOrder
+    adaCompliant?: SortOrder
     amenities?: SortOrder
     images?: SortOrder
     description?: SortOrder
@@ -37406,6 +37480,11 @@ export namespace Prisma {
     type?: StringFilter<"Room"> | string
     maxOccupancy?: IntFilter<"Room"> | number
     basePrice?: FloatFilter<"Room"> | number
+    weekendSurcharge?: FloatFilter<"Room"> | number
+    visibleOnline?: BoolFilter<"Room"> | boolean
+    petFriendly?: BoolFilter<"Room"> | boolean
+    smokingAllowed?: BoolFilter<"Room"> | boolean
+    adaCompliant?: BoolFilter<"Room"> | boolean
     amenities?: StringNullableListFilter<"Room">
     images?: StringNullableListFilter<"Room">
     description?: StringNullableFilter<"Room"> | string | null
@@ -37428,6 +37507,11 @@ export namespace Prisma {
     type?: SortOrder
     maxOccupancy?: SortOrder
     basePrice?: SortOrder
+    weekendSurcharge?: SortOrder
+    visibleOnline?: SortOrder
+    petFriendly?: SortOrder
+    smokingAllowed?: SortOrder
+    adaCompliant?: SortOrder
     amenities?: SortOrder
     images?: SortOrder
     description?: SortOrder
@@ -37453,6 +37537,11 @@ export namespace Prisma {
     type?: StringWithAggregatesFilter<"Room"> | string
     maxOccupancy?: IntWithAggregatesFilter<"Room"> | number
     basePrice?: FloatWithAggregatesFilter<"Room"> | number
+    weekendSurcharge?: FloatWithAggregatesFilter<"Room"> | number
+    visibleOnline?: BoolWithAggregatesFilter<"Room"> | boolean
+    petFriendly?: BoolWithAggregatesFilter<"Room"> | boolean
+    smokingAllowed?: BoolWithAggregatesFilter<"Room"> | boolean
+    adaCompliant?: BoolWithAggregatesFilter<"Room"> | boolean
     amenities?: StringNullableListFilter<"Room">
     images?: StringNullableListFilter<"Room">
     description?: StringNullableWithAggregatesFilter<"Room"> | string | null
@@ -40245,6 +40334,11 @@ export namespace Prisma {
     type: string
     maxOccupancy: number
     basePrice: number
+    weekendSurcharge?: number
+    visibleOnline?: boolean
+    petFriendly?: boolean
+    smokingAllowed?: boolean
+    adaCompliant?: boolean
     amenities?: RoomCreateamenitiesInput | string[]
     images?: RoomCreateimagesInput | string[]
     description?: string | null
@@ -40267,6 +40361,11 @@ export namespace Prisma {
     type: string
     maxOccupancy: number
     basePrice: number
+    weekendSurcharge?: number
+    visibleOnline?: boolean
+    petFriendly?: boolean
+    smokingAllowed?: boolean
+    adaCompliant?: boolean
     amenities?: RoomCreateamenitiesInput | string[]
     images?: RoomCreateimagesInput | string[]
     description?: string | null
@@ -40286,6 +40385,11 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     maxOccupancy?: IntFieldUpdateOperationsInput | number
     basePrice?: FloatFieldUpdateOperationsInput | number
+    weekendSurcharge?: FloatFieldUpdateOperationsInput | number
+    visibleOnline?: BoolFieldUpdateOperationsInput | boolean
+    petFriendly?: BoolFieldUpdateOperationsInput | boolean
+    smokingAllowed?: BoolFieldUpdateOperationsInput | boolean
+    adaCompliant?: BoolFieldUpdateOperationsInput | boolean
     amenities?: RoomUpdateamenitiesInput | string[]
     images?: RoomUpdateimagesInput | string[]
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -40307,6 +40411,11 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     maxOccupancy?: IntFieldUpdateOperationsInput | number
     basePrice?: FloatFieldUpdateOperationsInput | number
+    weekendSurcharge?: FloatFieldUpdateOperationsInput | number
+    visibleOnline?: BoolFieldUpdateOperationsInput | boolean
+    petFriendly?: BoolFieldUpdateOperationsInput | boolean
+    smokingAllowed?: BoolFieldUpdateOperationsInput | boolean
+    adaCompliant?: BoolFieldUpdateOperationsInput | boolean
     amenities?: RoomUpdateamenitiesInput | string[]
     images?: RoomUpdateimagesInput | string[]
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -40328,6 +40437,11 @@ export namespace Prisma {
     type: string
     maxOccupancy: number
     basePrice: number
+    weekendSurcharge?: number
+    visibleOnline?: boolean
+    petFriendly?: boolean
+    smokingAllowed?: boolean
+    adaCompliant?: boolean
     amenities?: RoomCreateamenitiesInput | string[]
     images?: RoomCreateimagesInput | string[]
     description?: string | null
@@ -40343,6 +40457,11 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     maxOccupancy?: IntFieldUpdateOperationsInput | number
     basePrice?: FloatFieldUpdateOperationsInput | number
+    weekendSurcharge?: FloatFieldUpdateOperationsInput | number
+    visibleOnline?: BoolFieldUpdateOperationsInput | boolean
+    petFriendly?: BoolFieldUpdateOperationsInput | boolean
+    smokingAllowed?: BoolFieldUpdateOperationsInput | boolean
+    adaCompliant?: BoolFieldUpdateOperationsInput | boolean
     amenities?: RoomUpdateamenitiesInput | string[]
     images?: RoomUpdateimagesInput | string[]
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -40359,6 +40478,11 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     maxOccupancy?: IntFieldUpdateOperationsInput | number
     basePrice?: FloatFieldUpdateOperationsInput | number
+    weekendSurcharge?: FloatFieldUpdateOperationsInput | number
+    visibleOnline?: BoolFieldUpdateOperationsInput | boolean
+    petFriendly?: BoolFieldUpdateOperationsInput | boolean
+    smokingAllowed?: BoolFieldUpdateOperationsInput | boolean
+    adaCompliant?: BoolFieldUpdateOperationsInput | boolean
     amenities?: RoomUpdateamenitiesInput | string[]
     images?: RoomUpdateimagesInput | string[]
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -43515,6 +43639,11 @@ export namespace Prisma {
     type?: SortOrder
     maxOccupancy?: SortOrder
     basePrice?: SortOrder
+    weekendSurcharge?: SortOrder
+    visibleOnline?: SortOrder
+    petFriendly?: SortOrder
+    smokingAllowed?: SortOrder
+    adaCompliant?: SortOrder
     amenities?: SortOrder
     images?: SortOrder
     description?: SortOrder
@@ -43527,6 +43656,7 @@ export namespace Prisma {
     floor?: SortOrder
     maxOccupancy?: SortOrder
     basePrice?: SortOrder
+    weekendSurcharge?: SortOrder
   }
 
   export type RoomMaxOrderByAggregateInput = {
@@ -43538,6 +43668,11 @@ export namespace Prisma {
     type?: SortOrder
     maxOccupancy?: SortOrder
     basePrice?: SortOrder
+    weekendSurcharge?: SortOrder
+    visibleOnline?: SortOrder
+    petFriendly?: SortOrder
+    smokingAllowed?: SortOrder
+    adaCompliant?: SortOrder
     description?: SortOrder
     status?: SortOrder
     createdAt?: SortOrder
@@ -43553,6 +43688,11 @@ export namespace Prisma {
     type?: SortOrder
     maxOccupancy?: SortOrder
     basePrice?: SortOrder
+    weekendSurcharge?: SortOrder
+    visibleOnline?: SortOrder
+    petFriendly?: SortOrder
+    smokingAllowed?: SortOrder
+    adaCompliant?: SortOrder
     description?: SortOrder
     status?: SortOrder
     createdAt?: SortOrder
@@ -43563,6 +43703,7 @@ export namespace Prisma {
     floor?: SortOrder
     maxOccupancy?: SortOrder
     basePrice?: SortOrder
+    weekendSurcharge?: SortOrder
   }
 
   export type EnumRoomCategoryWithAggregatesFilter<$PrismaModel = never> = {
@@ -49407,6 +49548,11 @@ export namespace Prisma {
     type: string
     maxOccupancy: number
     basePrice: number
+    weekendSurcharge?: number
+    visibleOnline?: boolean
+    petFriendly?: boolean
+    smokingAllowed?: boolean
+    adaCompliant?: boolean
     amenities?: RoomCreateamenitiesInput | string[]
     images?: RoomCreateimagesInput | string[]
     description?: string | null
@@ -49428,6 +49574,11 @@ export namespace Prisma {
     type: string
     maxOccupancy: number
     basePrice: number
+    weekendSurcharge?: number
+    visibleOnline?: boolean
+    petFriendly?: boolean
+    smokingAllowed?: boolean
+    adaCompliant?: boolean
     amenities?: RoomCreateamenitiesInput | string[]
     images?: RoomCreateimagesInput | string[]
     description?: string | null
@@ -49517,6 +49668,11 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     maxOccupancy?: IntFieldUpdateOperationsInput | number
     basePrice?: FloatFieldUpdateOperationsInput | number
+    weekendSurcharge?: FloatFieldUpdateOperationsInput | number
+    visibleOnline?: BoolFieldUpdateOperationsInput | boolean
+    petFriendly?: BoolFieldUpdateOperationsInput | boolean
+    smokingAllowed?: BoolFieldUpdateOperationsInput | boolean
+    adaCompliant?: BoolFieldUpdateOperationsInput | boolean
     amenities?: RoomUpdateamenitiesInput | string[]
     images?: RoomUpdateimagesInput | string[]
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -49537,6 +49693,11 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     maxOccupancy?: IntFieldUpdateOperationsInput | number
     basePrice?: FloatFieldUpdateOperationsInput | number
+    weekendSurcharge?: FloatFieldUpdateOperationsInput | number
+    visibleOnline?: BoolFieldUpdateOperationsInput | boolean
+    petFriendly?: BoolFieldUpdateOperationsInput | boolean
+    smokingAllowed?: BoolFieldUpdateOperationsInput | boolean
+    adaCompliant?: BoolFieldUpdateOperationsInput | boolean
     amenities?: RoomUpdateamenitiesInput | string[]
     images?: RoomUpdateimagesInput | string[]
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -49632,6 +49793,11 @@ export namespace Prisma {
     type: string
     maxOccupancy: number
     basePrice: number
+    weekendSurcharge?: number
+    visibleOnline?: boolean
+    petFriendly?: boolean
+    smokingAllowed?: boolean
+    adaCompliant?: boolean
     amenities?: RoomCreateamenitiesInput | string[]
     images?: RoomCreateimagesInput | string[]
     description?: string | null
@@ -49652,6 +49818,11 @@ export namespace Prisma {
     type: string
     maxOccupancy: number
     basePrice: number
+    weekendSurcharge?: number
+    visibleOnline?: boolean
+    petFriendly?: boolean
+    smokingAllowed?: boolean
+    adaCompliant?: boolean
     amenities?: RoomCreateamenitiesInput | string[]
     images?: RoomCreateimagesInput | string[]
     description?: string | null
@@ -50290,6 +50461,11 @@ export namespace Prisma {
     type?: StringFilter<"Room"> | string
     maxOccupancy?: IntFilter<"Room"> | number
     basePrice?: FloatFilter<"Room"> | number
+    weekendSurcharge?: FloatFilter<"Room"> | number
+    visibleOnline?: BoolFilter<"Room"> | boolean
+    petFriendly?: BoolFilter<"Room"> | boolean
+    smokingAllowed?: BoolFilter<"Room"> | boolean
+    adaCompliant?: BoolFilter<"Room"> | boolean
     amenities?: StringNullableListFilter<"Room">
     images?: StringNullableListFilter<"Room">
     description?: StringNullableFilter<"Room"> | string | null
@@ -51148,6 +51324,11 @@ export namespace Prisma {
     type: string
     maxOccupancy: number
     basePrice: number
+    weekendSurcharge?: number
+    visibleOnline?: boolean
+    petFriendly?: boolean
+    smokingAllowed?: boolean
+    adaCompliant?: boolean
     amenities?: RoomCreateamenitiesInput | string[]
     images?: RoomCreateimagesInput | string[]
     description?: string | null
@@ -51169,6 +51350,11 @@ export namespace Prisma {
     type: string
     maxOccupancy: number
     basePrice: number
+    weekendSurcharge?: number
+    visibleOnline?: boolean
+    petFriendly?: boolean
+    smokingAllowed?: boolean
+    adaCompliant?: boolean
     amenities?: RoomCreateamenitiesInput | string[]
     images?: RoomCreateimagesInput | string[]
     description?: string | null
@@ -51405,6 +51591,11 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     maxOccupancy?: IntFieldUpdateOperationsInput | number
     basePrice?: FloatFieldUpdateOperationsInput | number
+    weekendSurcharge?: FloatFieldUpdateOperationsInput | number
+    visibleOnline?: BoolFieldUpdateOperationsInput | boolean
+    petFriendly?: BoolFieldUpdateOperationsInput | boolean
+    smokingAllowed?: BoolFieldUpdateOperationsInput | boolean
+    adaCompliant?: BoolFieldUpdateOperationsInput | boolean
     amenities?: RoomUpdateamenitiesInput | string[]
     images?: RoomUpdateimagesInput | string[]
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -51425,6 +51616,11 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     maxOccupancy?: IntFieldUpdateOperationsInput | number
     basePrice?: FloatFieldUpdateOperationsInput | number
+    weekendSurcharge?: FloatFieldUpdateOperationsInput | number
+    visibleOnline?: BoolFieldUpdateOperationsInput | boolean
+    petFriendly?: BoolFieldUpdateOperationsInput | boolean
+    smokingAllowed?: BoolFieldUpdateOperationsInput | boolean
+    adaCompliant?: BoolFieldUpdateOperationsInput | boolean
     amenities?: RoomUpdateamenitiesInput | string[]
     images?: RoomUpdateimagesInput | string[]
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -51599,6 +51795,11 @@ export namespace Prisma {
     type: string
     maxOccupancy: number
     basePrice: number
+    weekendSurcharge?: number
+    visibleOnline?: boolean
+    petFriendly?: boolean
+    smokingAllowed?: boolean
+    adaCompliant?: boolean
     amenities?: RoomCreateamenitiesInput | string[]
     images?: RoomCreateimagesInput | string[]
     description?: string | null
@@ -51620,6 +51821,11 @@ export namespace Prisma {
     type: string
     maxOccupancy: number
     basePrice: number
+    weekendSurcharge?: number
+    visibleOnline?: boolean
+    petFriendly?: boolean
+    smokingAllowed?: boolean
+    adaCompliant?: boolean
     amenities?: RoomCreateamenitiesInput | string[]
     images?: RoomCreateimagesInput | string[]
     description?: string | null
@@ -51926,6 +52132,11 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     maxOccupancy?: IntFieldUpdateOperationsInput | number
     basePrice?: FloatFieldUpdateOperationsInput | number
+    weekendSurcharge?: FloatFieldUpdateOperationsInput | number
+    visibleOnline?: BoolFieldUpdateOperationsInput | boolean
+    petFriendly?: BoolFieldUpdateOperationsInput | boolean
+    smokingAllowed?: BoolFieldUpdateOperationsInput | boolean
+    adaCompliant?: BoolFieldUpdateOperationsInput | boolean
     amenities?: RoomUpdateamenitiesInput | string[]
     images?: RoomUpdateimagesInput | string[]
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -51946,6 +52157,11 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     maxOccupancy?: IntFieldUpdateOperationsInput | number
     basePrice?: FloatFieldUpdateOperationsInput | number
+    weekendSurcharge?: FloatFieldUpdateOperationsInput | number
+    visibleOnline?: BoolFieldUpdateOperationsInput | boolean
+    petFriendly?: BoolFieldUpdateOperationsInput | boolean
+    smokingAllowed?: BoolFieldUpdateOperationsInput | boolean
+    adaCompliant?: BoolFieldUpdateOperationsInput | boolean
     amenities?: RoomUpdateamenitiesInput | string[]
     images?: RoomUpdateimagesInput | string[]
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -54313,6 +54529,11 @@ export namespace Prisma {
     type: string
     maxOccupancy: number
     basePrice: number
+    weekendSurcharge?: number
+    visibleOnline?: boolean
+    petFriendly?: boolean
+    smokingAllowed?: boolean
+    adaCompliant?: boolean
     amenities?: RoomCreateamenitiesInput | string[]
     images?: RoomCreateimagesInput | string[]
     description?: string | null
@@ -54334,6 +54555,11 @@ export namespace Prisma {
     type: string
     maxOccupancy: number
     basePrice: number
+    weekendSurcharge?: number
+    visibleOnline?: boolean
+    petFriendly?: boolean
+    smokingAllowed?: boolean
+    adaCompliant?: boolean
     amenities?: RoomCreateamenitiesInput | string[]
     images?: RoomCreateimagesInput | string[]
     description?: string | null
@@ -54629,6 +54855,11 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     maxOccupancy?: IntFieldUpdateOperationsInput | number
     basePrice?: FloatFieldUpdateOperationsInput | number
+    weekendSurcharge?: FloatFieldUpdateOperationsInput | number
+    visibleOnline?: BoolFieldUpdateOperationsInput | boolean
+    petFriendly?: BoolFieldUpdateOperationsInput | boolean
+    smokingAllowed?: BoolFieldUpdateOperationsInput | boolean
+    adaCompliant?: BoolFieldUpdateOperationsInput | boolean
     amenities?: RoomUpdateamenitiesInput | string[]
     images?: RoomUpdateimagesInput | string[]
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -54649,6 +54880,11 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     maxOccupancy?: IntFieldUpdateOperationsInput | number
     basePrice?: FloatFieldUpdateOperationsInput | number
+    weekendSurcharge?: FloatFieldUpdateOperationsInput | number
+    visibleOnline?: BoolFieldUpdateOperationsInput | boolean
+    petFriendly?: BoolFieldUpdateOperationsInput | boolean
+    smokingAllowed?: BoolFieldUpdateOperationsInput | boolean
+    adaCompliant?: BoolFieldUpdateOperationsInput | boolean
     amenities?: RoomUpdateamenitiesInput | string[]
     images?: RoomUpdateimagesInput | string[]
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -56813,6 +57049,11 @@ export namespace Prisma {
     type: string
     maxOccupancy: number
     basePrice: number
+    weekendSurcharge?: number
+    visibleOnline?: boolean
+    petFriendly?: boolean
+    smokingAllowed?: boolean
+    adaCompliant?: boolean
     amenities?: RoomCreateamenitiesInput | string[]
     images?: RoomCreateimagesInput | string[]
     description?: string | null
@@ -57113,6 +57354,11 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     maxOccupancy?: IntFieldUpdateOperationsInput | number
     basePrice?: FloatFieldUpdateOperationsInput | number
+    weekendSurcharge?: FloatFieldUpdateOperationsInput | number
+    visibleOnline?: BoolFieldUpdateOperationsInput | boolean
+    petFriendly?: BoolFieldUpdateOperationsInput | boolean
+    smokingAllowed?: BoolFieldUpdateOperationsInput | boolean
+    adaCompliant?: BoolFieldUpdateOperationsInput | boolean
     amenities?: RoomUpdateamenitiesInput | string[]
     images?: RoomUpdateimagesInput | string[]
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -57132,6 +57378,11 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     maxOccupancy?: IntFieldUpdateOperationsInput | number
     basePrice?: FloatFieldUpdateOperationsInput | number
+    weekendSurcharge?: FloatFieldUpdateOperationsInput | number
+    visibleOnline?: BoolFieldUpdateOperationsInput | boolean
+    petFriendly?: BoolFieldUpdateOperationsInput | boolean
+    smokingAllowed?: BoolFieldUpdateOperationsInput | boolean
+    adaCompliant?: BoolFieldUpdateOperationsInput | boolean
     amenities?: RoomUpdateamenitiesInput | string[]
     images?: RoomUpdateimagesInput | string[]
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -57151,6 +57402,11 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     maxOccupancy?: IntFieldUpdateOperationsInput | number
     basePrice?: FloatFieldUpdateOperationsInput | number
+    weekendSurcharge?: FloatFieldUpdateOperationsInput | number
+    visibleOnline?: BoolFieldUpdateOperationsInput | boolean
+    petFriendly?: BoolFieldUpdateOperationsInput | boolean
+    smokingAllowed?: BoolFieldUpdateOperationsInput | boolean
+    adaCompliant?: BoolFieldUpdateOperationsInput | boolean
     amenities?: RoomUpdateamenitiesInput | string[]
     images?: RoomUpdateimagesInput | string[]
     description?: NullableStringFieldUpdateOperationsInput | string | null

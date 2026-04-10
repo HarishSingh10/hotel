@@ -64,10 +64,14 @@ export default function RoomsPage() {
         setCfgForm({
             type: room.type || '', category: room.category || 'STANDARD',
             roomNumber: room.roomNumber || '', floor: String(room.floor || 1),
-            basePrice: String(room.basePrice || 0), weekendSurcharge: '0',
+            basePrice: String(room.basePrice || 0), 
+            weekendSurcharge: String(room.weekendSurcharge || 0),
             maxOccupancy: String(room.maxOccupancy || 2), description: room.description || '',
-            status: room.status || 'AVAILABLE', visibleOnline: true,
-            petFriendly: false, smokingAllowed: false, adaCompliant: false,
+            status: room.status || 'AVAILABLE', 
+            visibleOnline: room.visibleOnline ?? true,
+            petFriendly: room.petFriendly ?? false, 
+            smokingAllowed: room.smokingAllowed ?? false, 
+            adaCompliant: room.adaCompliant ?? false,
             amenities: room.amenities || [],
         })
         setTab('general')
@@ -90,6 +94,11 @@ export default function RoomsPage() {
                     description: cfgForm.description,
                     status: cfgForm.status,
                     amenities: cfgForm.amenities,
+                    visibleOnline: cfgForm.visibleOnline,
+                    petFriendly: cfgForm.petFriendly,
+                    smokingAllowed: cfgForm.smokingAllowed,
+                    adaCompliant: cfgForm.adaCompliant,
+                    weekendSurcharge: parseFloat(cfgForm.weekendSurcharge),
                 }),
             })
             if (res.ok) { toast.success('Room saved'); setShowConfig(false); fetchRooms() }
