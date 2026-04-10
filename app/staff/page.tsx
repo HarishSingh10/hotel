@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import useSWR from 'swr'
 import { toast } from 'sonner'
 import {
     Filter, LayoutGrid, Loader2, Sparkles, User, Smartphone, Package,
@@ -15,33 +16,14 @@ const PWAInstall = dynamic(() => import('@/components/common/PWAInstall'), { ssr
 
 export default function StaffDashboard() {
     const router = useRouter()
-    const [loading, setLoading] = useState(true)
-    const [data, setData] = useState<any>(null)
-    const [punchLoading, setPunchLoading] = useState(false)
-    const [activeTab, setActiveTab] = useState<'TASKS' | 'ORDERS'>('TASKS')
-    const [currentTime, setCurrentTime] = useState(new Date())
+    const { data, mutate, isValidating: loading } = useSWR('/api/staff/me', (url) => fetch(url).then(res => res.json()), {
+        revalidateOnFocus: true,
+        dedupingInterval: 2000
+    })
 
-    const fetchData = useCallback(async () => {
-        try {
-            const res = await fetch('/api/staff/me')
-            if (res.status === 401) {
-                router.push('/staff/login')
-                return
-            }
-            if (res.ok) {
-                const json = await res.json()
-                setData(json)
-            }
-        } catch (error) {
-            console.error(error)
-        } finally {
-            setLoading(false)
-        }
-    }, [router])
-
-    useEffect(() => {
-        fetchData()
-    }, [fetchData])
+    const fetchData = useCallback(() => {
+        mutate()
+    }, [mutate])
 
     useEffect(() => {
         const isPunchedIn = data?.attendance?.punchIn && !data?.attendance?.punchOut
@@ -69,13 +51,32 @@ export default function StaffDashboard() {
         }
     }
 
-    if (loading) return (
-        <div className="flex flex-col items-center justify-center min-h-[60vh]">
-            <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+    // --- SKELETON UI ---
+    if (!data && loading) return (
+        <div className="space-y-8 animate-pulse px-2 pb-12">
+            <div className="flex items-center justify-between">
+                <div className="space-y-3">
+                    <div className="h-2 w-24 bg-white/5 rounded-full" />
+                    <div className="h-8 w-48 bg-white/5 rounded-xl" />
+                </div>
+                <div className="w-14 h-14 rounded-full bg-white/5" />
+            </div>
+            <div className="h-64 w-full bg-white/5 rounded-[45px]" />
+            <div className="grid grid-cols-2 gap-4">
+                <div className="h-24 bg-white/5 rounded-3xl" />
+                <div className="h-24 bg-white/5 rounded-3xl" />
+            </div>
+            <div className="space-y-4">
+                <div className="h-4 w-32 bg-white/5 rounded-full mx-2" />
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="h-32 bg-white/5 rounded-[30px]" />
+                    <div className="h-32 bg-white/5 rounded-[30px]" />
+                </div>
+            </div>
         </div>
     )
 
-    if (!data) return <div className="p-8 text-center text-rose-500 font-bold">Error loading profile</div>
+    if (!data) return <div className="p-8 text-center text-rose-500 font-bold">Protocol Error: Identification Failed</div>
 
     const isPunchedIn = data.attendance?.punchIn && !data.attendance?.punchOut
     const isPunchedOutToday = !!data.attendance?.punchOut

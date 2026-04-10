@@ -47,25 +47,20 @@ export default function AdminDashboard() {
     { refreshInterval: 60000 } // Auto-refresh every minute
   )
 
-  const fetchRooms = async () => {
-    try {
-      const res = await fetch(bcu('/api/admin/rooms', { status: 'ALL' }))
-      if (res.ok) setRooms(await res.json())
-    } catch { }
-  }
+  const { data: rooms = [] } = useSWR(
+    session ? bcu('/api/admin/rooms', { status: 'ALL' }) : null,
+    (url: string) => fetch(url).then(res => res.json())
+  )
 
-  const fetchReservations = async () => {
-    try {
-      const today = new Date()
-      const start = new Date(today.setHours(0, 0, 0, 0)).toISOString()
-      const end = new Date(today.setHours(23, 59, 59, 999)).toISOString()
-      const res = await fetch(bcu('/api/admin/bookings', { start, end }))
-      if (res.ok) {
-        const data = await res.json()
-        setTodayReservations(data.filter((b: any) => b.status === 'RESERVED'))
-      }
-    } catch { }
-  }
+  const { data: reservations = [] } = useSWR(
+    session ? bcu('/api/admin/bookings', { 
+        start: new Date(new Date().setHours(0, 0, 0, 0)).toISOString(), 
+        end: new Date(new Date().setHours(23, 59, 59, 999)).toISOString() 
+    }) : null,
+    (url: string) => fetch(url).then(res => res.json())
+  )
+
+  const todayReservations = reservations.filter((b: any) => b.status === 'RESERVED')
 
   const handleRaiseService = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -109,7 +104,7 @@ export default function AdminDashboard() {
   }
 
 
-  useEffect(() => { if (session) fetchStats() }, [session])
+  // Initial effect removed - now handled by SWR
 
   const statusBadge = (status: string) => {
     const map: Record<string, { bg: string; text: string; label: string }> = {
@@ -426,7 +421,7 @@ export default function AdminDashboard() {
               </button>
               <button
                 data-tour="raise-service"
-                onClick={() => { if (requireHotel('Add Service Request')) return; setShowServiceModal(true); fetchRooms() }}
+                onClick={() => { if (requireHotel('Add Service Request')) return; setShowServiceModal(true) }}
                 className="flex flex-col items-center gap-2 p-4 bg-[#182433] hover:bg-[#202e40] border border-white/[0.06] rounded-xl transition-all active:scale-95"
               >
                 <div className="w-9 h-9 rounded-lg bg-blue-500/10 flex items-center justify-center">

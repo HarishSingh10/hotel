@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import useSWR from 'swr'
 import { Plus, ChevronDown, ChevronRight, Building2, UserCircle, Users, Mail, MapPin, Sparkles, Megaphone, BarChart3, ShieldCheck, CheckCircle2 } from 'lucide-react'
 import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
@@ -71,26 +72,12 @@ export default function PropertiesPage() {
         longitude: ''
     })
 
-    useEffect(() => {
-        fetchHierarchy()
-    }, [])
+    const { data: properties = [], mutate, isValidating: loading } = useSWR<PropertyHierarchy[]>('/api/admin/properties/hierarchy', (url) => fetch(url).then(res => res.json()), {
+        revalidateOnFocus: true,
+        dedupingInterval: 5000
+    })
 
-    const fetchHierarchy = async () => {
-        try {
-            const res = await fetch('/api/admin/properties/hierarchy')
-            if (res.ok) {
-                const data = await res.json()
-                setProperties(data)
-            } else {
-                toast.error('Failed to fetch property hierarchy')
-            }
-        } catch (error) {
-            console.error('Error:', error)
-            toast.error('An error occurred while fetching properties')
-        } finally {
-            setLoading(false)
-        }
-    }
+    const fetchHierarchy = () => mutate()
 
     const handleAddProperty = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -124,10 +111,20 @@ export default function PropertiesPage() {
         )
     }
 
-    if (loading) {
+    // --- SKELETON UI ---
+    if (loading && properties.length === 0) {
         return (
-            <div className="flex items-center justify-center min-h-[400px]">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            <div className="space-y-6 animate-pulse">
+                <div className="flex justify-between items-center">
+                    <div className="space-y-2">
+                        <div className="h-8 w-48 bg-white/5 rounded-lg" />
+                        <div className="h-4 w-64 bg-white/5 rounded-md" />
+                    </div>
+                    <div className="h-10 w-32 bg-white/5 rounded-lg" />
+                </div>
+                {[1, 2, 3].map(i => (
+                    <div key={i} className="h-16 w-full bg-white/5 rounded-2xl" />
+                ))}
             </div>
         )
     }
