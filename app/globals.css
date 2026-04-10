@@ -126,6 +126,13 @@
   /* Input Styles */
   .input {
     @apply w-full px-4 py-3 bg-white/[0.03] border border-white/[0.08] rounded-xl text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 focus:bg-white/[0.05] transition-all;
+    color-scheme: dark;
+  }
+
+  /* Specific fix for native dropdown options in dark mode */
+  select.input option {
+    background-color: #1a1f26;
+    color: #e2e8f0;
   }
 
   /* Table Styles */

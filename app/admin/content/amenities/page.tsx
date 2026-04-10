@@ -7,6 +7,8 @@ import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import { toast } from 'sonner'
 
+import { buildContextUrl, getAdminContext } from '@/lib/admin-context'
+
 // Helper to render dynamic icons
 const IconMap: any = {
     Wifi, Coffee, Dumbbell, Car, Tv, Utensils
@@ -20,7 +22,7 @@ export default function AmenitiesPage() {
 
     const fetchAmenities = async () => {
         try {
-            const res = await fetch('/api/admin/content/amenities')
+            const res = await fetch(buildContextUrl('/api/admin/content/amenities'))
             if (res.ok) {
                 const data = await res.json()
                 setAmenities(data)
@@ -38,12 +40,14 @@ export default function AmenitiesPage() {
 
     const handleSubmit = async () => {
         if (!formData.name) return toast.error('Name is required')
+        const { propertyId } = getAdminContext()
+        if (!propertyId || propertyId === 'ALL') return toast.error('Please select a specific hotel first')
 
         try {
             const res = await fetch('/api/admin/content/amenities', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
+                body: JSON.stringify({ ...formData, propertyId })
             })
 
             if (res.ok) {
@@ -60,11 +64,18 @@ export default function AmenitiesPage() {
     }
 
     const handleDelete = async (id: string) => {
-        if (!confirm('Are you sure?')) return;
-        // Logic for delete would go here (API endpoint needed in real app)
-        // For MVP demo we'll just filter local state if API wasn't implemented
-        toast.success('Deleted (Simulated)')
-        setAmenities(prev => prev.filter(a => a.id !== id))
+        if (!confirm('Are you sure you want to delete this amenity?')) return;
+        try {
+            const res = await fetch(`/api/admin/content/amenities?id=${id}`, { method: 'DELETE' })
+            if (res.ok) {
+                toast.success('Amenity removed')
+                setAmenities(prev => prev.filter(a => a.id !== id))
+            } else {
+                toast.error('Failed to delete')
+            }
+        } catch (e) {
+            toast.error('Error deleting')
+        }
     }
 
     const IconComponent = IconMap[formData.icon] || Wifi

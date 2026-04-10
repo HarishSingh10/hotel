@@ -64,6 +64,11 @@ export async function PATCH(
                 roomNumber: body.roomNumber || undefined,
                 description: body.description !== undefined ? body.description : undefined,
                 amenities: body.amenities !== undefined ? body.amenities : undefined,
+                weekendSurcharge: body.weekendSurcharge ? parseFloat(body.weekendSurcharge.toString()) : undefined,
+                visibleOnline: body.visibleOnline !== undefined ? body.visibleOnline : undefined,
+                petFriendly: body.petFriendly !== undefined ? body.petFriendly : undefined,
+                smokingAllowed: body.smokingAllowed !== undefined ? body.smokingAllowed : undefined,
+                adaCompliant: body.adaCompliant !== undefined ? body.adaCompliant : undefined,
             }
         })
 

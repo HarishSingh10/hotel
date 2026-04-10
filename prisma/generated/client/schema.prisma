@@ -178,8 +178,14 @@ model Room {
   category   RoomCategory
   type       String // Standard King, Deluxe Twin, etc.
 
-  maxOccupancy Int
-  basePrice    Float
+  maxOccupancy     Int
+  basePrice        Float
+  weekendSurcharge Float @default(0)
+
+  visibleOnline  Boolean @default(true)
+  petFriendly    Boolean @default(false)
+  smokingAllowed Boolean @default(false)
+  adaCompliant   Boolean @default(false)
 
   amenities   String[]
   images      String[]
