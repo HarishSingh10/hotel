@@ -37,7 +37,8 @@ export const viewport = {
 }
 
 import { Providers } from './providers'
-import GuestPWAInstall from '@/components/common/GuestPWAInstall'
+import dynamic from 'next/dynamic'
+const GuestPWAInstall = dynamic(() => import('@/components/common/GuestPWAInstall'), { ssr: false })
 
 // ... imports
 

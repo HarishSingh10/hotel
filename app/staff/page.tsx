@@ -10,7 +10,8 @@ import {
 } from 'lucide-react'
 import { format, getHours } from 'date-fns'
 import { cn } from '@/lib/utils'
-import PWAInstall from '@/components/common/PWAInstall'
+import dynamic from 'next/dynamic'
+const PWAInstall = dynamic(() => import('@/components/common/PWAInstall'), { ssr: false })
 
 export default function StaffDashboard() {
     const router = useRouter()

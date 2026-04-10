@@ -11,7 +11,8 @@ import {
     Loader2, Zap, ArrowRight, Star, Moon, BellOff
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import PWAInstall from '@/components/common/PWAInstall'
+import dynamic from 'next/dynamic'
+const PWAInstall = dynamic(() => import('@/components/common/PWAInstall'), { ssr: false })
 import { format } from 'date-fns'
 
 export default function StaffProfilePage() {
