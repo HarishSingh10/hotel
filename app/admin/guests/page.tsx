@@ -2,6 +2,8 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
+import useSWR from 'swr'
+import { useMemo } from 'react'
 import { format } from 'date-fns'
 import {
   Plus, Download, Search, CheckCircle2, Clock,
@@ -40,8 +42,6 @@ function GuestsContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
 
-  const [guests, setGuests] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatus] = useState('ALL')
   const [sourceFilter, setSource] = useState('ALL')
@@ -53,23 +53,21 @@ function GuestsContent() {
     name: '', phone: '', email: '', idType: '', idNumber: '', address: '', dateOfBirth: '',
   })
 
-  const fetchGuests = async () => {
-    setLoading(true)
-    try {
-      const res = await fetch('/api/admin/guests')
-      if (res.ok) {
-        const data = await res.json()
-        setGuests(data.map((d: any) => ({
-          ...d,
-          checkIn: d.checkIn ? new Date(d.checkIn) : null,
-          checkOut: d.checkOut ? new Date(d.checkOut) : null,
-        })))
-      }
-    } catch (e) { console.error(e) }
-    finally { setLoading(false) }
-  }
+  const { data: rawGuests, mutate, isValidating: loading } = useSWR('/api/admin/guests', (url) => fetch(url).then(res => res.json()), {
+    revalidateOnFocus: true,
+    dedupingInterval: 5000
+  })
 
-  useEffect(() => { fetchGuests() }, [])
+  const guests = useMemo(() => {
+    const data = Array.isArray(rawGuests) ? rawGuests : []
+    return data.map((d: any) => ({
+      ...d,
+      checkIn: d.checkIn ? new Date(d.checkIn) : null,
+      checkOut: d.checkOut ? new Date(d.checkOut) : null,
+    }))
+  }, [rawGuests])
+
+  const fetchGuests = () => mutate()
   useEffect(() => {
     if (searchParams.get('addNew') === 'true') {
       setShowAdd(true)

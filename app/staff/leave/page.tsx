@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import useSWR from 'swr'
 import {
     Calendar, ChevronLeft, Send,
     Clock, CheckCircle2, AlertCircle, X,
@@ -20,25 +21,17 @@ export default function LeavePage() {
     const [startDate, setStartDate] = useState('')
     const [endDate, setEndDate] = useState('')
     const [evidence, setEvidence] = useState('')
-    const [data, setData] = useState<any>({ balances: {}, history: [] })
+    const { data: rawData, mutate, isValidating: loading } = useSWR('/api/staff/leave', (url) => fetch(url).then(res => res.json()), {
+        revalidateOnFocus: true,
+        dedupingInterval: 2000
+    })
 
-    const fetchLeaveData = useCallback(async () => {
-        try {
-            const res = await fetch('/api/staff/leave')
-            if (res.ok) {
-                const json = await res.json()
-                setData(json)
-            }
-        } catch (error) {
-            console.error(error)
-        } finally {
-            setLoading(false)
-        }
-    }, [])
+    const data = {
+        balances: rawData?.balances || {},
+        history: Array.isArray(rawData?.history) ? rawData.history : []
+    }
 
-    useEffect(() => {
-        fetchLeaveData()
-    }, [fetchLeaveData])
+    const fetchLeaveData = () => mutate()
 
     const totalDays = (startDate && endDate)
         ? differenceInDays(new Date(endDate), new Date(startDate)) + 1
@@ -93,9 +86,17 @@ export default function LeavePage() {
         { label: 'Casual Ops', value: `${data.balances.casual || 0} Units`, icon: Briefcase, color: 'text-purple-500', bg: 'bg-purple-500/10', progress: 'bg-purple-500', current: data.balances.casual, max: 7 },
     ]
 
-    if (loading) return (
-        <div className="flex flex-col items-center justify-center min-h-[60vh]">
-            <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+    if (!rawData && loading) return (
+        <div className="space-y-10 animate-pulse px-4 pb-16">
+            <div className="flex justify-between items-center">
+                <div className="h-10 w-10 bg-white/5 rounded-xl" />
+                <div className="h-10 w-48 bg-white/5 rounded-xl" />
+                <div className="w-10" />
+            </div>
+            <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2">
+                {[1, 2].map(i => <div key={i} className="h-44 min-w-[280px] bg-white/5 rounded-[35px]" />)}
+            </div>
+            <div className="h-96 w-full bg-white/5 rounded-[45px]" />
         </div>
     )
 
