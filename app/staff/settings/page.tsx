@@ -2,143 +2,125 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { 
-    ChevronLeft, Bell, Smartphone, Shield, 
-    Globe, Moon, Info, LogOut, ChevronRight,
-    Loader2, Check, Smartphone as PhoneIcon
+    ChevronLeft, Settings, Bell, Shield, 
+    Smartphone, Moon, Globe, Loader2,
+    Lock, CheckCircle2, Sliders, SmartphoneNfc
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
-import { signOut } from 'next-auth/react'
 
 export default function StaffSettingsPage() {
     const router = useRouter()
+    const { data: session } = useSession()
     const [loading, setLoading] = useState(false)
-    const [notifications, setNotifications] = useState({
-        push: true,
-        whatsapp: false,
-        tasks: true
+    const [settings, setSettings] = useState({
+        notifications: true,
+        darkMode: true,
+        biometric: false,
+        lang: 'English'
     })
 
-    const handleToggle = (key: keyof typeof notifications) => {
-        setNotifications(prev => ({ ...prev, [key]: !prev[key] }))
-        toast.success('Preference updated')
-    }
-
-    const handleSignOut = async () => {
-        setLoading(true)
-        try {
-            await signOut({ callbackUrl: '/staff/login' })
-        } catch {
-            toast.error('Sign out failed')
-            setLoading(false)
-        }
+    const handleToggle = (key: keyof typeof settings) => {
+        setSettings(prev => ({ ...prev, [key]: !prev[key] }))
+        toast.success(`${key.charAt(0).toUpperCase() + key.slice(1)} updated`)
     }
 
     return (
-        <div className="min-h-screen bg-[#0d1117] text-gray-300 pb-20">
+        <div className="space-y-8 animate-fade-in pb-20 bg-[#0d1117] min-h-screen p-5">
             {/* Header */}
-            <div className="p-6 pb-2">
-                <div className="flex items-center gap-2 text-[10px] text-gray-500 font-bold uppercase tracking-[0.3em] mb-4 italic">
-                    <button onClick={() => router.back()} className="hover:text-white transition-colors">ZENBOURG PORTAL</button>
-                    <ChevronRight className="w-3 h-3" />
-                    <span className="text-blue-500">SYSTEM CONFIG</span>
+            <div className="flex items-center justify-between">
+                <button
+                    onClick={() => router.back()}
+                    className="w-12 h-12 rounded-[22px] bg-white/[0.03] border border-white/[0.05] flex items-center justify-center text-gray-500 hover:text-white transition-all active:scale-95 shadow-inner"
+                >
+                    <ChevronLeft className="w-6 h-6" />
+                </button>
+                <div className="flex flex-col items-center">
+                    <h1 className="text-2xl font-black text-white tracking-tighter italic uppercase underline underline-offset-8 decoration-blue-500/20 leading-none mb-2">System Config</h1>
+                    <p className="text-[10px] font-black text-gray-600 uppercase tracking-[0.4em] italic">Operational Settings</p>
                 </div>
+                <div className="w-12 h-12 rounded-[22px] bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-500">
+                    <Settings className="w-6 h-6" />
+                </div>
+            </div>
 
-                <div className="flex items-center justify-between gap-6 mb-8">
-                    <div className="flex items-center gap-4">
-                        <button 
-                            onClick={() => router.back()}
-                            className="p-3 bg-white/[0.03] border border-white/10 rounded-2xl hover:bg-white/[0.08] transition-all"
-                        >
-                            <ChevronLeft className="w-6 h-6 text-white" />
-                        </button>
-                        <div>
-                            <h1 className="text-2xl font-black text-white tracking-tighter italic uppercase leading-none">Configuration</h1>
-                            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">Manage your operational preferences</p>
+            {/* Account Settings Section */}
+            <div className="space-y-4">
+                <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] italic ml-2">Preferences</h3>
+                
+                <div className="bg-[#161b22] border border-white/[0.05] rounded-[40px] overflow-hidden shadow-2xl shadow-black/40">
+                    {[
+                        { id: 'notifications', label: 'System Notifications', icon: Bell, sub: 'Real-time task alerts' },
+                        { id: 'darkMode', label: 'High-Contrast Mode', icon: Moon, sub: 'Night-shift optimization' },
+                        { id: 'biometric', label: 'Biometric Access', icon: SmartphoneNfc, sub: 'Faster terminal login' },
+                    ].map((item) => (
+                        <div key={item.id} className="p-6 border-b border-white/[0.03] last:border-0 flex items-center justify-between hover:bg-white/[0.01] transition-all">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/[0.05] flex items-center justify-center text-blue-500">
+                                    <item.icon className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <p className="text-[13px] font-black text-white italic tracking-tight uppercase">{item.label}</p>
+                                    <p className="text-[9px] font-bold text-gray-600 uppercase tracking-widest">{item.sub}</p>
+                                </div>
+                            </div>
+                            <button 
+                                onClick={() => handleToggle(item.id as any)}
+                                className={cn(
+                                    "w-14 h-8 rounded-full border relative transition-all duration-500 p-1",
+                                    (settings as any)[item.id] ? "bg-blue-600 border-blue-700 shadow-lg shadow-blue-500/20" : "bg-white/[0.03] border-white/10"
+                                )}
+                            >
+                                <div className={cn(
+                                    "w-6 h-6 rounded-full bg-white transition-all duration-500 shadow-sm",
+                                    (settings as any)[item.id] ? "translate-x-6" : "translate-x-0"
+                                )} />
+                            </button>
                         </div>
+                    ))}
+                    
+                    <div className="p-6 flex items-center justify-between hover:bg-white/[0.01] transition-all">
+                       <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/[0.05] flex items-center justify-center text-blue-500">
+                                <Globe className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <p className="text-[13px] font-black text-white italic tracking-tight uppercase">System Language</p>
+                                <p className="text-[9px] font-bold text-gray-600 uppercase tracking-widest">Interface localization</p>
+                            </div>
+                        </div>
+                        <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest bg-blue-500/10 px-3 py-1.5 rounded-xl border border-blue-500/20">English</span>
                     </div>
                 </div>
             </div>
 
-            {/* Settings Sections */}
-            <div className="px-6 space-y-8">
-                {/* Notifications */}
-                <div className="space-y-4">
-                    <h3 className="text-[10px] font-black text-blue-500 uppercase tracking-[0.4em] ml-2">Communication Node</h3>
-                    <div className="bg-[#161b22] border border-white/[0.05] rounded-[35px] overflow-hidden shadow-2xl">
-                        {[
-                            { id: 'push', label: 'Push Notifications', sub: 'Receive real-time task alerts on this device', icon: Bell },
-                            { id: 'whatsapp', label: 'WhatsApp Alerts', sub: 'Get high-priority updates via WhatsApp', icon: PhoneIcon },
-                            { id: 'tasks', label: 'Task Summaries', sub: 'Daily briefing of assigned objectives', icon: Shield },
-                        ].map((item, idx) => (
-                            <div key={item.id} className={cn("p-6 flex items-center justify-between group cursor-pointer", idx !== 2 && "border-b border-white/[0.03]")} onClick={() => handleToggle(item.id as any)}>
-                                <div className="flex items-center gap-5">
-                                    <div className="w-12 h-12 rounded-2xl bg-white/[0.02] border border-white/5 flex items-center justify-center text-gray-500 group-hover:bg-blue-600/10 group-hover:text-blue-500 transition-all">
-                                        <item.icon className="w-6 h-6" />
-                                    </div>
-                                    <div>
-                                        <h4 className="text-sm font-black text-white italic tracking-tight">{item.label}</h4>
-                                        <p className="text-[10px] text-gray-600 font-bold uppercase tracking-widest mt-0.5">{item.sub}</p>
-                                    </div>
-                                </div>
-                                <div className={cn(
-                                    "w-12 h-6 rounded-full p-1 transition-all duration-500",
-                                    notifications[item.id as keyof typeof notifications] ? "bg-blue-600" : "bg-gray-800"
-                                )}>
-                                    <div className={cn(
-                                        "w-4 h-4 bg-white rounded-full shadow-lg transition-all duration-500",
-                                        notifications[item.id as keyof typeof notifications] ? "translate-x-6" : "translate-x-0"
-                                    )} />
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Device & Security */}
-                <div className="space-y-4">
-                    <h3 className="text-[10px] font-black text-gray-600 uppercase tracking-[0.4em] ml-2">Hardware & protocols</h3>
-                    <div className="bg-[#161b22] border border-white/[0.05] rounded-[35px] overflow-hidden shadow-2xl">
-                         <div className="p-6 flex items-center justify-between border-b border-white/[0.03] group hover:bg-white/[0.01] transition-all cursor-pointer">
-                            <div className="flex items-center gap-5">
-                                <div className="w-12 h-12 rounded-2xl bg-white/[0.02] border border-white/5 flex items-center justify-center text-gray-500">
-                                    <Smartphone className="w-6 h-6" />
-                                </div>
-                                <div>
-                                    <h4 className="text-sm font-black text-white italic tracking-tight">Active Device</h4>
-                                    <p className="text-[10px] text-gray-600 font-bold uppercase tracking-widest mt-0.5">Primary Operation Unit: Mobile</p>
-                                </div>
-                            </div>
-                            <span className="text-[8px] font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-500 px-3 py-1 rounded-full border border-emerald-500/20 shadow-lg shadow-emerald-500/5">Encrypted</span>
+            {/* Security Section */}
+            <div className="space-y-4">
+                <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] italic ml-2">Security Hub</h3>
+                <div className="bg-[#161b22] border border-white/[0.05] rounded-[40px] p-6 space-y-4 shadow-3xl">
+                    <button className="w-full h-16 bg-white/[0.03] border border-white/[0.05] rounded-3xl flex items-center justify-between px-6 hover:bg-white/[0.05] transition-all active:scale-[0.98]">
+                        <div className="flex items-center gap-4">
+                            <Lock className="w-5 h-5 text-gray-500" />
+                            <span className="text-xs font-black text-white uppercase tracking-widest italic">Rotate Passkey</span>
                         </div>
-                        <div className="p-6 flex items-center justify-between group hover:bg-white/[0.01] transition-all cursor-pointer">
-                            <div className="flex items-center gap-5">
-                                <div className="w-12 h-12 rounded-2xl bg-white/[0.02] border border-white/5 flex items-center justify-center text-gray-500">
-                                    <Globe className="w-6 h-6" />
-                                </div>
-                                <div>
-                                    <h4 className="text-sm font-black text-white italic tracking-tight">Sync Region</h4>
-                                    <p className="text-[10px] text-gray-600 font-bold uppercase tracking-widest mt-0.5">Auto-detection: Local Grid</p>
-                                </div>
-                            </div>
-                            <ChevronRight className="w-4 h-4 text-gray-800 group-hover:text-blue-500 transition-colors" />
-                        </div>
-                    </div>
-                </div>
-
-                {/* Account Actions */}
-                <div className="pt-4 space-y-4">
-                    <button 
-                        onClick={handleSignOut}
-                        disabled={loading}
-                        className="w-full p-6 bg-rose-500/5 border border-rose-500/20 rounded-[30px] flex items-center justify-center gap-4 group hover:bg-rose-500 hover:text-white transition-all active:scale-95 shadow-xl shadow-rose-500/5"
-                    >
-                        {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : <LogOut className="w-6 h-6 text-rose-500 group-hover:text-white" />}
-                        <span className="text-[12px] font-black uppercase tracking-[0.2em] group-hover:text-white">Terminate Session</span>
+                        <ChevronLeft className="w-4 h-4 text-gray-800 rotate-180" />
                     </button>
-                    <p className="text-[9px] text-center text-gray-700 font-bold uppercase tracking-[0.3em]">Zenbourg OS v2.4.1 (Stable)</p>
+                    <button className="w-full h-16 bg-white/[0.03] border border-white/[0.05] rounded-3xl flex items-center justify-between px-6 hover:bg-white/[0.05] transition-all active:scale-[0.98]">
+                        <div className="flex items-center gap-4">
+                            <Shield className="w-5 h-5 text-gray-500" />
+                            <span className="text-xs font-black text-white uppercase tracking-widest italic">Two-Factor Sync</span>
+                        </div>
+                        <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest italic">Enabled</span>
+                    </button>
                 </div>
+            </div>
+
+            {/* Version Info */}
+            <div className="text-center pt-8">
+                <p className="text-[9px] font-black text-gray-800 uppercase tracking-[1em] mb-2 leading-none">Zenbourg Operational OS</p>
+                <p className="text-[8px] font-bold text-gray-700 uppercase tracking-widest">Build v4.2.0-Production-Stable</p>
             </div>
         </div>
     )

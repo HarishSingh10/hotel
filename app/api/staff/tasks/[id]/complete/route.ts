@@ -35,15 +35,44 @@ export async function POST(
             return new NextResponse('Not assigned to you', { status: 403 })
         }
 
+        const body = await request.json().catch(() => ({}))
+        const { notes, attachments } = body
+
         // Update Status
         const updated = await prisma.serviceRequest.update({
             where: { id },
             data: {
                 status: 'COMPLETED',
                 completedAt: new Date(),
-                // could add Calculate SLA logic here
+                notes: notes || undefined,
+                attachments: attachments || undefined
+            },
+            include: {
+                property: {
+                    select: { ownerIds: true, name: true }
+                },
+                room: { select: { roomNumber: true } },
+                assignedTo: { include: { user: { select: { name: true } } } }
             }
         })
+
+        // Notify Admins/Owners
+        if (updated.property?.ownerIds) {
+            try {
+                const notifications = updated.property.ownerIds.map(ownerId => ({
+                    userId: ownerId,
+                    title: 'Task Completed',
+                    description: `${updated.assignedTo?.user?.name || 'Staff'} completed "${updated.title}" for Room ${updated.room?.roomNumber || 'Gen-Ops'}`,
+                    type: 'SYSTEM'
+                }))
+
+                await prisma.inAppNotification.createMany({
+                    data: notifications
+                })
+            } catch (noteErr) {
+                console.error('Failed to notify admins:', noteErr)
+            }
+        }
 
         return NextResponse.json(updated)
 

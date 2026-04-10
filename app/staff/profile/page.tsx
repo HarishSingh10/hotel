@@ -39,6 +39,12 @@ export default function StaffProfilePage() {
     }, [fetchProfile])
 
     const handleRequestVerification = async () => {
+        // Optimistic Update
+        setStaffData((prev: any) => ({
+            ...prev,
+            profile: { ...prev.profile, verificationRequested: true }
+        }))
+        
         try {
             const res = await fetch('/api/staff/verify', { method: 'POST' })
             if (res.ok) {
@@ -51,23 +57,34 @@ export default function StaffProfilePage() {
     }
 
     const handleToggleDND = async (currentStatus: boolean) => {
+        // Optimistic Update
+        setStaffData((prev: any) => ({
+            ...prev,
+            profile: { 
+                ...prev.profile, 
+                user: { ...prev.profile.user, dndEnabled: !currentStatus } 
+            }
+        }))
+
         try {
             const res = await fetch('/api/staff/me', {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ dndEnabled: !currentStatus })
             })
-            if (res.ok) {
-                fetchProfile()
+            if (!res.ok) {
+               fetchProfile() // Rollback on error
             }
         } catch (error) {
             console.error("DND update error:", error)
+            fetchProfile()
         }
     }
 
     if (loading) return (
         <div className="flex flex-col items-center justify-center min-h-[60vh]">
             <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+            <p className="mt-4 text-[10px] font-black uppercase tracking-widest text-gray-500">Syncing Profile Node...</p>
         </div>
     )
 
@@ -78,7 +95,7 @@ export default function StaffProfilePage() {
         { label: 'Leave Requests', icon: Umbrella, href: '/staff/leave', color: 'text-amber-500', bg: 'bg-amber-600/10' },
         { label: 'Payroll Hub', icon: CreditCard, href: '/staff/payroll', color: 'text-blue-500', bg: 'bg-blue-600/10' },
         { label: 'Attendance Log', icon: Calendar, href: '/staff/attendance', color: 'text-indigo-500', bg: 'bg-indigo-600/10' },
-        { label: 'Operational SOP', icon: Info, href: '#', color: 'text-purple-500', bg: 'bg-purple-600/10' },
+        { label: 'Operational SOP', icon: Info, href: '/staff/sop', color: 'text-purple-500', bg: 'bg-purple-600/10' },
     ]
 
     return (
@@ -106,7 +123,9 @@ export default function StaffProfilePage() {
                                     className="w-full h-full object-cover transition-all duration-300"
                                 />
                             ) : (
-                                <User className="w-12 h-12 text-gray-700" />
+                                <div className="w-full h-full flex items-center justify-center bg-blue-600/10">
+                                    <User className="w-12 h-12 text-blue-500" />
+                                </div>
                             )}
                         </div>
                         <div className="absolute bottom-0 right-0 w-10 h-10 bg-[#161b22] border border-white/10 rounded-full flex items-center justify-center shadow-lg">
@@ -124,10 +143,10 @@ export default function StaffProfilePage() {
 
                 <div className="grid grid-cols-2 gap-3 w-full mt-10">
                     <button 
-                        onClick={() => toast.info("System configuration coming soon")}
+                        onClick={() => router.push('/staff/settings')}
                         className="h-14 bg-white/[0.03] border border-white/[0.05] rounded-2xl text-[10px] font-black uppercase tracking-widest text-white hover:bg-white/[0.08] transition-all flex items-center justify-center gap-2 active:scale-95"
                     >
-                        <Settings className="w-4 h-4 text-gray-500" /> Settings
+                        <Settings className="w-4 h-4 text-gray-500" /> Settings Portal
                     </button>
                     
                     {profile.isVerified ? (
@@ -136,7 +155,7 @@ export default function StaffProfilePage() {
                         </div>
                     ) : profile.verificationRequested ? (
                         <div className="h-14 bg-amber-500/10 border border-amber-500/20 text-amber-500 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2">
-                             Verification Pending
+                             Verification Active
                         </div>
                     ) : (
                         <button 
@@ -154,7 +173,7 @@ export default function StaffProfilePage() {
                 {quickActions.map((action, i) => (
                     <button
                         key={i}
-                        onClick={() => action.href !== '#' && router.push(action.href)}
+                        onClick={() => router.push(action.href)}
                         className="bg-[#161b22] border border-white/[0.05] p-6 rounded-[35px] flex flex-col gap-4 text-left transition-all hover:bg-white/[0.02] active:scale-95 group shadow-lg shadow-black/20"
                     >
                         <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center border border-white/[0.05] shadow-inner", action.bg)}>
