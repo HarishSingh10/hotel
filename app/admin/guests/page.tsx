@@ -59,8 +59,8 @@ function GuestsContent() {
   })
 
   const guests = useMemo(() => {
-    const data = Array.isArray(rawGuests) ? rawGuests : []
-    return data.map((d: any) => ({
+    const raw = Array.isArray(rawGuests) ? rawGuests : (rawGuests?.data ?? [])
+    return raw.map((d: any) => ({
       ...d,
       checkIn: d.checkIn ? new Date(d.checkIn) : null,
       checkOut: d.checkOut ? new Date(d.checkOut) : null,
@@ -76,7 +76,7 @@ function GuestsContent() {
   }, [searchParams])
 
   // Filtered
-  const filtered = guests.filter(g => {
+  const filtered = guests.filter((g: any) => {
     const q = search.toLowerCase()
     const matchSearch = g.name.toLowerCase().includes(q) ||
       g.phone.includes(q) || (g.email || '').toLowerCase().includes(q) ||
@@ -101,7 +101,7 @@ function GuestsContent() {
   }
   const handleSelectAll = () => {
     if (selected.size === pageItems.length) setSelected(new Set())
-    else setSelected(new Set(pageItems.map(g => g.id)))
+    else setSelected(new Set(pageItems.map((g: any) => g.id)))
   }
 
   const handleAddGuest = async () => {
@@ -123,7 +123,45 @@ function GuestsContent() {
     } catch { toast.error('Something went wrong') }
   }
 
-  const handleExport = () => toast.success('Exporting guest list...')
+  const handleExport = () => {
+    if (filtered.length === 0) { toast.error('No guests to export'); return }
+
+    const rows = filtered.map((g: any) => ({
+      Name: g.name ?? '',
+      Phone: g.phone ?? '',
+      Email: g.email ?? '',
+      Room: g.roomNumber ?? 'N/A',
+      'Check-in': g.checkIn ? format(new Date(g.checkIn), 'dd MMM yyyy') : '',
+      'Check-out': g.checkOut ? format(new Date(g.checkOut), 'dd MMM yyyy') : '',
+      PAX: g.guestCount ?? 1,
+      'ID Status': g.checkInStatus ?? '',
+      Source: g.source ?? '',
+      'Booking Status': g.status ?? '',
+    }))
+
+    const headers = Object.keys(rows[0])
+    const csvContent = [
+      headers.join(','),
+      ...rows.map((row: Record<string, any>) =>
+        headers.map(h => {
+          const val = row[h]
+          if (val === null || val === undefined) return '""'
+          return `"${String(val).replace(/"/g, '""')}"`
+        }).join(',')
+      ),
+    ].join('\n')
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `guests_${format(new Date(), 'yyyy-MM-dd')}.csv`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+    toast.success(`Exported ${rows.length} guests`)
+  }
 
   return (
     <div className="space-y-5 animate-fade-in">
@@ -243,7 +281,7 @@ function GuestsContent() {
           </div>
         ) : (
           <div className="divide-y divide-white/[0.04]">
-            {pageItems.map(guest => (
+            {pageItems.map((guest: any) => (
               <div key={guest.id} className="group transition-all duration-200">
                 {/* Desktop Row */}
                 <div

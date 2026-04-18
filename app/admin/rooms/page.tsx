@@ -52,7 +52,10 @@ export default function RoomsPage() {
         setLoading(true)
         try {
             const res = await fetch(buildContextUrl('/api/admin/rooms', { status: statusFilter }))
-            if (res.ok) setRooms(await res.json())
+            if (res.ok) {
+                const json = await res.json()
+                setRooms(Array.isArray(json) ? json : (json?.data ?? []))
+            }
         } catch { toast.error('Failed to fetch rooms') }
         finally { setLoading(false) }
     }, [statusFilter])

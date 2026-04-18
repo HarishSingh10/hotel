@@ -1,13 +1,39 @@
 import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 
-type UserRole = 'SUPER_ADMIN' | 'HOTEL_ADMIN' | 'STAFF'
+export type UserRole = 'SUPER_ADMIN' | 'HOTEL_ADMIN' | 'MANAGER' | 'RECEPTIONIST' | 'STAFF' | 'GUEST'
 
 interface AppState {
-    userRole: UserRole
-    setUserRole: (role: UserRole) => void
+    // Sidebar
+    sidebarOpen: boolean
+    setSidebarOpen: (open: boolean) => void
+
+    // Property context (for super admin)
+    selectedPropertyId: string
+    setSelectedPropertyId: (id: string) => void
+
+    // Notification badge
+    pendingServiceCount: number
+    setPendingServiceCount: (count: number) => void
 }
 
-export const useAppStore = create<AppState>((set) => ({
-    userRole: 'SUPER_ADMIN', // Default for dev
-    setUserRole: (role) => set({ userRole: role }),
-}))
+export const useAppStore = create<AppState>()(
+    persist(
+        (set) => ({
+            sidebarOpen: false,
+            setSidebarOpen: (open) => set({ sidebarOpen: open }),
+
+            selectedPropertyId: 'ALL',
+            setSelectedPropertyId: (id) => set({ selectedPropertyId: id }),
+
+            pendingServiceCount: 0,
+            setPendingServiceCount: (count) => set({ pendingServiceCount: count }),
+        }),
+        {
+            name: 'zenbourg-app-state',
+            partialize: (state) => ({
+                selectedPropertyId: state.selectedPropertyId,
+            }),
+        }
+    )
+)

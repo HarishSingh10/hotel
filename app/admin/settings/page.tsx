@@ -1,772 +1,760 @@
 'use client'
 
-export const dynamic = 'force-dynamic'
-
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useSession } from 'next-auth/react'
 import {
-    Save, UserCog, Bell, Building2, CreditCard,
-    Shield, LayoutDashboard, Bed,
-    Users, IndianRupee, Calendar, Settings as SettingsIcon,
-    Search, ChevronRight, Info, ShieldCheck,
-    Smartphone, Database, Globe, Command,
-    CheckCircle2, Clock, AlertTriangle, ExternalLink,
-    HelpCircle, BookOpen, UserCheck, ShieldAlert,
-    X, Plus, RefreshCw, Link2, LayoutGrid, List,
-    ChevronLeft, Lock, Unlock, Eye, EyeOff, Loader2, Trash2,
-    Copy, Edit3, ClipboardList, Check, Sparkles, Gem, Crown, TrendingUp,
-    Zap, Cpu, Activity
+  Save, Building2, IndianRupee, Sparkles, Shield, Smartphone,
+  Database, Globe, ChevronRight, ChevronLeft, Loader2,
+  Calendar, Check, CheckCircle2, Bell, Zap, ShieldAlert, ClipboardList,
+  Star, Crown, BedDouble, Users, CreditCard, Eye, EyeOff, AlertCircle
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
-import { buildContextUrl, getAdminContext } from '@/lib/admin-context'
-import Card from '@/components/ui/Card'
-import Button from '@/components/ui/Button'
-import Input from '@/components/ui/Input'
-import Badge from '@/components/ui/Badge'
-import Modal from '@/components/ui/Modal'
+import { getAdminContext } from '@/lib/admin-context'
 import Switch from '@/components/ui/Switch'
-import Select from '@/components/ui/Select'
-import Textarea from '@/components/ui/Textarea'
+import Button from '@/components/ui/Button'
 
-/* ───────────────── CONFIG ───────────────── */
-const GLOBAL_CONFIG = [
-    { id: 'branding', label: 'General Info & Branding', desc: 'Configure hotel name, address, timezone, and brand assets.', icon: Building2 },
-    { id: 'roles', label: 'Roles & Permissions', desc: 'Manage staff access levels, invite new users, and audit logs.', icon: UserCog },
-    { id: 'ops', label: 'Operations & Notifications', desc: 'Setup email templates, SMS alerts, and housekeeping schedules.', icon: Smartphone },
-    { id: 'financial', label: 'Financial & Payments', desc: 'Connect payment gateways, set tax rates, and configure invoices.', icon: IndianRupee },
-    { id: 'subscription', label: 'Subscription & Plan', desc: 'Manage your Zenbourg plan, view active features, and billing.', icon: Sparkles },
-]
+interface HotelInfo {
+  name: string; description: string; address: string; phone: string; email: string
+  plan: string; features: string[]; planExpiresAt: string | null; ranking: number
+}
+interface PlanDef {
+  id?: string; plan: string; displayName: string; tagline?: string; description?: string
+  originalPrice: number; discountedPrice: number; discountPercent: number
+  maxRooms: number; maxStaff: number; features: string[]
+}
 
-const SYSTEM_DATA = [
-    { id: 'retention', label: 'Data Retention', desc: 'Manage how long historical data and logs are stored.', icon: Database },
-    { id: 'integrations', label: 'Integrations & API', desc: 'Connect external apps, manage API keys, and sync bookings.', icon: Globe },
-]
-
-const INTEGRATIONS = [
-    { id: 'airbnb', name: 'Airbnb', type: 'Travel & Booking', status: 'NOT_CONNECTED', logo: '/icons/airbnb.png', color: 'text-[#FF5A5F]' },
-    { id: 'booking', name: 'Booking.com', type: 'OTA Channel', status: 'NOT_CONNECTED', logo: '/icons/booking.png', color: 'text-[#003580]' },
-    { id: 'expedia', name: 'Expedia', type: 'OTA Channel', status: 'NOT_CONNECTED', logo: '/icons/expedia.png', color: 'text-[#FFCC00]' },
-    { id: 'makemytrip', name: 'MakeMyTrip', type: 'OTA Channel', status: 'OTA Channel', logo: '/icons/mmt.png', color: 'text-[#E61B23]' },
+const NAV = [
+  { id: 'branding',     label: 'General Info',         icon: Building2,   desc: 'Hotel name, address, contact details' },
+  { id: 'roles',        label: 'Roles & Permissions',  icon: Shield,      desc: 'Staff access levels per module' },
+  { id: 'financial',    label: 'Financial & Tax',      icon: IndianRupee, desc: 'GST, service charge, discounts, invoice' },
+  { id: 'ops',          label: 'Notifications',        icon: Smartphone,  desc: 'SMS, push, email alert settings' },
+  { id: 'subscription', label: 'Subscription & Plans', icon: Sparkles,    desc: 'Current plan, upgrade, billing' },
+  { id: 'integrations', label: 'Integrations',         icon: Globe,       desc: 'OTA channels and API connections' },
+  { id: 'retention',    label: 'Data Retention',       icon: Database,    desc: 'How long data is stored' },
 ]
 
 const PERMISSIONS_SCHEMA = [
-    {
-        id: 'reservations',
-        label: 'Reservations',
-        description: 'Booking management and guest interactions',
-        icon: Calendar,
-        permissions: [
-            { id: 'view_reservations', label: 'View Reservations', description: 'Allow viewing of the booking calendar and lists.' },
-            { id: 'create_reservation', label: 'Create New Reservation', description: 'Ability to add new bookings manually.' },
-            { id: 'edit_guest_details', label: 'Edit Guest Details', description: 'Modify names, contact info, and preferences.' },
-            { id: 'process_refunds', label: 'Process Refunds', description: 'Authorize refunds to original payment methods.' },
-        ]
-    },
-    {
-        id: 'housekeeping',
-        label: 'Housekeeping',
-        description: 'Room status and cleaning schedules',
-        icon: ClipboardList,
-        permissions: [
-            { id: 'view_room_status', label: 'View Room Status', description: 'See if rooms are clean, dirty, or inspected.' },
-            { id: 'update_room_status', label: 'Update Room Status', description: 'Change room status (e.g., Dirty to Clean).' },
-            { id: 'manage_supplies', label: 'Manage Supplies', description: 'Track and order cleaning supplies.' },
-        ]
-    },
-    {
-        id: 'finance',
-        label: 'Finance & Accounts',
-        description: 'Revenue tracking and invoicing',
-        icon: IndianRupee,
-        permissions: [
-            { id: 'view_reports', label: 'View Financial Reports', description: 'Access daily and monthly revenue reports.' },
-            { id: 'manage_invoices', label: 'Manage Invoices', description: 'Create and edit guest invoices.' },
-            { id: 'tax_settings', label: 'Manage Tax Rules', description: 'Configure tax rates and regulations.' },
-        ]
-    }
+  { id: 'reservations', label: 'Reservations', icon: Calendar, permissions: [
+    { id: 'view_reservations',  label: 'View Reservations',   desc: 'View booking calendar and lists' },
+    { id: 'create_reservation', label: 'Create Reservation',  desc: 'Add new bookings manually' },
+    { id: 'edit_guest_details', label: 'Edit Guest Details',  desc: 'Modify guest names and contact info' },
+    { id: 'process_refunds',    label: 'Process Refunds',     desc: 'Authorize refunds to guests' },
+  ]},
+  { id: 'housekeeping', label: 'Housekeeping', icon: ClipboardList, permissions: [
+    { id: 'view_room_status',   label: 'View Room Status',   desc: 'See clean/dirty/inspected status' },
+    { id: 'update_room_status', label: 'Update Room Status', desc: 'Change room status' },
+    { id: 'manage_supplies',    label: 'Manage Supplies',    desc: 'Track and order cleaning supplies' },
+  ]},
+  { id: 'finance', label: 'Finance', icon: IndianRupee, permissions: [
+    { id: 'view_reports',    label: 'View Financial Reports', desc: 'Access revenue reports' },
+    { id: 'manage_invoices', label: 'Manage Invoices',        desc: 'Create and edit guest invoices' },
+    { id: 'tax_settings',    label: 'Manage Tax Rules',       desc: 'Configure tax rates' },
+  ]},
 ]
 
-const ALL_FEATURES = [
-    { id: 'BASIC_OPS', label: 'Basic Operations', desc: 'Standard check-in/out and room status.' },
-    { id: 'STAFF_MANAGEMENT', label: 'Staff Management', desc: 'Employee profiles and assignments.' },
-    { id: 'ADVANCED_PAYROLL', label: 'Advanced Payroll', desc: 'Salary disbursements and tax automated.' },
-    { id: 'MARKETING_TOOLS', label: 'Marketing Tools', desc: 'Campaigns and loyalty segment tracking.' },
-    { id: 'ANALYTICS_REPORTING', label: 'Analytics & Reporting', desc: 'Deep-dive reports and trend analysis.' },
-    { id: 'POS_HARDWARE_SYNC', label: 'POS & Hardware Sync', desc: 'Direct connection with retail terminal.' },
-    { id: 'IOT_INTEGRATION', label: 'IoT Integration', desc: 'Smart room and device connectivity.' },
-    { id: 'LOYALTY_PROGRAM', label: 'Loyalty Program', desc: 'VIP tiers and rewards management.' },
-    { id: 'MULTI_PROPERTY_MDM', label: 'Multi-Property MDM', desc: 'Organization-wide device management.' },
+const ROLES = [
+  { id: 'HOTEL_ADMIN',  label: 'Hotel Admin',  desc: 'Full property management' },
+  { id: 'MANAGER',      label: 'Manager',      desc: 'Operations and staff oversight' },
+  { id: 'RECEPTIONIST', label: 'Receptionist', desc: 'Front desk and check-in' },
+  { id: 'STAFF',        label: 'Staff',        desc: 'Task execution only' },
 ]
 
-const ALL_ROLES_DATA = [
-    { id: 'SUPER_ADMIN', label: 'Hotel Owner', desc: 'System Admin Access', badge: 'Active' },
-    { id: 'HOTEL_ADMIN', label: 'General Manager', desc: 'Manage operations', badge: 'Active' },
-    { id: 'MANAGER', label: 'Front Desk Agent', desc: 'Guest services focus', badge: 'Active' },
-    { id: 'RECEPTIONIST', label: 'Housekeeping Staff', desc: 'Room updates only', badge: 'Active' },
-    { id: 'STAFF', label: 'Maintenance', desc: 'Work orders', badge: 'Active' },
-]
+const PLAN_ICONS: Record<string, React.ElementType> = {
+  BASE: Building2, STARTER: Zap, STANDARD: Star, ENTERPRISE: Crown,
+}
+const PLAN_COLORS: Record<string, string> = {
+  BASE: 'text-slate-400', STARTER: 'text-blue-400',
+  STANDARD: 'text-amber-400', ENTERPRISE: 'text-purple-400',
+}
 
-export default function SettingsOverviewPage() {
-    const { data: session } = useSession()
-    const [view, setView] = useState<'OVERVIEW' | 'INTEGRATIONS' | 'ROLES' | 'BRANDING' | 'PAYMENT' | 'RETENTION' | 'OPS' | 'SUBSCRIPTION' | 'PLANS'>('OVERVIEW')
-    const [planDefinitions, setPlanDefinitions] = useState<any[]>([])
-    const [editingPlan, setEditingPlan] = useState<any>(null)
-    const [loading, setLoading] = useState(false)
-    const [saving, setSaving] = useState(false)
-    const [connectedApps, setConnectedApps] = useState<string[]>([])
+// ─── Financial Settings Component ───────────────────────────────────────────
+function FinancialView({ propertyId }: { propertyId: string | null | undefined }) {
+  const [s, setS] = useState({
+    gstPercent: 18, serviceChargePercent: 0, luxuryTaxPercent: 0,
+    defaultDiscountPercent: 0, discountLabel: 'Discount',
+    invoicePrefix: 'INV', invoiceFooter: '',
+    checkInTime: '14:00', checkOutTime: '11:00',
+    // Bank
+    bankAccountName: '', bankAccountNumber: '', bankIfscCode: '',
+    bankName: '', bankBranch: '', upiId: '',
+    razorpayKeyId: '',
+  })
+  const [razorpayKeySecret, setRazorpayKeySecret] = useState('')
+  const [showSecret, setShowSecret] = useState(false)
+  const [showAccountNumber, setShowAccountNumber] = useState(false)
+  const [maskedAccount, setMaskedAccount] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
 
-    // State Objects
-    const [hotelInfo, setHotelInfo] = useState({
-        name: '', description: '', address: '', phone: '', email: '', logo: '', coverImage: '', plan: 'GOLD', features: [] as string[], planExpiresAt: null as string | null, ranking: 0
-    })
-
-    const [paymentSettings, setPaymentSettings] = useState({
-        baseCurrency: 'INR', taxRate: 18.0, allowPartial: true, invoiceAutoGenerate: true,
-        gateways: [{ id: 'stripe', status: 'NOT_CONNECTED' }, { id: 'razorpay', status: 'CONNECTED' }],
-        acceptedMethods: { creditCard: true, cash: true, wireTransfer: false, crypto: false }
-    })
-
-    const [retentionSettings, setRetentionSettings] = useState({
-        legalHoldMode: false, guestProfiles: '3_YEARS', scans: '30_DAYS', financials: '7_YEARS', serviceLogs: '1_YEAR'
-    })
-
-    const [opsSettings, setOpsSettings] = useState({
-        emailTemplates: { welcome: true, checkout: true, reminder: false },
-        notifications: { smsAlerts: false, pushNotifications: true, slackLogs: false },
-        housekeeping: { autoSchedule: true, dailyChange: false, inspectionRequired: true }
-    })
-
-    const [selectedRole, setSelectedRole] = useState('MANAGER')
-    const [permissions, setPermissions] = useState<Record<string, any>>({})
-    const [rolePermissions, setRolePermissions] = useState<any[]>([])
-    const [isAddRoleModalOpen, setIsAddRoleModalOpen] = useState(false)
-    const [newRoleName, setNewRoleName] = useState('')
-    const [isAuditLogOpen, setIsAuditLogOpen] = useState(false)
-    const [searchTerm, setSearchTerm] = useState('')
-
-    // Helpers
-    const currentPropertyId = useMemo(() => {
-        return session?.user?.role === 'SUPER_ADMIN'
-            ? getAdminContext()?.propertyId
-            : session?.user?.propertyId
-    }, [session])
-
-    const fetchPropertyInfo = useCallback(async () => {
-        if (!currentPropertyId || currentPropertyId === 'ALL') return
-        try {
-            const res = await fetch(buildContextUrl(`/api/admin/settings/property?propertyId=${currentPropertyId}`))
-            const data = await res.json()
-            if (data.success) setHotelInfo(data.property)
-        } catch (e) { console.error(e) }
-    }, [currentPropertyId])
-
-    const fetchRoles = useCallback(async () => {
-        if (!currentPropertyId || currentPropertyId === 'ALL') return
-        try {
-            const res = await fetch(buildContextUrl('/api/admin/settings/roles'))
-            const data = await res.json()
-            if (data.success) {
-                setRolePermissions(data.rolePermissions || [])
-                const current = data.rolePermissions.find((rp: any) => rp.role === selectedRole)
-                if (current) setPermissions(current.permissions || {})
-            }
-        } catch (e) { console.error(e) }
-    }, [currentPropertyId, selectedRole])
-
-    useEffect(() => {
-        setLoading(true)
-        Promise.all([fetchPropertyInfo(), fetchRoles()]).finally(() => setLoading(false))
-    }, [currentPropertyId]) // Fetch all on property change
-
-    useEffect(() => {
-        // Only fetch roles when role selection changes, to save resources
-        fetchRoles()
-    }, [selectedRole, fetchRoles])
-
-    const handleSave = async () => {
-        setSaving(true)
-        try {
-            // Logic for different views
-            let url = '/api/admin/settings/property'
-            let body: any = { propertyId: currentPropertyId, ...hotelInfo }
-
-            if (view === 'ROLES') {
-                url = '/api/admin/settings/roles'
-                body = { propertyId: currentPropertyId, role: selectedRole, permissions }
-            } else if (view === 'PAYMENT') {
-                url = '/api/admin/settings/payments'
-                body = { propertyId: currentPropertyId, paymentSettings }
-            }
-
-            const res = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
-            })
-
-            if (res.ok) {
-                toast.success('System Configuration Synchronized', {
-                    description: `Parameters for ${view} updated successfully.`
-                })
-            }
-        } catch (e) {
-            toast.error('Encryption Failure', { description: 'Failed to commit changes to the ledger.' })
-        } finally {
-            setSaving(false)
+  useEffect(() => {
+    if (!propertyId || propertyId === 'ALL') { setLoading(false); return }
+    fetch(`/api/admin/settings/financial?propertyId=${propertyId}`)
+      .then(r => r.json())
+      .then(j => {
+        if (j.success && j.data) {
+          const d = j.data
+          setS(prev => ({
+            ...prev,
+            gstPercent: d.gstPercent ?? 18,
+            serviceChargePercent: d.serviceChargePercent ?? 0,
+            luxuryTaxPercent: d.luxuryTaxPercent ?? 0,
+            defaultDiscountPercent: d.defaultDiscountPercent ?? 0,
+            discountLabel: d.discountLabel ?? 'Discount',
+            invoicePrefix: d.invoicePrefix ?? 'INV',
+            invoiceFooter: d.invoiceFooter ?? '',
+            checkInTime: d.checkInTime ?? '14:00',
+            checkOutTime: d.checkOutTime ?? '11:00',
+            bankAccountName: d.bankAccountName ?? '',
+            bankAccountNumber: '',  // never pre-fill from server
+            bankIfscCode: d.bankIfscCode ?? '',
+            bankName: d.bankName ?? '',
+            bankBranch: d.bankBranch ?? '',
+            upiId: d.upiId ?? '',
+            razorpayKeyId: d.razorpayKeyId ?? '',
+          }))
+          if (d.bankAccountNumberMasked) setMaskedAccount(d.bankAccountNumberMasked)
         }
-    }
+      })
+      .catch(() => {}).finally(() => setLoading(false))
+  }, [propertyId])
 
-    const handleTogglePermission = (id: string) => {
-        setPermissions(prev => ({ ...prev, [id]: !prev[id] }))
-    }
+  const save = async () => {
+    if (!propertyId || propertyId === 'ALL') { toast.error('Select a hotel first'); return }
+    setSaving(true)
+    try {
+      const payload: any = { propertyId, ...s }
+      if (razorpayKeySecret) payload.razorpayKeySecret = razorpayKeySecret
+      // Don't send empty account number (would overwrite existing)
+      if (!s.bankAccountNumber) delete payload.bankAccountNumber
 
-    const filteredConfig = GLOBAL_CONFIG.filter(i => 
-        i.label.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        i.desc.toLowerCase().includes(searchTerm.toLowerCase())
+      const res = await fetch('/api/admin/settings/financial', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+      const j = await res.json()
+      if (j.success) {
+        toast.success('Financial settings saved')
+        if (j.data?.bankAccountNumberMasked) setMaskedAccount(j.data.bankAccountNumberMasked)
+        setS(p => ({ ...p, bankAccountNumber: '' }))
+        setRazorpayKeySecret('')
+      } else toast.error(j.error ?? 'Failed to save')
+    } catch { toast.error('Connection error') } finally { setSaving(false) }
+  }
+
+  if (loading) return (
+    <div className="flex items-center justify-center h-48">
+      <Loader2 className="w-6 h-6 animate-spin text-primary" />
+    </div>
+  )
+
+  const base = 5000
+  const gst = base * s.gstPercent / 100
+  const sc = base * s.serviceChargePercent / 100
+  const lt = base * s.luxuryTaxPercent / 100
+  const total = base + gst + sc + lt
+  const disc = total * s.defaultDiscountPercent / 100
+  const final = total - disc
+
+  const ic = 'w-full bg-surface-light border border-border rounded-xl px-4 py-2.5 text-sm text-white focus:ring-1 focus:ring-primary outline-none transition-all'
+  const lc = 'text-xs font-semibold text-text-secondary block mb-1.5'
+
+  return (
+    <div className="space-y-6">
+      {/* ── Tax Rates ── */}
+      <div className="bg-surface border border-border rounded-2xl p-6 space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-base font-semibold text-white">Tax Rates</h3>
+            <p className="text-xs text-text-secondary mt-0.5">Applied automatically to every booking</p>
+          </div>
+          <Button onClick={save} loading={saving} variant="primary" className="text-sm">
+            <Save className="w-4 h-4 mr-2" /> Save All
+          </Button>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="space-y-1.5"><label className={lc}>GST %</label><p className="text-[11px] text-text-tertiary">Goods &amp; Services Tax on room charges</p><input type="number" min={0} max={100} value={s.gstPercent} onChange={e => setS(p => ({ ...p, gstPercent: parseFloat(e.target.value) || 0 }))} className={ic} /></div>
+          <div className="space-y-1.5"><label className={lc}>Service Charge %</label><p className="text-[11px] text-text-tertiary">Hotel service charge</p><input type="number" min={0} max={100} value={s.serviceChargePercent} onChange={e => setS(p => ({ ...p, serviceChargePercent: parseFloat(e.target.value) || 0 }))} className={ic} /></div>
+          <div className="space-y-1.5"><label className={lc}>Luxury Tax %</label><p className="text-[11px] text-text-tertiary">State luxury tax</p><input type="number" min={0} max={100} value={s.luxuryTaxPercent} onChange={e => setS(p => ({ ...p, luxuryTaxPercent: parseFloat(e.target.value) || 0 }))} className={ic} /></div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-1.5"><label className={lc}>Default Discount %</label><p className="text-[11px] text-text-tertiary">Auto-applied to all bookings (0 = none)</p><input type="number" min={0} max={100} value={s.defaultDiscountPercent} onChange={e => setS(p => ({ ...p, defaultDiscountPercent: parseFloat(e.target.value) || 0 }))} className={ic} /></div>
+          <div className="space-y-1.5"><label className={lc}>Discount Label</label><p className="text-[11px] text-text-tertiary">e.g. Early Bird, Member Rate</p><input type="text" value={s.discountLabel} onChange={e => setS(p => ({ ...p, discountLabel: e.target.value }))} className={ic} /></div>
+        </div>
+      </div>
+
+      {/* ── Invoice & Times ── */}
+      <div className="bg-surface border border-border rounded-2xl p-6 space-y-4">
+        <h3 className="text-base font-semibold text-white">Invoice & Operations</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-1.5"><label className={lc}>Invoice Prefix</label><p className="text-[11px] text-text-tertiary">e.g. INV, ZB, HTL</p><input type="text" value={s.invoicePrefix} onChange={e => setS(p => ({ ...p, invoicePrefix: e.target.value }))} className={ic} /></div>
+          <div className="space-y-1.5"><label className={lc}>Invoice Footer Note</label><p className="text-[11px] text-text-tertiary">Appears at the bottom of every invoice</p><input type="text" value={s.invoiceFooter} onChange={e => setS(p => ({ ...p, invoiceFooter: e.target.value }))} className={ic} /></div>
+          <div className="space-y-1.5"><label className={lc}>Check-in Time</label><input type="time" value={s.checkInTime} onChange={e => setS(p => ({ ...p, checkInTime: e.target.value }))} className={ic} /></div>
+          <div className="space-y-1.5"><label className={lc}>Check-out Time</label><input type="time" value={s.checkOutTime} onChange={e => setS(p => ({ ...p, checkOutTime: e.target.value }))} className={ic} /></div>
+        </div>
+      </div>
+
+      {/* ── Bank Account Details ── */}
+      <div className="bg-surface border border-border rounded-2xl p-6 space-y-5">
+        <div className="flex items-start gap-3">
+          <div className="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
+            <CreditCard className="w-4 h-4 text-emerald-400" />
+          </div>
+          <div>
+            <h3 className="text-base font-semibold text-white">Bank Account Details</h3>
+            <p className="text-xs text-text-secondary mt-0.5">
+              All payments collected through the admin panel will be settled to this account via Razorpay.
+            </p>
+          </div>
+        </div>
+
+        <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 flex items-start gap-2">
+          <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+          <p className="text-xs text-amber-300">
+            Account number is stored securely and masked after saving. Only the last 4 digits will be shown.
+            Razorpay Key Secret is write-only — it will never be displayed after saving.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <label className={lc}>Account Holder Name</label>
+            <input type="text" value={s.bankAccountName} onChange={e => setS(p => ({ ...p, bankAccountName: e.target.value }))} className={ic} placeholder="e.g. Rajesh Kumar" />
+          </div>
+          <div className="space-y-1.5">
+            <label className={lc}>Account Number</label>
+            {maskedAccount && !showAccountNumber ? (
+              <div className="flex gap-2">
+                <input type="text" value={maskedAccount} readOnly className={cn(ic, 'opacity-60 cursor-not-allowed font-mono tracking-widest')} />
+                <button onClick={() => setShowAccountNumber(true)} className="px-3 py-2 bg-surface-light border border-border rounded-xl text-xs text-text-secondary hover:text-white transition-all whitespace-nowrap">
+                  Change
+                </button>
+              </div>
+            ) : (
+              <input type="text" value={s.bankAccountNumber} onChange={e => setS(p => ({ ...p, bankAccountNumber: e.target.value }))} className={ic} placeholder="Enter account number" />
+            )}
+          </div>
+          <div className="space-y-1.5">
+            <label className={lc}>IFSC Code</label>
+            <input type="text" value={s.bankIfscCode} onChange={e => setS(p => ({ ...p, bankIfscCode: e.target.value.toUpperCase() }))} className={cn(ic, 'uppercase tracking-widest')} placeholder="e.g. HDFC0001234" maxLength={11} />
+          </div>
+          <div className="space-y-1.5">
+            <label className={lc}>Bank Name</label>
+            <input type="text" value={s.bankName} onChange={e => setS(p => ({ ...p, bankName: e.target.value }))} className={ic} placeholder="e.g. HDFC Bank" />
+          </div>
+          <div className="space-y-1.5">
+            <label className={lc}>Branch Name</label>
+            <input type="text" value={s.bankBranch} onChange={e => setS(p => ({ ...p, bankBranch: e.target.value }))} className={ic} placeholder="e.g. Connaught Place, New Delhi" />
+          </div>
+          <div className="space-y-1.5">
+            <label className={lc}>UPI ID</label>
+            <input type="text" value={s.upiId} onChange={e => setS(p => ({ ...p, upiId: e.target.value }))} className={ic} placeholder="e.g. hotel@hdfcbank" />
+          </div>
+        </div>
+
+        {/* Razorpay Credentials */}
+        <div className="border-t border-border pt-5 space-y-4">
+          <div>
+            <h4 className="text-sm font-semibold text-white">Razorpay Credentials</h4>
+            <p className="text-xs text-text-secondary mt-0.5">
+              Add your hotel&apos;s own Razorpay keys so payments go directly to your account.
+              Leave blank to use the platform default.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className={lc}>Razorpay Key ID</label>
+              <input type="text" value={s.razorpayKeyId} onChange={e => setS(p => ({ ...p, razorpayKeyId: e.target.value }))} className={ic} placeholder="rzp_live_xxxxxxxxxxxx" />
+            </div>
+            <div className="space-y-1.5">
+              <label className={lc}>Razorpay Key Secret</label>
+              <div className="relative">
+                <input
+                  type={showSecret ? 'text' : 'password'}
+                  value={razorpayKeySecret}
+                  onChange={e => setRazorpayKeySecret(e.target.value)}
+                  className={cn(ic, 'pr-10')}
+                  placeholder={s.razorpayKeyId ? '••••••••••••••••' : 'Enter secret key'}
+                />
+                <button onClick={() => setShowSecret(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-white transition-colors">
+                  {showSecret ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Live Preview ── */}
+      <div className="bg-surface border border-border rounded-2xl p-6">
+        <h3 className="text-base font-semibold text-white mb-4">Live Preview — ₹5,000 room charge</h3>
+        <div className="space-y-2 text-sm">
+          <div className="flex justify-between text-text-secondary"><span>Room Charges</span><span>₹{base.toLocaleString('en-IN')}</span></div>
+          {gst > 0 && <div className="flex justify-between text-text-secondary"><span>GST ({s.gstPercent}%)</span><span>+₹{gst.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span></div>}
+          {sc > 0 && <div className="flex justify-between text-text-secondary"><span>Service Charge ({s.serviceChargePercent}%)</span><span>+₹{sc.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span></div>}
+          {lt > 0 && <div className="flex justify-between text-text-secondary"><span>Luxury Tax ({s.luxuryTaxPercent}%)</span><span>+₹{lt.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span></div>}
+          <div className="flex justify-between text-text-secondary border-t border-border pt-2"><span>Subtotal</span><span>₹{total.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span></div>
+          {disc > 0 && <div className="flex justify-between text-emerald-400"><span>{s.discountLabel} ({s.defaultDiscountPercent}%)</span><span>-₹{disc.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span></div>}
+          <div className="flex justify-between text-white font-bold border-t border-border pt-2"><span>Guest Pays</span><span>₹{final.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span></div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Subscription Component ──────────────────────────────────────────────────
+// Map legacy plan names to new ones (for properties that still have old plan in DB)
+const LEGACY_PLAN_MAP: Record<string, string> = {
+  GOLD: 'BASE', PLATINUM: 'STARTER', DIAMOND: 'STANDARD',
+}
+
+const PLAN_ORDER = ['BASE', 'STARTER', 'STANDARD', 'ENTERPRISE']
+
+function SubscriptionView({ propertyId, currentPlan, onUpgrade }: {
+  propertyId: string | null | undefined
+  currentPlan: string
+  onUpgrade: (plan: PlanDef) => void
+}) {
+  const [plans, setPlans] = useState<PlanDef[]>([])
+  const [loading, setLoading] = useState(true)
+
+  const loadPlans = () => {
+    setLoading(true)
+    fetch('/api/admin/subscription-plans')
+      .then(r => r.json())
+      .then(j => { if (j.success && j.data) setPlans(j.data) })
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }
+
+  useEffect(() => { loadPlans() }, [])
+
+  if (loading) return (
+    <div className="flex items-center justify-center h-48">
+      <Loader2 className="w-6 h-6 animate-spin text-primary" />
+    </div>
+  )
+
+  const normalizedPlan = LEGACY_PLAN_MAP[currentPlan] ?? currentPlan
+  // Sort plans in correct order
+  const sortedPlans = [...plans].sort((a, b) => {
+    const ai = PLAN_ORDER.indexOf(a.plan)
+    const bi = PLAN_ORDER.indexOf(b.plan)
+    return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi)
+  })
+  const activePlan = sortedPlans.find(p => p.plan === normalizedPlan) ?? sortedPlans[0]
+
+  return (
+    <div className="space-y-6">
+      {/* Current plan banner */}
+      {activePlan && (
+        <div className="bg-primary/10 border border-primary/30 rounded-2xl p-5 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            {(() => { const Icon = PLAN_ICONS[activePlan.plan] ?? Star; return <Icon className={cn('w-5 h-5', PLAN_COLORS[activePlan.plan] ?? 'text-primary')} /> })()}
+            <div>
+              <p className="text-[10px] font-semibold text-text-secondary uppercase tracking-wider">Current Plan</p>
+              <p className="text-base font-bold text-white">{activePlan.displayName ?? activePlan.plan}</p>
+              {activePlan.tagline && <p className="text-xs text-text-secondary mt-0.5">{activePlan.tagline}</p>}
+            </div>
+          </div>
+          <div className="text-right">
+            {activePlan.plan !== 'ENTERPRISE' ? (
+              <div>
+                <p className="text-lg font-bold text-white">
+                  ₹{(activePlan.discountedPrice ?? 0).toLocaleString('en-IN')}
+                  <span className="text-xs text-text-tertiary font-normal">/mo</span>
+                </p>
+                {(activePlan.maxRooms ?? 0) > 0 && (
+                  <p className="text-xs text-text-secondary mt-0.5">Up to {activePlan.maxRooms} rooms</p>
+                )}
+              </div>
+            ) : (
+              <p className="text-sm font-bold text-white">Custom Pricing</p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Plans grid */}
+      {sortedPlans.length === 0 ? (
+        <div className="text-center py-12 bg-surface border border-border rounded-2xl">
+          <ShieldAlert className="w-8 h-8 mx-auto mb-3 text-text-tertiary opacity-40" />
+          <p className="text-sm text-text-tertiary mb-3">No plans loaded.</p>
+          <button onClick={loadPlans} className="text-xs text-primary hover:underline font-medium">Retry</button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {sortedPlans.map(plan => {
+            const Icon = PLAN_ICONS[plan.plan] ?? Star
+            const isActive = plan.plan === normalizedPlan
+            const origPrice = plan.originalPrice ?? 0
+            const discPrice = plan.discountedPrice ?? 0
+            const savings = origPrice - discPrice
+            const discPct = plan.discountPercent ?? 0
+            const features: string[] = plan.features ?? []
+
+            return (
+              <div key={plan.plan} className={cn(
+                'relative flex flex-col border rounded-2xl p-5 transition-all',
+                isActive
+                  ? 'bg-primary/10 border-primary/40 ring-1 ring-primary/20'
+                  : 'bg-surface border-border hover:border-primary/30'
+              )}>
+                {isActive && (
+                  <span className="absolute top-3 right-3 text-[10px] font-bold bg-primary text-white px-2 py-0.5 rounded-full uppercase tracking-wider">
+                    Active
+                  </span>
+                )}
+
+                {/* Header */}
+                <div className="flex items-start gap-3 mb-4">
+                  <div className={cn(
+                    'w-9 h-9 rounded-xl flex items-center justify-center shrink-0',
+                    isActive ? 'bg-primary/20' : 'bg-surface-light'
+                  )}>
+                    <Icon className={cn('w-4 h-4', PLAN_COLORS[plan.plan] ?? 'text-primary')} />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-white">{plan.displayName ?? plan.plan}</h4>
+                    {plan.tagline && <p className="text-[11px] text-text-secondary mt-0.5 leading-relaxed">{plan.tagline}</p>}
+                  </div>
+                </div>
+
+                {/* Pricing */}
+                {plan.plan !== 'ENTERPRISE' ? (
+                  <div className="mb-4">
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-2xl font-bold text-white">₹{discPrice.toLocaleString('en-IN')}</span>
+                      <span className="text-xs text-text-tertiary">/-month</span>
+                    </div>
+                    {savings > 0 && (
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-xs text-text-tertiary line-through">₹{origPrice.toLocaleString('en-IN')}</span>
+                        {discPct > 0 && (
+                          <span className="text-[10px] font-bold text-emerald-400 bg-emerald-400/10 px-1.5 py-0.5 rounded">
+                            {discPct}% OFF
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="mb-4">
+                    <p className="text-lg font-bold text-white">Custom Pricing</p>
+                    <p className="text-xs text-text-secondary mt-0.5">Contact us for a tailored quote</p>
+                  </div>
+                )}
+
+                {/* Limits */}
+                <div className="flex items-center gap-4 mb-4 text-xs text-text-secondary">
+                  <span className="flex items-center gap-1.5">
+                    <BedDouble className="w-3.5 h-3.5 shrink-0" />
+                    {(plan.maxRooms ?? 0) === 0 ? 'Unlimited rooms' : `Up to ${plan.maxRooms} rooms`}
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <Users className="w-3.5 h-3.5 shrink-0" />
+                    {(plan.maxStaff ?? 0) === 0 ? 'Unlimited staff' : `Up to ${plan.maxStaff} staff`}
+                  </span>
+                </div>
+
+                {/* Features */}
+                <div className="space-y-1.5 mb-5 flex-1">
+                  {features.map((f, i) => (
+                    <div key={i} className="flex items-start gap-2 text-[11px] text-text-secondary">
+                      <CheckCircle2 className={cn('w-3.5 h-3.5 shrink-0 mt-0.5', PLAN_COLORS[plan.plan] ?? 'text-primary')} />
+                      <span>{f}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* CTA */}
+                {isActive ? (
+                  <div className="flex items-center gap-2 text-xs text-primary font-semibold mt-auto">
+                    <Check className="w-4 h-4" /> Current Plan
+                  </div>
+                ) : plan.plan === 'ENTERPRISE' ? (
+                  <a
+                    href="mailto:sales@zenbourg.com"
+                    className="mt-auto block w-full text-center py-2.5 rounded-xl border border-purple-500/30 text-purple-400 text-xs font-semibold hover:bg-purple-500/10 transition-all"
+                  >
+                    Contact Sales
+                  </a>
+                ) : (
+                  <button
+                    onClick={() => onUpgrade(plan)}
+                    className="mt-auto w-full py-2.5 rounded-xl bg-primary text-white text-xs font-semibold hover:bg-primary/90 active:scale-95 transition-all"
+                  >
+                    Upgrade to {plan.displayName ?? plan.plan}
+                  </button>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── Main Settings Page ───────────────────────────────────────────────────────
+export default function SettingsPage() {
+  const { data: session } = useSession()
+  const [view, setView] = useState('OVERVIEW')
+  const [saving, setSaving] = useState(false)
+  const [hotelInfo, setHotelInfo] = useState<HotelInfo>({ name: '', description: '', address: '', phone: '', email: '', plan: 'BASE', features: [], planExpiresAt: null, ranking: 0 })
+  const [selectedRole, setSelectedRole] = useState('MANAGER')
+  const [permissions, setPermissions] = useState<Record<string, boolean>>({})
+  const [notif, setNotif] = useState({ smsAlerts: false, pushNotifications: true, emailAlerts: true, bookingConfirmation: true, checkoutReminder: true, serviceUpdates: true })
+  const [retention, setRetention] = useState({ guestProfiles: '3_YEARS', financials: '7_YEARS', serviceLogs: '1_YEAR', legalHoldMode: false })
+
+  const INTEGRATIONS = [
+    { id: 'booking_com', name: 'Booking.com',  type: 'OTA Channel',      status: 'NOT_CONNECTED' },
+    { id: 'expedia',     name: 'Expedia',       type: 'OTA Channel',      status: 'NOT_CONNECTED' },
+    { id: 'airbnb',      name: 'Airbnb',        type: 'Travel & Booking', status: 'NOT_CONNECTED' },
+    { id: 'makemytrip',  name: 'MakeMyTrip',    type: 'OTA Channel',      status: 'NOT_CONNECTED' },
+    { id: 'razorpay',    name: 'Razorpay',      type: 'Payment Gateway',  status: 'CONNECTED' },
+    { id: 'twilio',      name: 'Twilio',        type: 'SMS / WhatsApp',   status: 'CONNECTED' },
+  ]
+
+  const currentPropertyId = useMemo(() => session?.user?.role === 'SUPER_ADMIN' ? getAdminContext()?.propertyId : session?.user?.propertyId, [session])
+
+  const fetchProperty = useCallback(async () => {
+    if (!currentPropertyId || currentPropertyId === 'ALL') return
+    try {
+      const r = await fetch(`/api/admin/settings/property?propertyId=${currentPropertyId}`)
+      const d = await r.json()
+      if (d.success && d.property) setHotelInfo(d.property)
+    } catch { /* silent */ }
+  }, [currentPropertyId])
+
+  const fetchRoles = useCallback(async () => {
+    if (!currentPropertyId || currentPropertyId === 'ALL') return
+    try {
+      const r = await fetch(`/api/admin/settings/roles?propertyId=${currentPropertyId}`)
+      const d = await r.json()
+      if (d.success) {
+        const cur = (d.rolePermissions || []).find((rp: any) => rp.role === selectedRole)
+        setPermissions(cur?.permissions || {})
+      }
+    } catch { /* silent */ }
+  }, [currentPropertyId, selectedRole])
+
+  useEffect(() => { fetchProperty() }, [fetchProperty])
+  useEffect(() => { fetchRoles() }, [fetchRoles])
+
+  const saveBranding = async () => {
+    if (!currentPropertyId || currentPropertyId === 'ALL') { toast.error('Select a hotel first'); return }
+    setSaving(true)
+    try {
+      const r = await fetch('/api/admin/settings/property', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ propertyId: currentPropertyId, ...hotelInfo }) })
+      const d = await r.json()
+      if (d.success) toast.success('Hotel info saved')
+      else toast.error(d.error ?? 'Failed to save')
+    } catch { toast.error('Connection error') } finally { setSaving(false) }
+  }
+
+  const saveRoles = async () => {
+    if (!currentPropertyId || currentPropertyId === 'ALL') { toast.error('Select a hotel first'); return }
+    setSaving(true)
+    try {
+      const r = await fetch('/api/admin/settings/roles', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ propertyId: currentPropertyId, role: selectedRole, permissions }) })
+      const d = await r.json()
+      if (d.success) toast.success('Permissions saved')
+      else toast.error(d.error ?? 'Failed to save')
+    } catch { toast.error('Connection error') } finally { setSaving(false) }
+  }
+
+  const handleUpgrade = async (plan: PlanDef) => {
+    if (!currentPropertyId || currentPropertyId === 'ALL') { toast.error('Select a hotel first'); return }
+    setSaving(true)
+    try {
+      const oRes = await fetch('/api/admin/subscription/upgrade', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'CREATE_ORDER', planId: plan.plan, propertyId: currentPropertyId }) })
+      const oData = await oRes.json()
+      if (!oData.success) throw new Error(oData.error || 'Order failed')
+      const opts = {
+        key: oData.key, amount: oData.amount, currency: oData.currency,
+        name: 'Zenbourg', description: `Upgrade to ${plan.displayName}`, order_id: oData.orderId,
+        handler: async (resp: any) => {
+          try {
+            const vRes = await fetch('/api/admin/subscription/upgrade', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'VERIFY_PAYMENT', planId: plan.plan, propertyId: currentPropertyId, razorpayData: resp }) })
+            const vData = await vRes.json()
+            if (vData.success) { setHotelInfo(p => ({ ...p, plan: plan.plan })); toast.success(`Upgraded to ${plan.displayName}!`) }
+            else toast.error(vData.error ?? 'Verification failed')
+          } catch { toast.error('Verification error') } finally { setSaving(false) }
+        },
+        prefill: { name: session?.user?.name, email: session?.user?.email },
+        theme: { color: '#4A9EFF' }, modal: { ondismiss: () => setSaving(false) },
+      }
+      new (window as any).Razorpay(opts).open()
+    } catch (e: any) { toast.error(e.message || 'Upgrade failed'); setSaving(false) }
+  }
+
+  const ic = 'w-full bg-surface-light border border-border rounded-xl px-4 py-2.5 text-sm text-white focus:ring-1 focus:ring-primary outline-none transition-all'
+  const lc = 'text-xs font-semibold text-text-secondary block mb-1.5'
+
+  const renderView = () => {
+    if (view === 'BRANDING') return (
+      <div className="space-y-6">
+        <div className="bg-surface border border-border rounded-2xl p-6 space-y-5">
+          <div className="flex items-center justify-between">
+            <div><h3 className="text-base font-semibold text-white">Hotel Information</h3><p className="text-xs text-text-secondary mt-0.5">Update your hotel name, contact details and description</p></div>
+            <Button onClick={saveBranding} loading={saving} variant="primary" className="text-sm"><Save className="w-4 h-4 mr-2" />Save</Button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div><label className={lc}>Hotel Name</label><input value={hotelInfo.name} onChange={e => setHotelInfo(p => ({ ...p, name: e.target.value }))} className={ic} placeholder="e.g. Grand Palace Hotel" /></div>
+            <div><label className={lc}>Email</label><input type="email" value={hotelInfo.email} onChange={e => setHotelInfo(p => ({ ...p, email: e.target.value }))} className={ic} placeholder="admin@hotel.com" /></div>
+            <div><label className={lc}>Phone</label><input value={hotelInfo.phone} onChange={e => setHotelInfo(p => ({ ...p, phone: e.target.value }))} className={ic} placeholder="+91 98765 43210" /></div>
+            <div><label className={lc}>Address</label><input value={hotelInfo.address} onChange={e => setHotelInfo(p => ({ ...p, address: e.target.value }))} className={ic} placeholder="Street, City, State" /></div>
+          </div>
+          <div><label className={lc}>Description</label><textarea rows={3} value={hotelInfo.description} onChange={e => setHotelInfo(p => ({ ...p, description: e.target.value }))} className={cn(ic, 'resize-none')} placeholder="Brief description of your hotel..." /></div>
+        </div>
+      </div>
+    )
+
+    if (view === 'ROLES') return (
+      <div className="space-y-6">
+        <div className="bg-surface border border-border rounded-2xl p-6">
+          <div className="flex items-center justify-between mb-5">
+            <div><h3 className="text-base font-semibold text-white">Roles & Permissions</h3><p className="text-xs text-text-secondary mt-0.5">Control what each staff role can access</p></div>
+            <Button onClick={saveRoles} loading={saving} variant="primary" className="text-sm"><Save className="w-4 h-4 mr-2" />Save</Button>
+          </div>
+          <div className="flex gap-2 flex-wrap mb-6">
+            {ROLES.map(r => (
+              <button key={r.id} onClick={() => setSelectedRole(r.id)} className={cn('px-4 py-2 rounded-xl text-sm font-medium transition-all', selectedRole === r.id ? 'bg-primary text-white' : 'bg-surface-light text-text-secondary hover:text-white border border-border')}>
+                {r.label}
+              </button>
+            ))}
+          </div>
+          <div className="space-y-6">
+            {PERMISSIONS_SCHEMA.map(mod => (
+              <div key={mod.id}>
+                <p className="text-xs font-bold text-text-tertiary uppercase tracking-wider mb-3">{mod.label}</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {mod.permissions.map(perm => (
+                    <div key={perm.id} className="flex items-center justify-between p-4 bg-surface-light border border-border rounded-xl">
+                      <div><p className="text-sm font-medium text-white">{perm.label}</p><p className="text-xs text-text-secondary mt-0.5">{perm.desc}</p></div>
+                      <Switch checked={!!permissions[perm.id]} onChange={() => setPermissions(p => ({ ...p, [perm.id]: !p[perm.id] }))} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    )
+
+    if (view === 'FINANCIAL') return <FinancialView propertyId={currentPropertyId} />
+
+    if (view === 'OPS') return (
+      <div className="space-y-6">
+        <div className="bg-surface border border-border rounded-2xl p-6 space-y-5">
+          <div><h3 className="text-base font-semibold text-white">Notification Settings</h3><p className="text-xs text-text-secondary mt-0.5">Control which alerts are sent to staff and guests</p></div>
+          <div className="space-y-3">
+            {[
+              { id: 'smsAlerts',           label: 'SMS Alerts',              desc: 'Send SMS for bookings and service updates' },
+              { id: 'pushNotifications',   label: 'Push Notifications',      desc: 'In-app push alerts for staff' },
+              { id: 'emailAlerts',         label: 'Email Alerts',            desc: 'Email notifications for important events' },
+              { id: 'bookingConfirmation', label: 'Booking Confirmation',    desc: 'Auto-send confirmation to guests on booking' },
+              { id: 'checkoutReminder',    label: 'Checkout Reminder',       desc: 'Remind guests 1 hour before checkout' },
+              { id: 'serviceUpdates',      label: 'Service Request Updates', desc: 'Notify guests when their request is completed' },
+            ].map(n => (
+              <div key={n.id} className="flex items-center justify-between p-4 bg-surface-light border border-border rounded-xl">
+                <div><p className="text-sm font-medium text-white">{n.label}</p><p className="text-xs text-text-secondary mt-0.5">{n.desc}</p></div>
+                <Switch checked={!!(notif as any)[n.id]} onChange={() => setNotif(p => ({ ...p, [n.id]: !(p as any)[n.id] }))} />
+              </div>
+            ))}
+          </div>
+          <Button onClick={() => toast.success('Notification settings saved')} variant="primary" className="text-sm"><Save className="w-4 h-4 mr-2" />Save Settings</Button>
+        </div>
+      </div>
+    )
+
+    if (view === 'SUBSCRIPTION') return (
+      <SubscriptionView propertyId={currentPropertyId} currentPlan={hotelInfo.plan} onUpgrade={handleUpgrade} />
+    )
+
+    if (view === 'INTEGRATIONS') return (
+      <div className="space-y-6">
+        <div className="bg-surface border border-border rounded-2xl p-6 space-y-4">
+          <div><h3 className="text-base font-semibold text-white">Integrations & Channels</h3><p className="text-xs text-text-secondary mt-0.5">Connect OTA channels, payment gateways and communication tools</p></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {INTEGRATIONS.map(intg => (
+              <div key={intg.id} className="flex items-center justify-between p-4 bg-surface-light border border-border rounded-xl">
+                <div><p className="text-sm font-semibold text-white">{intg.name}</p><p className="text-xs text-text-secondary mt-0.5">{intg.type}</p></div>
+                <div className="flex items-center gap-3">
+                  <span className={cn('text-xs font-semibold px-2.5 py-1 rounded-full', intg.status === 'CONNECTED' ? 'bg-emerald-500/15 text-emerald-400' : 'bg-surface text-text-tertiary border border-border')}>
+                    {intg.status === 'CONNECTED' ? 'Connected' : 'Not Connected'}
+                  </span>
+                  <button className="text-xs text-primary hover:underline font-medium">{intg.status === 'CONNECTED' ? 'Manage' : 'Connect'}</button>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4">
+            <p className="text-xs text-amber-400 font-medium">OTA channel sync requires the Standard or Enterprise plan. Contact support to enable.</p>
+          </div>
+        </div>
+      </div>
+    )
+
+    if (view === 'RETENTION') return (
+      <div className="space-y-6">
+        <div className="bg-surface border border-border rounded-2xl p-6 space-y-5">
+          <div><h3 className="text-base font-semibold text-white">Data Retention</h3><p className="text-xs text-text-secondary mt-0.5">Configure how long different types of data are stored</p></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div><label className={lc}>Guest Profiles</label><select value={retention.guestProfiles} onChange={e => setRetention(p => ({ ...p, guestProfiles: e.target.value }))} className={cn(ic, 'appearance-none cursor-pointer')}><option value="1_YEAR">1 Year</option><option value="3_YEARS">3 Years</option><option value="5_YEARS">5 Years</option><option value="FOREVER">Forever</option></select></div>
+            <div><label className={lc}>Financial Records</label><select value={retention.financials} onChange={e => setRetention(p => ({ ...p, financials: e.target.value }))} className={cn(ic, 'appearance-none cursor-pointer')}><option value="3_YEARS">3 Years</option><option value="5_YEARS">5 Years</option><option value="7_YEARS">7 Years</option><option value="FOREVER">Forever</option></select></div>
+            <div><label className={lc}>Service Logs</label><select value={retention.serviceLogs} onChange={e => setRetention(p => ({ ...p, serviceLogs: e.target.value }))} className={cn(ic, 'appearance-none cursor-pointer')}><option value="30_DAYS">30 Days</option><option value="90_DAYS">90 Days</option><option value="1_YEAR">1 Year</option><option value="3_YEARS">3 Years</option></select></div>
+          </div>
+          <div className="flex items-center justify-between p-4 bg-surface-light border border-border rounded-xl">
+            <div><p className="text-sm font-medium text-white">Legal Hold Mode</p><p className="text-xs text-text-secondary mt-0.5">Prevent deletion of any data (for compliance/audit)</p></div>
+            <Switch checked={retention.legalHoldMode} onChange={() => setRetention(p => ({ ...p, legalHoldMode: !p.legalHoldMode }))} />
+          </div>
+          <Button onClick={() => toast.success('Retention settings saved')} variant="primary" className="text-sm"><Save className="w-4 h-4 mr-2" />Save Settings</Button>
+        </div>
+      </div>
     )
 
     return (
-        <div className="min-h-screen bg-[#06080C] text-slate-400 font-sans selection:bg-blue-500/30">
-            {/* ── DYNAMIC BACKGROUND ── */}
-            <div className="fixed inset-0 pointer-events-none">
-                <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-blue-600/5 blur-[150px] rounded-full -translate-y-1/2 translate-x-1/2" />
-                <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-indigo-600/5 blur-[100px] rounded-full translate-y-1/2 -translate-x-1/2" />
-                <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {NAV.map(item => (
+          <button key={item.id} onClick={() => setView(item.id.toUpperCase())}
+            className="group p-5 bg-surface border border-border rounded-2xl text-left hover:border-primary/40 hover:bg-surface-light transition-all">
+            <div className="flex items-start justify-between mb-4">
+              <div className="w-10 h-10 rounded-xl bg-surface-light border border-border flex items-center justify-center text-text-secondary group-hover:text-primary group-hover:border-primary/30 transition-all">
+                <item.icon className="w-5 h-5" />
+              </div>
+              <ChevronRight className="w-4 h-4 text-text-tertiary group-hover:text-primary transition-all group-hover:translate-x-0.5" />
             </div>
-
-            {/* ── HEADER ── */}
-            <div className="relative sticky top-0 z-30 bg-[#06080C]/80 backdrop-blur-xl border-b border-white/5">
-                <div className="max-w-[1600px] mx-auto px-6 md:px-10 h-24 flex items-center justify-between">
-                    <div className="flex items-center gap-6">
-                        {view !== 'OVERVIEW' && (
-                            <button 
-                                onClick={() => setView('OVERVIEW')}
-                                className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all active:scale-90"
-                            >
-                                <ChevronLeft className="w-5 h-5 text-white" />
-                            </button>
-                        )}
-                        <div>
-                            <div className="flex items-center gap-2 mb-1.5">
-                                <span className="text-[10px] font-black text-blue-500 uppercase tracking-[0.3em]">Command Terminal</span>
-                                <div className="w-1 h-1 rounded-full bg-slate-700" />
-                                <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">{view}</span>
-                            </div>
-                            <h1 className="text-2xl font-black text-white tracking-tighter uppercase italic leading-none">
-                                {view === 'OVERVIEW' ? 'System Settings' : view}
-                            </h1>
-                        </div>
-                    </div>
-
-                    <div className="flex items-center gap-4">
-                        <button
-                            onClick={handleSave}
-                            disabled={saving || view === 'OVERVIEW'}
-                            className={cn(
-                                "h-12 px-8 rounded-2xl flex items-center gap-3 text-[11px] font-black uppercase tracking-[0.2em] transition-all active:scale-95 disabled:opacity-50",
-                                view === 'OVERVIEW' ? "bg-white/5 text-slate-600 border border-white/5 cursor-not-allowed" : "bg-blue-600 text-white shadow-xl shadow-blue-600/10 hover:bg-blue-500"
-                            )}
-                        >
-                            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                            <span className="hidden sm:inline">Synchronize Ledger</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            {/* ── MAIN CONTAINER ── */}
-            <div className="relative max-w-[1600px] mx-auto px-4 md:px-10 py-6 md:py-16">
-                
-                {/* ── BREADCRUMBS & OVERVIEW SEARCH ── */}
-                {view === 'OVERVIEW' && (
-                    <div className="mb-8 md:mb-16 space-y-6 md:space-y-10">
-                        <div className="relative group w-full">
-                            <div className="absolute -inset-1 bg-gradient-to-r from-blue-600/20 to-indigo-600/20 rounded-[20px] md:rounded-[32px] blur opacity-0 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
-                            <div className="relative">
-                                <Search className="absolute left-5 md:left-7 top-1/2 -translate-y-1/2 w-5 h-5 md:w-6 md:h-6 text-slate-600" />
-                                <input 
-                                    type="text" 
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    placeholder="Search protocols..."
-                                    className="w-full bg-[#0B0F17] border border-white/5 rounded-[20px] md:rounded-[28px] pl-14 md:pl-16 pr-6 md:pr-10 py-5 md:py-7 text-sm md:text-lg text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/40 transition-all shadow-2xl"
-                                />
-                            </div>
-                        </div>
-
-                        {/* Quick Stats Grid */}
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                            {[
-                                { label: 'Uptime', value: '99.98%', icon: Activity, color: 'text-emerald-500' },
-                                { label: 'Latency', value: '42ms', icon: Zap, color: 'text-blue-500' },
-                                { label: 'Security', value: 'AES-256', icon: ShieldCheck, color: 'text-indigo-500' },
-                                { label: 'Sync', value: 'Ready', icon: RefreshCw, color: 'text-amber-500' },
-                            ].map((s, i) => (
-                                <div key={i} className="p-4 md:p-6 bg-white/[0.02] border border-white/5 rounded-2xl md:rounded-3xl hover:bg-white/[0.04] transition-all">
-                                    <div className="flex items-center gap-2 md:gap-3 mb-2 md:mb-3">
-                                        <div className={cn("p-1.5 rounded-lg bg-black/40", s.color)}>
-                                            <s.icon className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                                        </div>
-                                        <span className="text-[8px] md:text-[10px] font-bold text-slate-500 uppercase tracking-widest">{s.label}</span>
-                                    </div>
-                                    <div className="text-lg md:text-2xl font-black text-white italic tracking-tighter">{s.value}</div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
-
-                {/* ── VIEWS ── */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-10">
-                    
-                    {/* LEFT CONTENT (8/12) */}
-                    <div className="order-2 lg:order-1 lg:col-span-8 flex flex-col gap-6 md:gap-10">
-                        {view === 'OVERVIEW' ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                                {filteredConfig.map((item) => (
-                                    <button 
-                                        key={item.id}
-                                        onClick={() => {
-                                            if (item.id === 'branding') setView('BRANDING')
-                                            else if (item.id === 'roles') setView('ROLES')
-                                            else if (item.id === 'financial') setView('PAYMENT')
-                                            else if (item.id === 'ops') setView('OPS')
-                                            else if (item.id === 'subscription') setView('SUBSCRIPTION')
-                                        }}
-                                        className="group p-8 bg-[#0B0F17] border border-white/5 rounded-[32px] text-left hover:bg-white/[0.04] hover:border-blue-500/20 transition-all shadow-2xl relative overflow-hidden"
-                                    >
-                                        <div className="flex items-start justify-between mb-10">
-                                            <div className="w-16 h-16 rounded-2xl bg-black border border-white/5 flex items-center justify-center text-slate-500 group-hover:text-blue-500 group-hover:border-blue-500/20 transition-all shadow-inner">
-                                                <item.icon className="w-8 h-8" />
-                                            </div>
-                                            <div className="w-10 h-10 rounded-full flex items-center justify-center bg-white/5 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0">
-                                                <ChevronRight className="w-5 h-5 text-white" />
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <h3 className="text-xl font-black text-white uppercase italic tracking-tight mb-2">{item.label}</h3>
-                                            <p className="text-sm text-slate-500 font-medium leading-relaxed">{item.desc}</p>
-                                        </div>
-                                        <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-blue-500/5 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
-                                    </button>
-                                ))}
-
-                                {/* Infrastructure Section Header */}
-                                <div className="col-span-full mt-10 mb-2">
-                                    <div className="flex items-center gap-4">
-                                        <span className="text-[10px] font-black text-slate-600 uppercase tracking-[0.4em]">Core Infrastructure</span>
-                                        <div className="h-px flex-1 bg-white/5" />
-                                    </div>
-                                </div>
-
-                                {SYSTEM_DATA.map((item) => (
-                                    <button 
-                                        key={item.id}
-                                        onClick={() => {
-                                            if (item.id === 'retention') setView('RETENTION')
-                                            else if (item.id === 'integrations') setView('INTEGRATIONS')
-                                        }}
-                                        className="group p-6 bg-[#0B0F17] border border-white/5 rounded-[24px] text-left hover:bg-white/[0.02] hover:border-white/10 transition-all flex items-center gap-6"
-                                    >
-                                        <div className="w-12 h-12 rounded-xl bg-black border border-white/5 flex items-center justify-center text-slate-600 group-hover:text-blue-400 transition-all shrink-0">
-                                            <item.icon className="w-6 h-6" />
-                                        </div>
-                                        <div>
-                                            <h4 className="text-sm font-black text-white uppercase italic tracking-widest">{item.label}</h4>
-                                            <p className="text-[11px] text-slate-500 font-bold mt-0.5">{item.desc}</p>
-                                        </div>
-                                        <ChevronRight className="w-4 h-4 text-slate-800 ml-auto group-hover:text-white transition-all transform group-hover:translate-x-1" />
-                                    </button>
-                                ))}
-                            </div>
-                        ) : view === 'ROLES' ? (
-                            <div className="flex flex-col gap-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                <div className="bg-[#0B0F17] border border-white/5 rounded-[40px] p-8 md:p-12 shadow-3xl">
-                                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-14 h-14 rounded-2xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-500">
-                                                <Shield className="w-7 h-7" />
-                                            </div>
-                                            <div>
-                                                <h2 className="text-2xl font-black text-white italic tracking-tighter uppercase">{selectedRole} Matrix</h2>
-                                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Permission Level Protocol</p>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-3">
-                                            <button 
-                                                onClick={() => setIsAddRoleModalOpen(true)}
-                                                className="h-12 px-6 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-[11px] font-black uppercase tracking-widest text-white transition-all"
-                                            >
-                                                Initialize New Role
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-12">
-                                        {PERMISSIONS_SCHEMA.map(module => (
-                                            <div key={module.id} className="space-y-6">
-                                                <div className="flex items-center gap-4">
-                                                    <h4 className="text-[11px] font-black text-blue-500/60 uppercase tracking-[0.4em] italic">{module.label} Core</h4>
-                                                    <div className="h-px flex-1 bg-white/5" />
-                                                </div>
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                    {(module.permissions || []).map(perm => (
-                                                        <div key={perm.id} className="group p-5 bg-black/40 border border-white/5 rounded-3xl flex items-center justify-between hover:border-white/10 transition-all">
-                                                            <div className="flex items-start gap-4">
-                                                                <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-slate-600 group-hover:text-blue-500 transition-colors shrink-0">
-                                                                    <module.icon className="w-5 h-5" />
-                                                                </div>
-                                                                <div className="space-y-1">
-                                                                    <p className="text-sm font-black text-white uppercase italic tracking-tight">{perm.label}</p>
-                                                                    <p className="text-[11px] text-slate-600 font-bold leading-tight">{perm.description}</p>
-                                                                </div>
-                                                            </div>
-                                                            <Switch 
-                                                                checked={!!(permissions || {})[perm.id]} 
-                                                                onChange={() => handleTogglePermission(perm.id)} 
-                                                            />
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                        ) : view === 'BRANDING' ? (
-                            <div className="flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                <div className="bg-[#0B0F17] border border-white/5 rounded-[40px] p-8 md:p-12 shadow-3xl space-y-12">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500">
-                                                <Building2 className="w-7 h-7" />
-                                            </div>
-                                            <div>
-                                                <h2 className="text-2xl font-black text-white italic tracking-tighter uppercase">Identity Profile</h2>
-                                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Institutional Branding Protocols</p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                        <div className="space-y-3">
-                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Institutional Name</label>
-                                            <input 
-                                                value={hotelInfo.name} 
-                                                onChange={e => setHotelInfo({...hotelInfo, name: e.target.value})}
-                                                className="w-full bg-black/40 border border-white/5 rounded-2xl p-5 text-white font-bold focus:border-blue-500/40 outline-none transition-all placeholder:text-slate-800"
-                                                placeholder="e.g. Zenbourg Grand Palace"
-                                            />
-                                        </div>
-                                        <div className="space-y-3">
-                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Administrative Email</label>
-                                            <input 
-                                                type="email"
-                                                value={hotelInfo.email} 
-                                                onChange={e => setHotelInfo({...hotelInfo, email: e.target.value})}
-                                                className="w-full bg-black/40 border border-white/5 rounded-2xl p-5 text-white font-bold focus:border-blue-500/40 outline-none transition-all placeholder:text-slate-800"
-                                                placeholder="admin@zenbourg.com"
-                                            />
-                                        </div>
-                                        <div className="space-y-3">
-                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Contact Handshake</label>
-                                            <input 
-                                                value={hotelInfo.phone} 
-                                                onChange={e => setHotelInfo({...hotelInfo, phone: e.target.value})}
-                                                className="w-full bg-black/40 border border-white/5 rounded-2xl p-5 text-white font-bold focus:border-blue-500/40 outline-none transition-all placeholder:text-slate-800"
-                                                placeholder="+91 0000 0000 00"
-                                            />
-                                        </div>
-                                        <div className="space-y-3">
-                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Geographic Coordinates</label>
-                                            <input 
-                                                value={hotelInfo.address} 
-                                                onChange={e => setHotelInfo({...hotelInfo, address: e.target.value})}
-                                                className="w-full bg-black/40 border border-white/5 rounded-2xl p-5 text-white font-bold focus:border-blue-500/40 outline-none transition-all placeholder:text-slate-800"
-                                                placeholder="Street, City, HQ"
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="space-y-3">
-                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Executive Summary</label>
-                                        <textarea 
-                                            rows={4}
-                                            value={hotelInfo.description} 
-                                            onChange={e => setHotelInfo({...hotelInfo, description: e.target.value})}
-                                            className="w-full bg-black/40 border border-white/5 rounded-2xl p-6 text-white font-bold focus:border-blue-500/40 outline-none transition-all placeholder:text-slate-800 resize-none"
-                                            placeholder="Brief institutional overview..."
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        ) : view === 'PAYMENT' ? (
-                            <div className="flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                <div className="bg-[#0B0F17] border border-white/5 rounded-[40px] p-8 md:p-12 shadow-3xl space-y-12">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500">
-                                            <IndianRupee className="w-7 h-7" />
-                                        </div>
-                                        <div>
-                                            <h2 className="text-2xl font-black text-white italic tracking-tighter uppercase">Financial Ledger</h2>
-                                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Ledger Distribution & Tax Rules</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                                        <div className="space-y-4">
-                                            <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest ml-1">Global Currency Unit</label>
-                                            <div className="relative">
-                                                <select 
-                                                    value={paymentSettings.baseCurrency} 
-                                                    onChange={e => setPaymentSettings({...paymentSettings, baseCurrency: e.target.value})} 
-                                                    className="w-full bg-black border border-white/5 rounded-2xl p-5 text-white font-black appearance-none cursor-pointer focus:border-blue-500/40 transition-all outline-none"
-                                                >
-                                                    <option value="INR">INR - Indian Rupee (Primary)</option>
-                                                    <option value="USD">USD - United States Dollar</option>
-                                                    <option value="EUR">EUR - Euro Matrix</option>
-                                                    <option value="GBP">GBP - British Pound</option>
-                                                </select>
-                                                <ChevronLeft className="w-5 h-5 text-slate-700 absolute right-5 top-1/2 -translate-y-1/2 -rotate-90 pointer-events-none" />
-                                            </div>
-                                        </div>
-                                        <div className="space-y-4">
-                                            <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest ml-1">Universal Tax Threshold (%)</label>
-                                            <input 
-                                                type="number" 
-                                                value={paymentSettings.taxRate} 
-                                                onChange={e => setPaymentSettings({...paymentSettings, taxRate: parseFloat(e.target.value)})}
-                                                className="w-full bg-black border border-white/5 rounded-2xl p-5 text-white font-black focus:border-blue-500/40 outline-none transition-all"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-6">
-                                        <h3 className="text-[10px] font-black text-slate-600 uppercase tracking-[0.4em] italic">Active Gateways</h3>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            {(paymentSettings.gateways || []).map(gw => (
-                                                <div key={gw.id} className="p-6 bg-black/40 border border-white/5 rounded-[28px] flex items-center justify-between group">
-                                                    <div className="flex items-center gap-5">
-                                                        <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-white/40 group-hover:text-white transition-all">
-                                                            <CreditCard className="w-6 h-6" />
-                                                        </div>
-                                                        <div>
-                                                            <p className="text-sm font-black text-white uppercase italic tracking-tight">{gw.id}</p>
-                                                            <p className="text-[10px] text-slate-600 font-bold uppercase tracking-widest">{gw.status === 'CONNECTED' ? 'Live Link Active' : 'Not Configured'}</p>
-                                                        </div>
-                                                    </div>
-                                                    <div className={cn(
-                                                        "w-3 h-3 rounded-full",
-                                                        gw.status === 'CONNECTED' ? 'bg-emerald-500 shadow-[0_0_12px_#10b981]' : 'bg-slate-800'
-                                                    )} />
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        ) : view === 'OPS' ? (
-                            <div className="flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                <div className="bg-[#0B0F17] border border-white/5 rounded-[40px] p-8 md:p-12 shadow-3xl space-y-12">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-14 h-14 rounded-2xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-500">
-                                            <Smartphone className="w-7 h-7" />
-                                        </div>
-                                        <div>
-                                            <h2 className="text-2xl font-black text-white italic tracking-tighter uppercase">Operational Protocols</h2>
-                                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Notification & Automation Matrix</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-10">
-                                        <div className="space-y-6">
-                                            <h4 className="text-[11px] font-black text-slate-600 uppercase tracking-[0.4em] italic">Alert Distribution</h4>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                {[
-                                                    { id: 'smsAlerts', label: 'SMS Gateway Enabled', icon: Bell },
-                                                    { id: 'pushNotifications', label: 'Push Protocol Enabled', icon: Zap },
-                                                    { id: 'slackLogs', label: 'Slack Webhook Sync', icon: Database },
-                                                ].map(n => (
-                                                    <div key={n.id} className="p-6 bg-black/40 border border-white/5 rounded-3xl flex items-center justify-between group hover:border-white/10 transition-all">
-                                                        <div className="flex items-center gap-4">
-                                                            <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-slate-600 group-hover:text-blue-500 transition-colors">
-                                                                <n.icon className="w-5 h-5" />
-                                                            </div>
-                                                            <span className="text-sm font-black text-white uppercase italic tracking-tight">{n.label}</span>
-                                                        </div>
-                                                        <Switch 
-                                                            checked={!!(opsSettings.notifications as any)[n.id]} 
-                                                            onChange={() => setOpsSettings({
-                                                                ...opsSettings, 
-                                                                notifications: { ...opsSettings.notifications, [n.id]: !(opsSettings.notifications as any)[n.id] }
-                                                            })} 
-                                                        />
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        ) : view === 'SUBSCRIPTION' ? (
-                            <div className="flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                <div className="bg-[#0B0F17] border border-white/5 rounded-[40px] p-8 md:p-12 shadow-3xl space-y-12">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-500">
-                                                <Sparkles className="w-7 h-7" />
-                                            </div>
-                                            <div>
-                                                <h2 className="text-2xl font-black text-white italic tracking-tighter uppercase">Plan Ecosystem</h2>
-                                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Current License & Feature Access</p>
-                                            </div>
-                                        </div>
-                                        <Badge variant="blue" className="px-5 py-2 text-[10px] font-black uppercase tracking-[0.2em] italic">{hotelInfo.plan || 'No Plan'}</Badge>
-                                    </div>
-
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                                        <div className="p-8 bg-black/40 border border-white/5 rounded-[32px] space-y-4">
-                                            <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Renewal Date</p>
-                                            <div className="flex items-center gap-4">
-                                                <Calendar className="w-8 h-8 text-blue-500" />
-                                                <span className="text-2xl font-black text-white italic tracking-tighter uppercase">{hotelInfo.planExpiresAt || 'Perpetual'}</span>
-                                            </div>
-                                        </div>
-                                        <div className="p-8 bg-black/40 border border-white/5 rounded-[32px] space-y-4">
-                                            <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Protocol Version</p>
-                                            <div className="flex items-center gap-4">
-                                                <Cpu className="w-8 h-8 text-emerald-500" />
-                                                <span className="text-2xl font-black text-white italic tracking-tighter uppercase">Zenbourg v2.4</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-6">
-                                        <h4 className="text-[11px] font-black text-slate-600 uppercase tracking-[0.4em] italic">Active Feature Modules</h4>
-                                        <div className="grid grid-cols-1 gap-4">
-                                            {(hotelInfo.features || []).length > 0 ? (hotelInfo.features || []).map(f => (
-                                                <div key={f} className="flex items-center gap-4 p-4 bg-[#0B0F17] border border-white/5 rounded-2xl group hover:border-blue-500/20 transition-all">
-                                                    <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-500">
-                                                        <Check className="w-4 h-4" />
-                                                    </div>
-                                                    <span className="text-[13px] font-bold text-slate-400 group-hover:text-white transition-colors">{f.replace(/_/g, ' ')}</span>
-                                                </div>
-                                            )) : (
-                                                <div className="py-8 text-center bg-white/[0.01] border border-dashed border-white/5 rounded-2xl">
-                                                    <p className="text-[11px] font-bold text-slate-600 uppercase tracking-widest">No Premium Protocols Active</p>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        ) : null}
-
-                    </div>
-
-                    {/* RIGHT SIDEBAR (4/12) */}
-                    <div className="order-1 lg:order-2 lg:col-span-4 flex flex-col gap-6 md:gap-8">
-                        {/* ROLES SELECTOR SIDEBAR */}
-                        {view === 'ROLES' ? (
-                            <div className="bg-[#0B0F17] border border-white/5 rounded-[40px] p-8 shadow-3xl">
-                                <h3 className="text-[11px] font-black text-slate-500 uppercase tracking-[0.3em] mb-8">Access Hierarchy</h3>
-                                <div className="space-y-3">
-                                    {ALL_ROLES_DATA.map(role => (
-                                        <button 
-                                            key={role.id}
-                                            onClick={() => setSelectedRole(role.id)}
-                                            className={cn(
-                                                "w-full text-left p-6 rounded-[24px] border transition-all flex items-center justify-between group",
-                                                selectedRole === role.id 
-                                                    ? "bg-blue-600/10 border-blue-500/30 text-white" 
-                                                    : "bg-black border-transparent text-slate-500 hover:bg-white/5 hover:border-white/10"
-                                            )}
-                                        >
-                                            <div className="flex items-center gap-4">
-                                                <div className={cn(
-                                                    "w-1.5 h-1.5 rounded-full transition-all",
-                                                    selectedRole === role.id ? "bg-blue-500 shadow-[0_0_8px_#3b82f6]" : "bg-slate-800"
-                                                )} />
-                                                <div>
-                                                    <p className={cn("text-sm font-black uppercase italic tracking-tight", selectedRole === role.id ? "text-white" : "text-slate-500 group-hover:text-slate-300")}>{role.label}</p>
-                                                    <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest">{role.desc}</p>
-                                                </div>
-                                            </div>
-                                            <ChevronRight className={cn("w-4 h-4 transition-all opacity-0 group-hover:opacity-100", selectedRole === role.id && "opacity-100 translate-x-1")} />
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        ) : (
-                            <>
-                                {/* Global Visibility Card */}
-                                <div className="bg-[#0B0F17] border border-white/5 rounded-[40px] overflow-hidden shadow-3xl group">
-                                    <div className="p-8 pb-4">
-                                        <div className="flex items-center justify-between mb-8">
-                                            <div className="flex items-center gap-2 px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                                <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Global Live</span>
-                                            </div>
-                                            <Cpu className="w-5 h-5 text-slate-700" />
-                                        </div>
-                                        <h3 className="text-xl font-black text-white uppercase italic tracking-tight mb-2">Visibility Index</h3>
-                                        <p className="text-[11px] text-slate-600 font-bold uppercase tracking-widest leading-relaxed">Search priority and operational SEO ranking based on protocol adherence.</p>
-                                    </div>
-                                    <div className="p-8 pt-4 flex items-end gap-3">
-                                        <span className="text-5xl font-black text-white italic tracking-tighter">#{hotelInfo.ranking || 0}</span>
-                                        <div className="mb-2 p-1.5 bg-blue-600/10 text-blue-500 rounded-lg">
-                                            <TrendingUp className="w-5 h-5" />
-                                        </div>
-                                    </div>
-                                    <div className="px-8 pb-8">
-                                        <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
-                                            <div className="h-full bg-gradient-to-r from-blue-600 to-indigo-600 w-[78%]" />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Support Hub */}
-                                <div className="bg-blue-600 rounded-[40px] p-10 relative overflow-hidden group cursor-pointer shadow-3xl">
-                                    <div className="relative z-10 space-y-4">
-                                        <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white">
-                                            <HelpCircle className="w-8 h-8" />
-                                        </div>
-                                        <h3 className="text-2xl font-black text-white italic tracking-tighter uppercase leading-tight">Protocol Support</h3>
-                                        <p className="text-sm font-bold text-white/70 leading-relaxed uppercase tracking-widest text-[11px]">Direct 24/7 access to Zenbourg Technical Command for configuration assistance.</p>
-                                    </div>
-                                    <div className="absolute -bottom-10 -right-10 w-48 h-48 bg-white/10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" />
-                                </div>
-                            </>
-                        )}
-                    </div>
-
-                </div>
-            </div>
-
-            {/* ── MODALS ── */}
-            <Modal 
-                isOpen={isAddRoleModalOpen} 
-                onClose={() => setIsAddRoleModalOpen(false)} 
-                title="System Protocol: Role Initialization"
-                size="md"
-            >
-                <div className="p-10 space-y-10 bg-[#06080c]">
-                    <div className="space-y-4">
-                        <label className="text-[11px] font-black text-slate-600 uppercase tracking-widest ml-1">New Role Identifier</label>
-                        <input 
-                            value={newRoleName} 
-                            onChange={e => setNewRoleName(e.target.value)}
-                            className="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-white font-black italic focus:border-blue-500/40 outline-none transition-all placeholder:text-slate-800"
-                            placeholder="e.g. EXECUTIVE_ASST"
-                        />
-                    </div>
-                    <button 
-                        className="w-full h-16 rounded-[24px] bg-blue-600 text-white font-black text-[13px] uppercase tracking-[0.3em] italic shadow-2xl shadow-blue-600/20 active:scale-95 transition-all hover:bg-blue-500"
-                    >
-                        Initialize Identity Matrix
-                    </button>
-                </div>
-            </Modal>
-        </div>
+            <h3 className="text-sm font-semibold text-white mb-1">{item.label}</h3>
+            <p className="text-xs text-text-secondary leading-relaxed">{item.desc}</p>
+          </button>
+        ))}
+      </div>
     )
+  }
+
+  const viewTitle: Record<string, string> = {
+    OVERVIEW: 'Settings', BRANDING: 'General Info', ROLES: 'Roles & Permissions',
+    FINANCIAL: 'Financial & Tax', OPS: 'Notifications', SUBSCRIPTION: 'Subscription & Plans',
+    INTEGRATIONS: 'Integrations', RETENTION: 'Data Retention',
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center gap-4">
+        {view !== 'OVERVIEW' && (
+          <button onClick={() => setView('OVERVIEW')} className="w-9 h-9 flex items-center justify-center rounded-xl bg-surface-light border border-border hover:border-primary/40 transition-all">
+            <ChevronLeft className="w-4 h-4 text-text-secondary" />
+          </button>
+        )}
+        <div>
+          <h1 className="text-xl font-bold text-white">{viewTitle[view] ?? view}</h1>
+          {view !== 'OVERVIEW' && <p className="text-xs text-text-secondary mt-0.5">{NAV.find(n => n.id.toUpperCase() === view)?.desc}</p>}
+        </div>
+      </div>
+      {renderView()}
+    </div>
+  )
 }

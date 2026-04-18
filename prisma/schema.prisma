@@ -62,9 +62,9 @@ model Guest {
   name            String
   email           String?
   phone           String    @unique
-  idType          String? // Aadhaar, Passport, etc.
+  idType          String?
   idNumber        String?
-  idDocumentFront String? // URL to uploaded document
+  idDocumentFront String?
   idDocumentBack  String?
   address         String?
   dateOfBirth     DateTime?
@@ -73,6 +73,9 @@ model Guest {
   checkInCompletedAt DateTime?
 
   language String @default("English")
+
+  // Track which property created/owns this guest profile
+  createdByPropertyId String? @db.ObjectId
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -133,7 +136,7 @@ model Property {
   // Policies
   cancellationPolicy String?
   // Subscription Model
-  plan               SubscriptionPlan @default(GOLD)
+  plan               SubscriptionPlan @default(BASE)
   features           String[]         @default(["BASIC_OPS", "STAFF_MANAGEMENT"])
   planExpiresAt      DateTime?
 
@@ -252,11 +255,23 @@ model Booking {
   paidAmount    Float         @default(0)
   paymentStatus PaymentStatus @default(PENDING)
 
+  // Tax & Charges breakdown (applied at booking time from PropertySettings)
+  baseAmount         Float?   // Room rate × nights (before tax)
+  gstPercent         Float?   // GST % applied
+  gstAmount          Float?   // GST amount
+  serviceChargePercent Float? // Service charge %
+  serviceChargeAmount Float?  // Service charge amount
+  luxuryTaxPercent   Float?   // Luxury tax %
+  luxuryTaxAmount    Float?   // Luxury tax amount
+  discountPercent    Float?   // Discount %
+  discountAmount     Float?   // Discount amount
+  finalAmount        Float?   // totalAmount after all taxes & discounts
+
   specialRequests String?
   notes           String?
 
-  propertyId String   @db.ObjectId
-  property   Property @relation("PropertyToBooking", fields: [propertyId], references: [id])
+  propertyId String?  @db.ObjectId
+  property   Property? @relation("PropertyToBooking", fields: [propertyId], references: [id])
 
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
@@ -932,6 +947,11 @@ model Message {
 }
 
 enum SubscriptionPlan {
+  BASE
+  STARTER
+  STANDARD
+  ENTERPRISE
+  // Legacy values kept for backward compatibility with existing DB records
   GOLD
   PLATINUM
   DIAMOND
@@ -983,14 +1003,74 @@ model TicketMessage {
 // ========================================
 
 model PlanDefinition {
-  id          String           @id @default(auto()) @map("_id") @db.ObjectId
-  plan        SubscriptionPlan @unique
-  features    String[]
-  price       Float?           @default(0)
-  description String?
-  updatedAt   DateTime         @updatedAt
+  id           String           @id @default(auto()) @map("_id") @db.ObjectId
+  plan         SubscriptionPlan @unique
+
+  // Display
+  displayName  String?          // "Base", "Starter", "Standard", "Enterprise"
+  tagline      String?          // "For independent properties getting started"
+  description  String?
+
+  // Pricing
+  originalPrice Float           @default(0)   // Strikethrough price
+  discountedPrice Float         @default(0)   // Actual charge
+  discountPercent Float         @default(0)   // % off (editable by super admin)
+  billingCycle  String          @default("monthly") // monthly | yearly
+
+  // Limits
+  maxRooms     Int              @default(30)   // 0 = unlimited
+  maxStaff     Int              @default(10)   // 0 = unlimited
+
+  // Features included
+  features     String[]
+
+  updatedAt    DateTime         @updatedAt
 
   @@map("plan_definitions")
+}
+
+// Per-property financial settings (editable by hotel admin)
+model PropertySettings {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  propertyId   String   @unique @db.ObjectId
+
+  // Tax & Charges
+  gstPercent           Float   @default(18.0)
+  serviceChargePercent Float   @default(0.0)
+  luxuryTaxPercent     Float   @default(0.0)
+
+  // Discount
+  defaultDiscountPercent Float  @default(0.0)
+  discountLabel          String? @default("Discount")
+
+  // Invoice
+  invoicePrefix  String  @default("INV")
+  invoiceFooter  String?
+
+  // Currency
+  currency       String  @default("INR")
+  currencySymbol String  @default("₹")
+
+  // Check-in/out
+  checkInTime    String  @default("14:00")
+  checkOutTime   String  @default("11:00")
+
+  // Bank Account (for Razorpay payouts to hotel owner)
+  bankAccountName   String?  // Account holder name
+  bankAccountNumber String?  // Account number
+  bankIfscCode      String?  // IFSC code
+  bankName          String?  // Bank name e.g. HDFC, SBI
+  bankBranch        String?  // Branch name
+  upiId             String?  // UPI ID for quick payments
+
+  // Property-specific Razorpay credentials (override global keys)
+  razorpayKeyId     String?  // Razorpay Key ID
+  razorpayKeySecret String?  // Razorpay Key Secret (handle with care)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("property_settings")
 }
 
 enum TicketType {

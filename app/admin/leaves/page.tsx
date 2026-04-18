@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect, useCallback } from 'react'
 import {
@@ -29,8 +29,8 @@ export default function LeavesManagementPage() {
         try {
             const res = await fetch(`/api/admin/leaves?status=${filterStatus}`)
             if (res.ok) {
-                const data = await res.json()
-                setRequests(data)
+                const json = await res.json()
+                setRequests(Array.isArray(json) ? json : (json?.data ?? []))
             }
         } catch (error) {
             console.error(error)
@@ -182,7 +182,7 @@ export default function LeavesManagementPage() {
 
                                         <div className="pt-4 border-t border-white/5">
                                             <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-2">Reason</p>
-                                            <p className="text-xs font-medium text-gray-400 line-clamp-2 leading-relaxed italic">&ldquo;{req.reason}&rdquo;</p>
+                                            <p className="text-xs font-medium text-gray-400 line-clamp-2 leading-relaxed ">&ldquo;{req.reason}&rdquo;</p>
                                         </div>
 
                                         {req.evidence && (
@@ -248,7 +248,7 @@ export default function LeavesManagementPage() {
                         </div>
                         <div className="pt-3 border-t border-white/5">
                             <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Employee Statement</p>
-                            <p className="text-sm font-medium text-gray-300 leading-relaxed italic">&ldquo;{selectedRequest?.reason}&rdquo;</p>
+                            <p className="text-sm font-medium text-gray-300 leading-relaxed ">&ldquo;{selectedRequest?.reason}&rdquo;</p>
                         </div>
 
                         {selectedRequest?.evidence && (
@@ -313,3 +313,4 @@ export default function LeavesManagementPage() {
         </div>
     )
 }
+

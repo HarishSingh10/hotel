@@ -52,13 +52,16 @@ export default function PayrollPage() {
             const [year, m] = month.split('-')
             const res = await fetch(buildContextUrl('/api/payroll', { month: m, year }))
             if (res.ok) {
-                const data = await res.json()
-                setPayrollData(data.payroll || [])
+                const json = await res.json()
+                // Handle both { payroll, stats } and { success, data: { payrolls, summary } }
+                const payrolls = json?.data?.payrolls ?? json?.payroll ?? []
+                const summary = json?.data?.summary ?? json?.stats ?? {}
+                setPayrollData(payrolls)
                 setStats({
-                    totalPayroll: data.stats.totalPayroll,
-                    paidCount: data.stats.paidCount,
-                    pendingCount: data.stats.pendingCount,
-                    avgSalary: data.stats.totalPayroll / (data.payroll.length || 1)
+                    totalPayroll: summary.totalPayout ?? summary.totalPayroll ?? 0,
+                    paidCount: summary.paidCount ?? 0,
+                    pendingCount: summary.pendingCount ?? 0,
+                    avgSalary: payrolls.length > 0 ? (summary.totalPayout ?? summary.totalPayroll ?? 0) / payrolls.length : 0
                 })
             }
         } catch (error) {

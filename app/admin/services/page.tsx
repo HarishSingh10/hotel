@@ -127,7 +127,8 @@ export default function ServicesPage() {
         try {
             const res = await fetch(buildContextUrl('/api/admin/services', { status: 'ALL' }))
             if (res.ok) {
-                const data = await res.json()
+                const json = await res.json()
+                const data = Array.isArray(json) ? json : (json?.data ?? [])
                 setRequests(data)
 
                 const s = {
@@ -144,13 +145,19 @@ export default function ServicesPage() {
     const fetchRooms = async () => {
         if (!currentPropertyId) return
         const res = await fetch(buildContextUrl('/api/admin/rooms'))
-        if (res.ok) setRooms(await res.json())
+        if (res.ok) {
+            const json = await res.json()
+            setRooms(Array.isArray(json) ? json : (json?.data ?? []))
+        }
     }
 
     const fetchServiceConfigs = async () => {
         if (!currentPropertyId) return
         const res = await fetch(buildContextUrl('/api/admin/service-configs'))
-        if (res.ok) setServiceConfigs(await res.json())
+        if (res.ok) {
+            const json = await res.json()
+            setServiceConfigs(Array.isArray(json) ? json : (json?.data ?? []))
+        }
     }
 
     useEffect(() => {

@@ -2,11 +2,11 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/options'
 import { prisma } from '@/lib/db'
-import { writeFile, mkdir } from 'fs/promises'
-import { join } from 'path'
-import { existsSync } from 'fs'
 
 export const dynamic = 'force-dynamic'
+
+// Max 5MB
+const MAX_SIZE = 5 * 1024 * 1024
 
 export async function POST(request: Request) {
     const session = await getServerSession(authOptions)
@@ -25,34 +25,28 @@ export async function POST(request: Request) {
             return new NextResponse('Missing required fields', { status: 400 })
         }
 
-        // Read file as buffer
-        const bytes = await file.arrayBuffer()
-        const buffer = Buffer.from(bytes)
-
-        // Store locally in public/uploads/documents/
-        const uploadDir = join(process.cwd(), 'public', 'uploads', 'documents')
-        if (!existsSync(uploadDir)) {
-            await mkdir(uploadDir, { recursive: true })
+        if (file.size > MAX_SIZE) {
+            return NextResponse.json({ error: 'File too large. Max 5MB.' }, { status: 400 })
         }
 
-        const ext = file.name.split('.').pop() || 'jpg'
-        const filename = `${guestId}_${side}_${Date.now()}.${ext}`
-        const filepath = join(uploadDir, filename)
-        await writeFile(filepath, buffer)
-
-        const publicUrl = `/uploads/documents/${filename}`
+        // Convert to base64 data URL — works on any hosting (Vercel, local, etc.)
+        const bytes = await file.arrayBuffer()
+        const base64 = Buffer.from(bytes).toString('base64')
+        const mimeType = file.type || 'image/jpeg'
+        const dataUrl = `data:${mimeType};base64,${base64}`
 
         // Update guest record
         await prisma.guest.update({
             where: { id: guestId },
             data: {
-                ...(side === 'front' ? { idDocumentFront: publicUrl } : { idDocumentBack: publicUrl }),
-                // Auto-advance status to LINK_OPENED if still PENDING
+                ...(side === 'front'
+                    ? { idDocumentFront: dataUrl }
+                    : { idDocumentBack: dataUrl }),
                 checkInStatus: 'LINK_OPENED',
             }
         })
 
-        return NextResponse.json({ url: publicUrl, success: true })
+        return NextResponse.json({ url: dataUrl, success: true })
     } catch (error) {
         console.error('[UPLOAD_DOC]', error)
         return new NextResponse('Upload failed', { status: 500 })

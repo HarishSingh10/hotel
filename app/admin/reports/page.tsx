@@ -26,26 +26,37 @@ export default function ReportsPage() {
     const [loading, setLoading] = useState(true)
     const [exporting, setExporting] = useState(false)
     const [trendView, setTrendView] = useState<'Daily' | 'Weekly' | 'Monthly'>('Daily')
+    const [range, setRange] = useState<'this_month' | 'last_month' | 'last_3_months' | 'this_year'>('this_month')
+    const [showRangePicker, setShowRangePicker] = useState(false)
     const chartRef = useRef<HTMLDivElement>(null)
 
-    useEffect(() => {
-        const fetchReports = async () => {
-            try {
-                const res = await fetch(buildContextUrl('/api/admin/reports'))
-                if (res.ok) {
-                    const json = await res.json()
-                    setData(json)
-                }
-            } catch (error) {
-                console.error(error)
-            } finally {
-                setLoading(false)
+    const RANGE_LABELS: Record<string, string> = {
+        this_month: 'This Month',
+        last_month: 'Last Month',
+        last_3_months: 'Last 3 Months',
+        this_year: 'This Year',
+    }
+
+    const fetchReports = async (selectedRange = range) => {
+        setLoading(true)
+        try {
+            const res = await fetch(buildContextUrl(`/api/admin/reports?range=${selectedRange}`))
+            if (res.ok) {
+                const json = await res.json()
+                setData(json?.data ?? json)
             }
+        } catch (error) {
+            console.error(error)
+        } finally {
+            setLoading(false)
         }
+    }
+
+    useEffect(() => {
         if (session && ['SUPER_ADMIN', 'HOTEL_ADMIN', 'MANAGER', 'RECEPTIONIST'].includes(session.user.role)) {
-            fetchReports()
+            fetchReports(range)
         }
-    }, [session])
+    }, [session, range])
 
     const handleExport = () => {
         if (!data) return
@@ -74,7 +85,10 @@ export default function ReportsPage() {
             doc.setFontSize(10)
             doc.setTextColor(100, 100, 100)
             doc.text(`Generated on: ${date}`, 14, 30)
-            doc.text(`Reporting Period: ${periodLabel}`, 14, 35)
+            const pLabel = data
+                ? `${new Date(data.periodStart).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${new Date(data.periodEnd).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+                : 'Current Month'
+            doc.text(`Reporting Period: ${pLabel}`, 14, 35)
 
             // Capture Graph
             if (chartRef.current) {
@@ -187,11 +201,32 @@ export default function ReportsPage() {
                     <p className="text-text-secondary mt-1 text-xs md:text-sm">Overview of key hotel performance metrics</p>
                 </div>
                 <div className="flex gap-2 md:gap-3 items-center overflow-x-auto pb-1 sm:pb-0">
-                    <button className="flex items-center gap-2 px-3 md:px-4 py-2 bg-white/[0.03] border border-white/[0.08] rounded-xl text-xs md:text-sm font-bold text-text-secondary hover:bg-white/[0.06] transition-all whitespace-nowrap">
-                        <Calendar className="w-3.5 h-3.5" />
-                        <span>{periodLabel}</span>
-                        <ChevronDown className="w-3.5 h-3.5 opacity-50" />
-                    </button>
+                    <div className="relative">
+                        <button
+                            onClick={() => setShowRangePicker(v => !v)}
+                            className="flex items-center gap-2 px-3 md:px-4 py-2 bg-white/[0.03] border border-white/[0.08] rounded-xl text-xs md:text-sm font-bold text-text-secondary hover:bg-white/[0.06] transition-all whitespace-nowrap"
+                        >
+                            <Calendar className="w-3.5 h-3.5" />
+                            <span>{RANGE_LABELS[range]}</span>
+                            <ChevronDown className="w-3.5 h-3.5 opacity-50" />
+                        </button>
+                        {showRangePicker && (
+                            <>
+                                <div className="fixed inset-0 z-40" onClick={() => setShowRangePicker(false)} />
+                                <div className="absolute right-0 mt-2 w-44 bg-surface border border-border rounded-xl shadow-xl z-50 overflow-hidden">
+                                    {Object.entries(RANGE_LABELS).map(([key, label]) => (
+                                        <button
+                                            key={key}
+                                            onClick={() => { setRange(key as any); setShowRangePicker(false) }}
+                                            className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${range === key ? 'bg-primary text-white' : 'text-text-secondary hover:bg-surface-light hover:text-white'}`}
+                                        >
+                                            {label}
+                                        </button>
+                                    ))}
+                                </div>
+                            </>
+                        )}
+                    </div>
                     <div className="flex bg-white/[0.03] border border-white/[0.08] rounded-xl overflow-hidden p-1">
                         <button 
                             onClick={handleExport}

@@ -1,111 +1,166 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/options'
+import { unauthorized, badRequest, serverError } from '@/lib/api-response'
 
 export const dynamic = 'force-dynamic'
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
     try {
         const session = await getServerSession(authOptions)
-        if (!session) return new NextResponse('Unauthorized', { status: 401 })
+        if (!session) return unauthorized()
 
         const { searchParams } = new URL(req.url)
         const status = searchParams.get('status')
+        const search = searchParams.get('search')?.trim()
+        const queryPropertyId = searchParams.get('propertyId')
+        const page = parseInt(searchParams.get('page') ?? '1')
+        const limit = Math.min(parseInt(searchParams.get('limit') ?? '50'), 200)
 
-        const propertyId = session.user.propertyId
-        const whereClause: any = {}
-        if (status && status !== 'ALL') whereClause.checkInStatus = status as any
+        // Resolve which property to scope to
+        let propertyId: string | null = null
+        if (session.user.role === 'SUPER_ADMIN') {
+            if (queryPropertyId && queryPropertyId !== 'ALL') propertyId = queryPropertyId
+        } else {
+            propertyId = session.user.propertyId ?? null
+        }
+
+        const where: any = {}
+
+        if (status && status !== 'ALL') where.checkInStatus = status
+
+        if (search) {
+            where.OR = [
+                { name: { contains: search, mode: 'insensitive' } },
+                { email: { contains: search, mode: 'insensitive' } },
+                { phone: { contains: search } },
+            ]
+        }
+
         if (propertyId) {
-            whereClause.bookings = {
-                some: {
-                    propertyId: propertyId
-                }
+            // A guest belongs to this hotel if:
+            // 1. They were directly created by this property (createdByPropertyId)
+            // 2. They have at least one booking at this property
+            const propertyFilter = {
+                OR: [
+                    { createdByPropertyId: propertyId },
+                    { bookings: { some: { propertyId } } },
+                ],
+            }
+
+            // Merge with existing search OR if present
+            if (where.OR) {
+                where.AND = [{ OR: where.OR }, propertyFilter]
+                delete where.OR
+            } else {
+                Object.assign(where, propertyFilter)
             }
         }
 
-        const guests = await prisma.guest.findMany({
-            where: whereClause,
-            include: {
-                bookings: {
-                    select: {
-                        room: { select: { roomNumber: true } },
-                        status: true,
-                        source: true,
-                        numberOfGuests: true,
-                        checkIn: true,
-                        checkOut: true,
-                        totalAmount: true
-                    }
-                }
-            },
-            orderBy: { createdAt: 'desc' }
-        })
+        const [guests, total] = await Promise.all([
+            prisma.guest.findMany({
+                where,
+                include: {
+                    bookings: {
+                        where: propertyId ? { propertyId } : {},
+                        select: {
+                            id: true,
+                            room: { select: { roomNumber: true } },
+                            status: true,
+                            source: true,
+                            numberOfGuests: true,
+                            checkIn: true,
+                            checkOut: true,
+                            totalAmount: true,
+                        },
+                        orderBy: { checkIn: 'desc' },
+                        take: 5,
+                    },
+                },
+                orderBy: { createdAt: 'desc' },
+                skip: (page - 1) * limit,
+                take: limit,
+            }),
+            prisma.guest.count({ where }),
+        ])
 
-        // Transform for frontend
-        const formatted = guests.map(g => {
-            const activeBooking = g.bookings[0] || {}
+        const formatted = guests.map((g) => {
+            const activeBooking = g.bookings.find(
+                (b) => b.status === 'CHECKED_IN' || b.status === 'RESERVED'
+            ) ?? g.bookings[0]
+
             return {
                 id: g.id,
                 name: g.name,
                 email: g.email,
                 phone: g.phone,
-                roomNumber: activeBooking.room?.roomNumber || 'N/A',
-                checkIn: activeBooking.checkIn,
-                checkOut: activeBooking.checkOut,
-                guestCount: activeBooking.numberOfGuests || 1,
+                roomNumber: activeBooking?.room?.roomNumber ?? 'N/A',
+                checkIn: activeBooking?.checkIn ?? null,
+                checkOut: activeBooking?.checkOut ?? null,
+                guestCount: activeBooking?.numberOfGuests ?? 1,
                 idVerified: g.checkInStatus === 'VERIFIED',
-                source: activeBooking.source || 'DIRECT',
-                status: activeBooking.status || 'RESERVED',
-                bookings: g.bookings
+                checkInStatus: g.checkInStatus,
+                source: activeBooking?.source ?? 'DIRECT',
+                status: activeBooking?.status ?? null,
+                totalStays: g.bookings.length,
+                bookings: g.bookings,
             }
         })
 
-        return NextResponse.json(formatted)
+        return NextResponse.json({
+            success: true,
+            data: formatted,
+            pagination: { page, limit, total, pages: Math.ceil(total / limit) },
+        })
     } catch (error) {
-        console.error('[GUESTS_GET]', error)
-        return new NextResponse('Internal Error', { status: 500 })
+        return serverError(error, 'GUESTS_GET')
     }
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
     try {
         const session = await getServerSession(authOptions)
-        if (!session) return new NextResponse('Unauthorized', { status: 401 })
+        if (!session) return unauthorized()
 
         const body = await req.json()
-        const { name, email, phone, idType, idNumber, address, dateOfBirth, guestCount = 1 } = body
+        const { name, email, phone, idType, idNumber, address, dateOfBirth } = body
 
-        if (!name || !phone) {
-            return new NextResponse('Name and Phone are required', { status: 400 })
-        }
+        if (!name || !phone) return badRequest('Name and phone are required')
 
-        // Create or Update Guest
+        // Resolve property — this is who "owns" this guest
+        const propertyId = session.user.role === 'SUPER_ADMIN'
+            ? (body.propertyId ?? session.user.propertyId)
+            : session.user.propertyId
+
         const guest = await prisma.guest.upsert({
             where: { phone },
             update: {
                 name,
-                email,
-                idType,
-                idNumber,
-                address,
+                email: email ?? undefined,
+                idType: idType ?? undefined,
+                idNumber: idNumber ?? undefined,
+                address: address ?? undefined,
                 dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : undefined,
+                // Update property link if not already set
+                ...(propertyId ? { createdByPropertyId: propertyId } : {}),
             },
             create: {
                 name,
-                email,
+                email: email ?? null,
                 phone,
-                idType,
-                idNumber,
-                address,
-                dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : undefined,
-                checkInStatus: 'PENDING'
-            }
+                idType: idType ?? null,
+                idNumber: idNumber ?? null,
+                address: address ?? null,
+                dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
+                checkInStatus: 'PENDING',
+                // Link to the property that created this guest
+                createdByPropertyId: propertyId ?? null,
+            },
         })
 
-        return NextResponse.json(guest)
+        return NextResponse.json({ success: true, data: guest }, { status: 201 })
     } catch (error) {
-        console.error('[GUESTS_POST]', error)
-        return new NextResponse('Internal Error', { status: 500 })
+        return serverError(error, 'GUESTS_POST')
     }
 }

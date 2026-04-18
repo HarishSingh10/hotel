@@ -1,9 +1,10 @@
 import { prisma } from '@/lib/db'
-import { UserRole } from '@prisma/client'
 
 export type PermissionLevel = 'NONE' | 'READ' | 'READ_WRITE'
 
-export async function getPermissions(propertyId: string, role: UserRole) {
+type UserRoleType = 'SUPER_ADMIN' | 'HOTEL_ADMIN' | 'MANAGER' | 'RECEPTIONIST' | 'STAFF' | 'GUEST'
+
+export async function getPermissions(propertyId: string, role: UserRoleType) {
     if (role === 'SUPER_ADMIN' || role === 'HOTEL_ADMIN') {
         // Admins have full access by default
         return null
@@ -23,7 +24,7 @@ export async function getPermissions(propertyId: string, role: UserRole) {
  */
 export async function checkPermission(
     propertyId: string,
-    role: UserRole,
+    role: UserRoleType,
     module: string,
     required: PermissionLevel = 'READ'
 ): Promise<boolean> {

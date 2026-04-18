@@ -50,13 +50,13 @@ export default function StaffPage() {
         dedupingInterval: 5000
     })
 
-    const staffList = Array.isArray(rawStaff) ? rawStaff : []
+    const staffList = Array.isArray(rawStaff) ? rawStaff : (rawStaff?.data ?? [])
 
     const fetchStaff = () => mutate()
 
     // Derived filtered list
     const filteredStaff = useMemo(() => {
-        return staffList.filter(s => {
+        return staffList.filter((s: any) => {
             const matchesSearch = s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 (s.role || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
                 (s.department || '').toLowerCase().includes(searchQuery.toLowerCase());
@@ -69,7 +69,10 @@ export default function StaffPage() {
     const handleAddStaff = async (e: React.FormEvent) => {
         e.preventDefault()
         setIsSubmitting(true)
-        const { propertyId } = getAdminContext()
+        // Use session propertyId for non-super-admins, localStorage for super-admin
+        const propertyId = session?.user?.role === 'SUPER_ADMIN'
+            ? getAdminContext().propertyId
+            : session?.user?.propertyId
 
         try {
             const res = await fetch('/api/admin/staff', {
@@ -78,7 +81,7 @@ export default function StaffPage() {
                 body: JSON.stringify({
                     ...formData,
                     salary: parseFloat(formData.salary),
-                    propertyId: propertyId !== 'ALL' ? propertyId : undefined
+                    propertyId: propertyId && propertyId !== 'ALL' ? propertyId : undefined
                 })
             })
 
@@ -121,7 +124,7 @@ export default function StaffPage() {
             toast.error('No data to export');
             return;
         }
-        downloadCSV(filteredStaff.map(s => ({
+        downloadCSV(filteredStaff.map((s: any) => ({
             Name: s.name,
             Email: s.email,
             Phone: s.phone,
@@ -278,9 +281,9 @@ export default function StaffPage() {
                         )}
                     >
                         Verification Tasks
-                        {staffList.filter(s => s.verificationRequested).length > 0 && (
+                        {staffList.filter((s: any) => s.verificationRequested).length > 0 && (
                             <span className="w-5 h-5 bg-blue-600 text-white text-[10px] rounded-full flex items-center justify-center animate-pulse">
-                                {staffList.filter(s => s.verificationRequested).length}
+                                {staffList.filter((s: any) => s.verificationRequested).length}
                             </span>
                         )}
                     </button>
@@ -328,7 +331,7 @@ export default function StaffPage() {
                             No staff members found matching your search.
                         </div>
                     ) : (
-                        filteredStaff.map(staff => (
+                        filteredStaff.map((staff: any) => (
                             <div key={staff.id} onClick={() => viewStaffDetails(staff)} className="p-4 hover:bg-white/[0.02] transition-colors flex items-center justify-between group cursor-pointer">
                                 <div className="flex items-center gap-4">
                                     <Avatar name={staff.name} />

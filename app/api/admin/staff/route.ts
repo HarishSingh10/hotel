@@ -1,67 +1,81 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/options'
 import { prisma } from '@/lib/db'
 import { hash } from 'bcryptjs'
+import { unauthorized, forbidden, badRequest, conflict, serverError } from '@/lib/api-response'
 
 export const dynamic = 'force-dynamic'
 
-export async function GET(request: Request) {
+const ALLOWED_ROLES = ['SUPER_ADMIN', 'HOTEL_ADMIN', 'MANAGER', 'RECEPTIONIST']
+
+export async function GET(request: NextRequest) {
     const session = await getServerSession(authOptions)
-    if (!session || !['SUPER_ADMIN', 'HOTEL_ADMIN', 'MANAGER', 'RECEPTIONIST'].includes(session.user.role)) {
-        return new NextResponse('Unauthorized', { status: 401 })
-    }
+    if (!session) return unauthorized()
+    if (!ALLOWED_ROLES.includes(session.user.role)) return forbidden()
 
     const { searchParams } = new URL(request.url)
     const queryPropertyId = searchParams.get('propertyId')
     const activeOnly = searchParams.get('activeOnly') === 'true'
+    const department = searchParams.get('department')
+    const search = searchParams.get('search')?.trim()
+    const page = parseInt(searchParams.get('page') ?? '1')
+    const limit = Math.min(parseInt(searchParams.get('limit') ?? '50'), 200)
 
-    let where: any = {
-        user: { status: 'ACTIVE' } // Never show inactive accounts
-    }
+    const where: any = { user: { status: 'ACTIVE' } }
 
     if (activeOnly) {
-        where.attendances = {
-            some: { punchOut: null }
-        }
+        where.attendances = { some: { punchOut: null } }
     }
 
-    // RBAC: If Super Admin, they can filter by any property or see all. 
-    // Otherwise, they are locked to their own property.
+    if (department && department !== 'ALL') {
+        where.department = department
+    }
+
     if (session.user.role === 'SUPER_ADMIN') {
         if (queryPropertyId && queryPropertyId !== 'ALL') {
             where.propertyId = queryPropertyId
         }
     } else {
         const propertyId = session.user.propertyId
-        if (!propertyId) return NextResponse.json([])
+        if (!propertyId) return NextResponse.json({ success: true, data: [], pagination: { page: 1, limit, total: 0, pages: 0 } })
         where.propertyId = propertyId
     }
 
+    if (search) {
+        where.user = {
+            ...where.user,
+            OR: [
+                { name: { contains: search, mode: 'insensitive' } },
+                { email: { contains: search, mode: 'insensitive' } },
+                { phone: { contains: search } },
+            ],
+        }
+    }
+
     try {
-        // Time threshold: we consider shifts valid up to 24 hours back if not checked out
-
-        const staff = await prisma.staff.findMany({
-            where: where,
-            include: {
-                user: {
-                    select: {
-                        name: true,
-                        email: true,
-                        phone: true,
-                        status: true,
-                        role: true
-                    }
+        const [staff, total] = await Promise.all([
+            prisma.staff.findMany({
+                where,
+                include: {
+                    user: {
+                        select: { name: true, email: true, phone: true, status: true, role: true },
+                    },
+                    attendances: {
+                        orderBy: { punchIn: 'desc' },
+                        take: 1,
+                    },
                 },
-                attendances: {
-                    orderBy: { punchIn: 'desc' },
-                    take: 1
-                }
-            },
-            orderBy: { user: { name: 'asc' } }
-        })
+                orderBy: { user: { name: 'asc' } },
+                skip: (page - 1) * limit,
+                take: limit,
+            }),
+            prisma.staff.count({ where }),
+        ])
 
-        const formatted = staff.map(s => {
+        const canSeeSalary = ['SUPER_ADMIN', 'HOTEL_ADMIN', 'MANAGER'].includes(session.user.role)
+
+        const formatted = staff.map((s) => {
             const attendance = s.attendances[0]
             let dutyStatus = 'OFF_DUTY'
 
@@ -69,8 +83,9 @@ export async function GET(request: Request) {
                 if (attendance.punchIn && !attendance.punchOut) {
                     dutyStatus = 'ON_DUTY'
                 } else if (attendance.punchOut) {
-                    const punchedOutToday = (new Date().getTime() - new Date(attendance.punchOut).getTime()) < 24 * 60 * 60 * 1000
-                    dutyStatus = punchedOutToday ? 'PUNCHED_OUT' : 'OFF_DUTY'
+                    const punchedOutRecently =
+                        Date.now() - new Date(attendance.punchOut).getTime() < 24 * 60 * 60 * 1000
+                    dutyStatus = punchedOutRecently ? 'PUNCHED_OUT' : 'OFF_DUTY'
                 }
             } else {
                 dutyStatus = 'NOT_STARTED'
@@ -78,78 +93,85 @@ export async function GET(request: Request) {
 
             return {
                 id: s.id,
+                userId: s.userId,
                 name: s.user.name,
                 email: s.user.email,
                 phone: s.user.phone,
                 department: s.department,
-                role: s.designation,
+                designation: s.designation,
                 userRole: s.user.role,
                 status: s.user.status,
-                dutyStatus: dutyStatus,
+                dutyStatus,
                 isVerified: s.isVerified,
                 verificationRequested: s.verificationRequested,
-                salary: ['SUPER_ADMIN', 'HOTEL_ADMIN', 'MANAGER'].includes(session.user.role) ? s.baseSalary : '***',
-                location: 'Main Property'
+                salary: canSeeSalary ? s.baseSalary : null,
+                employeeId: s.employeeId,
+                dateOfJoining: s.dateOfJoining,
             }
         })
 
-        return NextResponse.json(formatted)
+        return NextResponse.json({
+            success: true,
+            data: formatted,
+            pagination: { page, limit, total, pages: Math.ceil(total / limit) },
+        })
     } catch (error) {
-        return new NextResponse('Internal Error', { status: 500 })
+        return serverError(error, 'STAFF_GET')
     }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions)
-    if (!session || !['SUPER_ADMIN', 'HOTEL_ADMIN', 'MANAGER', 'RECEPTIONIST'].includes(session.user.role)) {
-        return new NextResponse('Unauthorized', { status: 401 })
-    }
+    if (!session) return unauthorized()
+    if (!ALLOWED_ROLES.includes(session.user.role)) return forbidden()
 
     try {
         const body = await request.json()
-        const { name, email, phone, role, department, salary, password, userRole, propertyId: bodyPropertyId } = body
+        const { name, email, phone, designation, department, salary, password, userRole, propertyId: bodyPropertyId } = body
+
+        if (!name || !email || !phone || !department) {
+            return badRequest('name, email, phone and department are required')
+        }
 
         let targetPropertyId = session.user.propertyId
         if (session.user.role === 'SUPER_ADMIN' && bodyPropertyId) {
             targetPropertyId = bodyPropertyId
         }
+        if (!targetPropertyId) return badRequest('Missing property ID')
 
-        if (!targetPropertyId) return new NextResponse('Missing property ID', { status: 400 })
+        const hashedPassword = await hash(password || '123456', 12)
 
-        // 1. Create User
-        const hashedPassword = await hash(password || '123456', 10)
+        const result = await prisma.$transaction(async (tx) => {
+            const user = await tx.user.create({
+                data: {
+                    name,
+                    email: email.toLowerCase().trim(),
+                    phone,
+                    password: hashedPassword,
+                    role: (userRole ?? 'STAFF') as any,
+                    status: 'ACTIVE',
+                    workplaceId: targetPropertyId,
+                },
+            })
 
-        const user = await prisma.user.create({
-            data: {
-                name,
-                email,
-                phone,
-                password: hashedPassword,
-                role: userRole || 'STAFF',
-                status: 'ACTIVE',
-                workplaceId: targetPropertyId
-            }
+            const staff = await tx.staff.create({
+                data: {
+                    userId: user.id,
+                    propertyId: targetPropertyId!,
+                    employeeId: `EMP-${Date.now().toString().slice(-6)}`,
+                    department: department as any,
+                    designation: designation ?? 'Member',
+                    baseSalary: parseFloat(salary) || 0,
+                    dateOfJoining: new Date(),
+                },
+            })
+
+            return { user, staff }
         })
 
-        // 2. Create Staff Profile
-        const staff = await prisma.staff.create({
-            data: {
-                userId: user.id,
-                propertyId: targetPropertyId,
-                employeeId: `EMP-${Date.now().toString().slice(-6)}`,
-                department: department || 'FRONT_DESK',
-                designation: role || 'Member',
-                baseSalary: parseFloat(salary) || 0,
-                dateOfJoining: new Date()
-            }
-        })
-
-        return NextResponse.json(staff)
+        return NextResponse.json({ success: true, data: result.staff }, { status: 201 })
     } catch (error: any) {
-        console.error(error)
-        if (error.code === 'P2002') {
-            return new NextResponse('User with this email or phone already exists', { status: 400 })
-        }
-        return new NextResponse('Internal Server Error', { status: 500 })
+        if (error?.code === 'P2002') return conflict('User with this email or phone already exists')
+        return serverError(error, 'STAFF_POST')
     }
 }

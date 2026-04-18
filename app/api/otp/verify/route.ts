@@ -1,66 +1,57 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { verifyOTP } from '@/lib/twilio';
-import prisma from '@/lib/db';
-import jwt from 'jsonwebtoken';
+import { NextRequest, NextResponse } from 'next/server'
+import { verifyOTP } from '@/lib/twilio'
+import prisma from '@/lib/db'
+import jwt from 'jsonwebtoken'
+import { rateLimit, getClientIp } from '@/lib/rate-limit'
+import { badRequest, tooManyRequests, serverError } from '@/lib/api-response'
 
-export const dynamic = 'force-dynamic';
-
-const JWT_SECRET = process.env.NEXTAUTH_SECRET || 'dev-secret-123';
+export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
+    // Rate limit: 10 attempts per 10 minutes per IP
+    const ip = getClientIp(request)
+    const rl = rateLimit(`otp-verify:${ip}`, { limit: 10, windowSec: 600 })
+    if (!rl.success) return tooManyRequests(rl.resetAt)
+
     try {
-        const { phone, code } = await request.json();
+        const { phone, code } = await request.json()
+        if (!phone || !code) return badRequest('Phone and OTP code are required')
 
-        if (!phone || !code) {
-            return NextResponse.json({ error: 'Phone and OTP code are required' }, { status: 400 });
-        }
-
-        const verification = await verifyOTP(phone, code);
-
+        const verification = await verifyOTP(phone, code)
         if (verification.status !== 'approved') {
-            return NextResponse.json({ error: 'Invalid or expired OTP' }, { status: 400 });
+            return NextResponse.json(
+                { success: false, error: 'Invalid or expired OTP' },
+                { status: 400 }
+            )
         }
 
-        // OTP is valid, now find or create the user
-        let user = await prisma.user.findUnique({
-            where: { phone },
-        });
+        const user = await prisma.user.findUnique({ where: { phone } })
 
-        // If user doesn't exist, we can't fully "log in" yet if this is just verification
-        // But for mobile app flow, we usually auto-register or return a token if exists
-        
         if (!user) {
-            return NextResponse.json({ 
-                success: true, 
+            return NextResponse.json({
+                success: true,
                 verified: true,
                 isNewUser: true,
-                message: 'Phone verified. Please complete signup.'
-            });
+                message: 'Phone verified. Please complete signup.',
+            })
         }
 
-        // Generate JWT token for existing user
         const token = jwt.sign(
-            {
-                userId: user.id,
-                phone: user.phone,
-                role: user.role,
-            },
-            JWT_SECRET,
+            { id: user.id, email: user.email, role: user.role },
+            process.env.NEXTAUTH_SECRET!,
             { expiresIn: '30d' }
-        );
+        )
 
-        const { password: _, ...userWithoutPassword } = user;
+        const { password: _pw, ...safeUser } = user
 
         return NextResponse.json({
             success: true,
             verified: true,
             isNewUser: false,
             token,
-            user: userWithoutPassword,
-            message: 'Logged in successfully'
-        });
+            user: safeUser,
+        })
     } catch (error: any) {
-        console.error('Verify OTP Route Error:', error);
-        return NextResponse.json({ error: error.message || 'Failed to verify OTP' }, { status: 500 });
+        return serverError(error, 'OTP_VERIFY')
     }
 }

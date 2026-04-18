@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic'
  */
 export async function GET(req: NextRequest) {
     try {
-        const authResult = await requireAuth(req, ['SUPER_ADMIN'])
+        const authResult = await requireAuth(req, ['SUPER_ADMIN', 'HOTEL_ADMIN', 'MANAGER'])
         if (authResult instanceof NextResponse) return authResult
 
         const plans = await (prisma as any).planDefinition.findMany({

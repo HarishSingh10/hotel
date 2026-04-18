@@ -2,10 +2,14 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Home, ClipboardList, User, LogOut, Bell, MessageSquare, Calendar, CreditCard, Sparkles } from 'lucide-react'
+import { Home, ClipboardList, User, Bell, MessageSquare, Calendar, Download } from 'lucide-react'
 import { signOut, useSession } from 'next-auth/react'
 import { cn } from '@/lib/utils'
 import { useEffect } from 'react'
+import { usePwaInstall } from '@/lib/hooks/usePwaInstall'
+import dynamic from 'next/dynamic'
+
+const PWAInstall = dynamic(() => import('@/components/common/PWAInstall'), { ssr: false })
 
 export default function StaffLayout({
     children,
@@ -15,6 +19,7 @@ export default function StaffLayout({
     const pathname = usePathname()
     const router = useRouter()
     const { data: session } = useSession()
+    const { isInstallable, installPwa } = usePwaInstall()
 
     useEffect(() => {
         if ('serviceWorker' in navigator) {
@@ -47,18 +52,27 @@ export default function StaffLayout({
                     <div className="relative">
                         <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 p-[1px] shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform">
                             <div className="w-full h-full rounded-[15px] bg-[#0d1117] flex items-center justify-center overflow-hidden">
-                                <span className="font-black text-[12px] text-white italic tracking-tighter">ZB</span>
+                                <span className="font-black text-[12px] text-white  tracking-tighter">ZB</span>
                             </div>
                         </div>
                         <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full border-2 border-[#0d1117] animate-pulse"></div>
                     </div>
                     <div className="flex flex-col">
-                        <h1 className="font-black text-[14px] text-white tracking-tighter italic leading-none">ZENBOURG <span className="text-blue-500 not-italic ml-0.5">STAFF</span></h1>
-                        <span className="text-[9px] font-black text-gray-600 uppercase tracking-widest mt-1 italic">Operations Portal</span>
+                        <h1 className="font-black text-[14px] text-white tracking-tighter  leading-none">ZENBOURG <span className="text-blue-500 not- ml-0.5">STAFF</span></h1>
+                        <span className="text-[9px] font-black text-gray-600 uppercase tracking-widest mt-1 ">Operations Portal</span>
                     </div>
                 </div>
 
                 <div className="flex items-center gap-2">
+                    {isInstallable && (
+                        <button
+                            onClick={installPwa}
+                            className="w-10 h-10 rounded-xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-400 hover:bg-blue-600 hover:text-white transition-all active:scale-95"
+                            title="Install App"
+                        >
+                            <Download className="w-4 h-4" />
+                        </button>
+                    )}
                     <button
                         onClick={() => router.push('/staff/notifications')}
                         className="w-10 h-10 rounded-xl bg-white/[0.03] border border-white/[0.05] flex items-center justify-center text-gray-400 hover:text-white transition-all hover:bg-white/[0.08] relative active:scale-95"
@@ -79,6 +93,8 @@ export default function StaffLayout({
             <main className="px-5 py-24 max-w-lg mx-auto min-h-screen">
                 {children}
             </main>
+
+            <PWAInstall />
 
             {/* Bottom Nav: Premium Floating Design */}
             <div className="fixed bottom-0 left-0 right-0 z-50 px-6 pb-6 pointer-events-none">

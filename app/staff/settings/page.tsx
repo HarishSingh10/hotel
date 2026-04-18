@@ -38,8 +38,8 @@ export default function StaffSettingsPage() {
                     <ChevronLeft className="w-6 h-6" />
                 </button>
                 <div className="flex flex-col items-center">
-                    <h1 className="text-2xl font-black text-white tracking-tighter italic uppercase underline underline-offset-8 decoration-blue-500/20 leading-none mb-2">System Config</h1>
-                    <p className="text-[10px] font-black text-gray-600 uppercase tracking-[0.4em] italic">Operational Settings</p>
+                    <h1 className="text-2xl font-black text-white tracking-tighter  uppercase underline underline-offset-8 decoration-blue-500/20 leading-none mb-2">System Config</h1>
+                    <p className="text-[10px] font-black text-gray-600 uppercase tracking-[0.4em] ">Operational Settings</p>
                 </div>
                 <div className="w-12 h-12 rounded-[22px] bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-500">
                     <Settings className="w-6 h-6" />
@@ -48,7 +48,7 @@ export default function StaffSettingsPage() {
 
             {/* Account Settings Section */}
             <div className="space-y-4">
-                <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] italic ml-2">Preferences</h3>
+                <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em]  ml-2">Preferences</h3>
                 
                 <div className="bg-[#161b22] border border-white/[0.05] rounded-[40px] overflow-hidden shadow-2xl shadow-black/40">
                     {[
@@ -62,7 +62,7 @@ export default function StaffSettingsPage() {
                                     <item.icon className="w-5 h-5" />
                                 </div>
                                 <div>
-                                    <p className="text-[13px] font-black text-white italic tracking-tight uppercase">{item.label}</p>
+                                    <p className="text-[13px] font-black text-white  tracking-tight uppercase">{item.label}</p>
                                     <p className="text-[9px] font-bold text-gray-600 uppercase tracking-widest">{item.sub}</p>
                                 </div>
                             </div>
@@ -87,7 +87,7 @@ export default function StaffSettingsPage() {
                                 <Globe className="w-5 h-5" />
                             </div>
                             <div>
-                                <p className="text-[13px] font-black text-white italic tracking-tight uppercase">System Language</p>
+                                <p className="text-[13px] font-black text-white  tracking-tight uppercase">System Language</p>
                                 <p className="text-[9px] font-bold text-gray-600 uppercase tracking-widest">Interface localization</p>
                             </div>
                         </div>
@@ -98,21 +98,21 @@ export default function StaffSettingsPage() {
 
             {/* Security Section */}
             <div className="space-y-4">
-                <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] italic ml-2">Security Hub</h3>
+                <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em]  ml-2">Security Hub</h3>
                 <div className="bg-[#161b22] border border-white/[0.05] rounded-[40px] p-6 space-y-4 shadow-3xl">
                     <button className="w-full h-16 bg-white/[0.03] border border-white/[0.05] rounded-3xl flex items-center justify-between px-6 hover:bg-white/[0.05] transition-all active:scale-[0.98]">
                         <div className="flex items-center gap-4">
                             <Lock className="w-5 h-5 text-gray-500" />
-                            <span className="text-xs font-black text-white uppercase tracking-widest italic">Rotate Passkey</span>
+                            <span className="text-xs font-black text-white uppercase tracking-widest ">Rotate Passkey</span>
                         </div>
                         <ChevronLeft className="w-4 h-4 text-gray-800 rotate-180" />
                     </button>
                     <button className="w-full h-16 bg-white/[0.03] border border-white/[0.05] rounded-3xl flex items-center justify-between px-6 hover:bg-white/[0.05] transition-all active:scale-[0.98]">
                         <div className="flex items-center gap-4">
                             <Shield className="w-5 h-5 text-gray-500" />
-                            <span className="text-xs font-black text-white uppercase tracking-widest italic">Two-Factor Sync</span>
+                            <span className="text-xs font-black text-white uppercase tracking-widest ">Two-Factor Sync</span>
                         </div>
-                        <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest italic">Enabled</span>
+                        <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest ">Enabled</span>
                     </button>
                 </div>
             </div>

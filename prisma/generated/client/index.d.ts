@@ -163,6 +163,11 @@ export type TicketMessage = $Result.DefaultSelection<Prisma.$TicketMessagePayloa
  * 
  */
 export type PlanDefinition = $Result.DefaultSelection<Prisma.$PlanDefinitionPayload>
+/**
+ * Model PropertySettings
+ * 
+ */
+export type PropertySettings = $Result.DefaultSelection<Prisma.$PropertySettingsPayload>
 
 /**
  * Enums
@@ -201,6 +206,10 @@ export type CheckInStatus = (typeof CheckInStatus)[keyof typeof CheckInStatus]
 
 
 export const SubscriptionPlan: {
+  BASE: 'BASE',
+  STARTER: 'STARTER',
+  STANDARD: 'STANDARD',
+  ENTERPRISE: 'ENTERPRISE',
   GOLD: 'GOLD',
   PLATINUM: 'PLATINUM',
   DIAMOND: 'DIAMOND'
@@ -916,6 +925,16 @@ export class PrismaClient<
     * ```
     */
   get planDefinition(): Prisma.PlanDefinitionDelegate<ExtArgs>;
+
+  /**
+   * `prisma.propertySettings`: Exposes CRUD operations for the **PropertySettings** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more PropertySettings
+    * const propertySettings = await prisma.propertySettings.findMany()
+    * ```
+    */
+  get propertySettings(): Prisma.PropertySettingsDelegate<ExtArgs>;
 }
 
 export namespace Prisma {
@@ -1386,7 +1405,8 @@ export namespace Prisma {
     Message: 'Message',
     SupportTicket: 'SupportTicket',
     TicketMessage: 'TicketMessage',
-    PlanDefinition: 'PlanDefinition'
+    PlanDefinition: 'PlanDefinition',
+    PropertySettings: 'PropertySettings'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1402,7 +1422,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "user" | "guest" | "favorite" | "property" | "room" | "booking" | "serviceRequest" | "staff" | "attendance" | "leaveRequest" | "payroll" | "rating" | "performanceScore" | "amenity" | "menuItem" | "spaService" | "lostItem" | "rolePermission" | "systemSetting" | "notificationTemplate" | "serviceConfig" | "serviceStep" | "campaign" | "systemNode" | "systemAlert" | "inAppNotification" | "message" | "supportTicket" | "ticketMessage" | "planDefinition"
+      modelProps: "user" | "guest" | "favorite" | "property" | "room" | "booking" | "serviceRequest" | "staff" | "attendance" | "leaveRequest" | "payroll" | "rating" | "performanceScore" | "amenity" | "menuItem" | "spaService" | "lostItem" | "rolePermission" | "systemSetting" | "notificationTemplate" | "serviceConfig" | "serviceStep" | "campaign" | "systemNode" | "systemAlert" | "inAppNotification" | "message" | "supportTicket" | "ticketMessage" | "planDefinition" | "propertySettings"
       txIsolationLevel: never
     }
     model: {
@@ -3626,6 +3646,80 @@ export namespace Prisma {
           }
         }
       }
+      PropertySettings: {
+        payload: Prisma.$PropertySettingsPayload<ExtArgs>
+        fields: Prisma.PropertySettingsFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.PropertySettingsFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PropertySettingsPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.PropertySettingsFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PropertySettingsPayload>
+          }
+          findFirst: {
+            args: Prisma.PropertySettingsFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PropertySettingsPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.PropertySettingsFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PropertySettingsPayload>
+          }
+          findMany: {
+            args: Prisma.PropertySettingsFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PropertySettingsPayload>[]
+          }
+          create: {
+            args: Prisma.PropertySettingsCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PropertySettingsPayload>
+          }
+          createMany: {
+            args: Prisma.PropertySettingsCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.PropertySettingsDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PropertySettingsPayload>
+          }
+          update: {
+            args: Prisma.PropertySettingsUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PropertySettingsPayload>
+          }
+          deleteMany: {
+            args: Prisma.PropertySettingsDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.PropertySettingsUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.PropertySettingsUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PropertySettingsPayload>
+          }
+          aggregate: {
+            args: Prisma.PropertySettingsAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregatePropertySettings>
+          }
+          groupBy: {
+            args: Prisma.PropertySettingsGroupByArgs<ExtArgs>
+            result: $Utils.Optional<PropertySettingsGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.PropertySettingsFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.PropertySettingsAggregateRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          count: {
+            args: Prisma.PropertySettingsCountArgs<ExtArgs>
+            result: $Utils.Optional<PropertySettingsCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -5399,6 +5493,7 @@ export namespace Prisma {
     checkInStatus: $Enums.CheckInStatus | null
     checkInCompletedAt: Date | null
     language: string | null
+    createdByPropertyId: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -5417,6 +5512,7 @@ export namespace Prisma {
     checkInStatus: $Enums.CheckInStatus | null
     checkInCompletedAt: Date | null
     language: string | null
+    createdByPropertyId: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -5435,6 +5531,7 @@ export namespace Prisma {
     checkInStatus: number
     checkInCompletedAt: number
     language: number
+    createdByPropertyId: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -5455,6 +5552,7 @@ export namespace Prisma {
     checkInStatus?: true
     checkInCompletedAt?: true
     language?: true
+    createdByPropertyId?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -5473,6 +5571,7 @@ export namespace Prisma {
     checkInStatus?: true
     checkInCompletedAt?: true
     language?: true
+    createdByPropertyId?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -5491,6 +5590,7 @@ export namespace Prisma {
     checkInStatus?: true
     checkInCompletedAt?: true
     language?: true
+    createdByPropertyId?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -5582,6 +5682,7 @@ export namespace Prisma {
     checkInStatus: $Enums.CheckInStatus
     checkInCompletedAt: Date | null
     language: string
+    createdByPropertyId: string | null
     createdAt: Date
     updatedAt: Date
     _count: GuestCountAggregateOutputType | null
@@ -5617,6 +5718,7 @@ export namespace Prisma {
     checkInStatus?: boolean
     checkInCompletedAt?: boolean
     language?: boolean
+    createdByPropertyId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     bookings?: boolean | Guest$bookingsArgs<ExtArgs>
@@ -5643,6 +5745,7 @@ export namespace Prisma {
     checkInStatus?: boolean
     checkInCompletedAt?: boolean
     language?: boolean
+    createdByPropertyId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
@@ -5681,6 +5784,7 @@ export namespace Prisma {
       checkInStatus: $Enums.CheckInStatus
       checkInCompletedAt: Date | null
       language: string
+      createdByPropertyId: string | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["guest"]>
@@ -6094,6 +6198,7 @@ export namespace Prisma {
     readonly checkInStatus: FieldRef<"Guest", 'CheckInStatus'>
     readonly checkInCompletedAt: FieldRef<"Guest", 'DateTime'>
     readonly language: FieldRef<"Guest", 'String'>
+    readonly createdByPropertyId: FieldRef<"Guest", 'String'>
     readonly createdAt: FieldRef<"Guest", 'DateTime'>
     readonly updatedAt: FieldRef<"Guest", 'DateTime'>
   }
@@ -10237,12 +10342,32 @@ export namespace Prisma {
     numberOfGuests: number | null
     totalAmount: number | null
     paidAmount: number | null
+    baseAmount: number | null
+    gstPercent: number | null
+    gstAmount: number | null
+    serviceChargePercent: number | null
+    serviceChargeAmount: number | null
+    luxuryTaxPercent: number | null
+    luxuryTaxAmount: number | null
+    discountPercent: number | null
+    discountAmount: number | null
+    finalAmount: number | null
   }
 
   export type BookingSumAggregateOutputType = {
     numberOfGuests: number | null
     totalAmount: number | null
     paidAmount: number | null
+    baseAmount: number | null
+    gstPercent: number | null
+    gstAmount: number | null
+    serviceChargePercent: number | null
+    serviceChargeAmount: number | null
+    luxuryTaxPercent: number | null
+    luxuryTaxAmount: number | null
+    discountPercent: number | null
+    discountAmount: number | null
+    finalAmount: number | null
   }
 
   export type BookingMinAggregateOutputType = {
@@ -10259,6 +10384,16 @@ export namespace Prisma {
     totalAmount: number | null
     paidAmount: number | null
     paymentStatus: $Enums.PaymentStatus | null
+    baseAmount: number | null
+    gstPercent: number | null
+    gstAmount: number | null
+    serviceChargePercent: number | null
+    serviceChargeAmount: number | null
+    luxuryTaxPercent: number | null
+    luxuryTaxAmount: number | null
+    discountPercent: number | null
+    discountAmount: number | null
+    finalAmount: number | null
     specialRequests: string | null
     notes: string | null
     propertyId: string | null
@@ -10280,6 +10415,16 @@ export namespace Prisma {
     totalAmount: number | null
     paidAmount: number | null
     paymentStatus: $Enums.PaymentStatus | null
+    baseAmount: number | null
+    gstPercent: number | null
+    gstAmount: number | null
+    serviceChargePercent: number | null
+    serviceChargeAmount: number | null
+    luxuryTaxPercent: number | null
+    luxuryTaxAmount: number | null
+    discountPercent: number | null
+    discountAmount: number | null
+    finalAmount: number | null
     specialRequests: string | null
     notes: string | null
     propertyId: string | null
@@ -10301,6 +10446,16 @@ export namespace Prisma {
     totalAmount: number
     paidAmount: number
     paymentStatus: number
+    baseAmount: number
+    gstPercent: number
+    gstAmount: number
+    serviceChargePercent: number
+    serviceChargeAmount: number
+    luxuryTaxPercent: number
+    luxuryTaxAmount: number
+    discountPercent: number
+    discountAmount: number
+    finalAmount: number
     specialRequests: number
     notes: number
     propertyId: number
@@ -10314,12 +10469,32 @@ export namespace Prisma {
     numberOfGuests?: true
     totalAmount?: true
     paidAmount?: true
+    baseAmount?: true
+    gstPercent?: true
+    gstAmount?: true
+    serviceChargePercent?: true
+    serviceChargeAmount?: true
+    luxuryTaxPercent?: true
+    luxuryTaxAmount?: true
+    discountPercent?: true
+    discountAmount?: true
+    finalAmount?: true
   }
 
   export type BookingSumAggregateInputType = {
     numberOfGuests?: true
     totalAmount?: true
     paidAmount?: true
+    baseAmount?: true
+    gstPercent?: true
+    gstAmount?: true
+    serviceChargePercent?: true
+    serviceChargeAmount?: true
+    luxuryTaxPercent?: true
+    luxuryTaxAmount?: true
+    discountPercent?: true
+    discountAmount?: true
+    finalAmount?: true
   }
 
   export type BookingMinAggregateInputType = {
@@ -10336,6 +10511,16 @@ export namespace Prisma {
     totalAmount?: true
     paidAmount?: true
     paymentStatus?: true
+    baseAmount?: true
+    gstPercent?: true
+    gstAmount?: true
+    serviceChargePercent?: true
+    serviceChargeAmount?: true
+    luxuryTaxPercent?: true
+    luxuryTaxAmount?: true
+    discountPercent?: true
+    discountAmount?: true
+    finalAmount?: true
     specialRequests?: true
     notes?: true
     propertyId?: true
@@ -10357,6 +10542,16 @@ export namespace Prisma {
     totalAmount?: true
     paidAmount?: true
     paymentStatus?: true
+    baseAmount?: true
+    gstPercent?: true
+    gstAmount?: true
+    serviceChargePercent?: true
+    serviceChargeAmount?: true
+    luxuryTaxPercent?: true
+    luxuryTaxAmount?: true
+    discountPercent?: true
+    discountAmount?: true
+    finalAmount?: true
     specialRequests?: true
     notes?: true
     propertyId?: true
@@ -10378,6 +10573,16 @@ export namespace Prisma {
     totalAmount?: true
     paidAmount?: true
     paymentStatus?: true
+    baseAmount?: true
+    gstPercent?: true
+    gstAmount?: true
+    serviceChargePercent?: true
+    serviceChargeAmount?: true
+    luxuryTaxPercent?: true
+    luxuryTaxAmount?: true
+    discountPercent?: true
+    discountAmount?: true
+    finalAmount?: true
     specialRequests?: true
     notes?: true
     propertyId?: true
@@ -10486,9 +10691,19 @@ export namespace Prisma {
     totalAmount: number
     paidAmount: number
     paymentStatus: $Enums.PaymentStatus
+    baseAmount: number | null
+    gstPercent: number | null
+    gstAmount: number | null
+    serviceChargePercent: number | null
+    serviceChargeAmount: number | null
+    luxuryTaxPercent: number | null
+    luxuryTaxAmount: number | null
+    discountPercent: number | null
+    discountAmount: number | null
+    finalAmount: number | null
     specialRequests: string | null
     notes: string | null
-    propertyId: string
+    propertyId: string | null
     createdAt: Date
     updatedAt: Date
     _count: BookingCountAggregateOutputType | null
@@ -10526,6 +10741,16 @@ export namespace Prisma {
     totalAmount?: boolean
     paidAmount?: boolean
     paymentStatus?: boolean
+    baseAmount?: boolean
+    gstPercent?: boolean
+    gstAmount?: boolean
+    serviceChargePercent?: boolean
+    serviceChargeAmount?: boolean
+    luxuryTaxPercent?: boolean
+    luxuryTaxAmount?: boolean
+    discountPercent?: boolean
+    discountAmount?: boolean
+    finalAmount?: boolean
     specialRequests?: boolean
     notes?: boolean
     propertyId?: boolean
@@ -10533,7 +10758,7 @@ export namespace Prisma {
     updatedAt?: boolean
     guest?: boolean | GuestDefaultArgs<ExtArgs>
     room?: boolean | RoomDefaultArgs<ExtArgs>
-    property?: boolean | PropertyDefaultArgs<ExtArgs>
+    property?: boolean | Booking$propertyArgs<ExtArgs>
     lostItems?: boolean | Booking$lostItemsArgs<ExtArgs>
     _count?: boolean | BookingCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["booking"]>
@@ -10553,6 +10778,16 @@ export namespace Prisma {
     totalAmount?: boolean
     paidAmount?: boolean
     paymentStatus?: boolean
+    baseAmount?: boolean
+    gstPercent?: boolean
+    gstAmount?: boolean
+    serviceChargePercent?: boolean
+    serviceChargeAmount?: boolean
+    luxuryTaxPercent?: boolean
+    luxuryTaxAmount?: boolean
+    discountPercent?: boolean
+    discountAmount?: boolean
+    finalAmount?: boolean
     specialRequests?: boolean
     notes?: boolean
     propertyId?: boolean
@@ -10563,7 +10798,7 @@ export namespace Prisma {
   export type BookingInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     guest?: boolean | GuestDefaultArgs<ExtArgs>
     room?: boolean | RoomDefaultArgs<ExtArgs>
-    property?: boolean | PropertyDefaultArgs<ExtArgs>
+    property?: boolean | Booking$propertyArgs<ExtArgs>
     lostItems?: boolean | Booking$lostItemsArgs<ExtArgs>
     _count?: boolean | BookingCountOutputTypeDefaultArgs<ExtArgs>
   }
@@ -10573,7 +10808,7 @@ export namespace Prisma {
     objects: {
       guest: Prisma.$GuestPayload<ExtArgs>
       room: Prisma.$RoomPayload<ExtArgs>
-      property: Prisma.$PropertyPayload<ExtArgs>
+      property: Prisma.$PropertyPayload<ExtArgs> | null
       lostItems: Prisma.$LostItemPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -10590,9 +10825,19 @@ export namespace Prisma {
       totalAmount: number
       paidAmount: number
       paymentStatus: $Enums.PaymentStatus
+      baseAmount: number | null
+      gstPercent: number | null
+      gstAmount: number | null
+      serviceChargePercent: number | null
+      serviceChargeAmount: number | null
+      luxuryTaxPercent: number | null
+      luxuryTaxAmount: number | null
+      discountPercent: number | null
+      discountAmount: number | null
+      finalAmount: number | null
       specialRequests: string | null
       notes: string | null
-      propertyId: string
+      propertyId: string | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["booking"]>
@@ -10960,7 +11205,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     guest<T extends GuestDefaultArgs<ExtArgs> = {}>(args?: Subset<T, GuestDefaultArgs<ExtArgs>>): Prisma__GuestClient<$Result.GetResult<Prisma.$GuestPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
     room<T extends RoomDefaultArgs<ExtArgs> = {}>(args?: Subset<T, RoomDefaultArgs<ExtArgs>>): Prisma__RoomClient<$Result.GetResult<Prisma.$RoomPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
-    property<T extends PropertyDefaultArgs<ExtArgs> = {}>(args?: Subset<T, PropertyDefaultArgs<ExtArgs>>): Prisma__PropertyClient<$Result.GetResult<Prisma.$PropertyPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    property<T extends Booking$propertyArgs<ExtArgs> = {}>(args?: Subset<T, Booking$propertyArgs<ExtArgs>>): Prisma__PropertyClient<$Result.GetResult<Prisma.$PropertyPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     lostItems<T extends Booking$lostItemsArgs<ExtArgs> = {}>(args?: Subset<T, Booking$lostItemsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LostItemPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -11004,6 +11249,16 @@ export namespace Prisma {
     readonly totalAmount: FieldRef<"Booking", 'Float'>
     readonly paidAmount: FieldRef<"Booking", 'Float'>
     readonly paymentStatus: FieldRef<"Booking", 'PaymentStatus'>
+    readonly baseAmount: FieldRef<"Booking", 'Float'>
+    readonly gstPercent: FieldRef<"Booking", 'Float'>
+    readonly gstAmount: FieldRef<"Booking", 'Float'>
+    readonly serviceChargePercent: FieldRef<"Booking", 'Float'>
+    readonly serviceChargeAmount: FieldRef<"Booking", 'Float'>
+    readonly luxuryTaxPercent: FieldRef<"Booking", 'Float'>
+    readonly luxuryTaxAmount: FieldRef<"Booking", 'Float'>
+    readonly discountPercent: FieldRef<"Booking", 'Float'>
+    readonly discountAmount: FieldRef<"Booking", 'Float'>
+    readonly finalAmount: FieldRef<"Booking", 'Float'>
     readonly specialRequests: FieldRef<"Booking", 'String'>
     readonly notes: FieldRef<"Booking", 'String'>
     readonly propertyId: FieldRef<"Booking", 'String'>
@@ -11332,6 +11587,21 @@ export namespace Prisma {
      * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
      */
     options?: InputJsonValue
+  }
+
+  /**
+   * Booking.property
+   */
+  export type Booking$propertyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Property
+     */
+    select?: PropertySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PropertyInclude<ExtArgs> | null
+    where?: PropertyWhereInput
   }
 
   /**
@@ -35075,70 +35345,128 @@ export namespace Prisma {
   }
 
   export type PlanDefinitionAvgAggregateOutputType = {
-    price: number | null
+    originalPrice: number | null
+    discountedPrice: number | null
+    discountPercent: number | null
+    maxRooms: number | null
+    maxStaff: number | null
   }
 
   export type PlanDefinitionSumAggregateOutputType = {
-    price: number | null
+    originalPrice: number | null
+    discountedPrice: number | null
+    discountPercent: number | null
+    maxRooms: number | null
+    maxStaff: number | null
   }
 
   export type PlanDefinitionMinAggregateOutputType = {
     id: string | null
     plan: $Enums.SubscriptionPlan | null
-    price: number | null
+    displayName: string | null
+    tagline: string | null
     description: string | null
+    originalPrice: number | null
+    discountedPrice: number | null
+    discountPercent: number | null
+    billingCycle: string | null
+    maxRooms: number | null
+    maxStaff: number | null
     updatedAt: Date | null
   }
 
   export type PlanDefinitionMaxAggregateOutputType = {
     id: string | null
     plan: $Enums.SubscriptionPlan | null
-    price: number | null
+    displayName: string | null
+    tagline: string | null
     description: string | null
+    originalPrice: number | null
+    discountedPrice: number | null
+    discountPercent: number | null
+    billingCycle: string | null
+    maxRooms: number | null
+    maxStaff: number | null
     updatedAt: Date | null
   }
 
   export type PlanDefinitionCountAggregateOutputType = {
     id: number
     plan: number
-    features: number
-    price: number
+    displayName: number
+    tagline: number
     description: number
+    originalPrice: number
+    discountedPrice: number
+    discountPercent: number
+    billingCycle: number
+    maxRooms: number
+    maxStaff: number
+    features: number
     updatedAt: number
     _all: number
   }
 
 
   export type PlanDefinitionAvgAggregateInputType = {
-    price?: true
+    originalPrice?: true
+    discountedPrice?: true
+    discountPercent?: true
+    maxRooms?: true
+    maxStaff?: true
   }
 
   export type PlanDefinitionSumAggregateInputType = {
-    price?: true
+    originalPrice?: true
+    discountedPrice?: true
+    discountPercent?: true
+    maxRooms?: true
+    maxStaff?: true
   }
 
   export type PlanDefinitionMinAggregateInputType = {
     id?: true
     plan?: true
-    price?: true
+    displayName?: true
+    tagline?: true
     description?: true
+    originalPrice?: true
+    discountedPrice?: true
+    discountPercent?: true
+    billingCycle?: true
+    maxRooms?: true
+    maxStaff?: true
     updatedAt?: true
   }
 
   export type PlanDefinitionMaxAggregateInputType = {
     id?: true
     plan?: true
-    price?: true
+    displayName?: true
+    tagline?: true
     description?: true
+    originalPrice?: true
+    discountedPrice?: true
+    discountPercent?: true
+    billingCycle?: true
+    maxRooms?: true
+    maxStaff?: true
     updatedAt?: true
   }
 
   export type PlanDefinitionCountAggregateInputType = {
     id?: true
     plan?: true
-    features?: true
-    price?: true
+    displayName?: true
+    tagline?: true
     description?: true
+    originalPrice?: true
+    discountedPrice?: true
+    discountPercent?: true
+    billingCycle?: true
+    maxRooms?: true
+    maxStaff?: true
+    features?: true
     updatedAt?: true
     _all?: true
   }
@@ -35232,9 +35560,16 @@ export namespace Prisma {
   export type PlanDefinitionGroupByOutputType = {
     id: string
     plan: $Enums.SubscriptionPlan
-    features: string[]
-    price: number | null
+    displayName: string | null
+    tagline: string | null
     description: string | null
+    originalPrice: number
+    discountedPrice: number
+    discountPercent: number
+    billingCycle: string
+    maxRooms: number
+    maxStaff: number
+    features: string[]
     updatedAt: Date
     _count: PlanDefinitionCountAggregateOutputType | null
     _avg: PlanDefinitionAvgAggregateOutputType | null
@@ -35260,9 +35595,16 @@ export namespace Prisma {
   export type PlanDefinitionSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     plan?: boolean
-    features?: boolean
-    price?: boolean
+    displayName?: boolean
+    tagline?: boolean
     description?: boolean
+    originalPrice?: boolean
+    discountedPrice?: boolean
+    discountPercent?: boolean
+    billingCycle?: boolean
+    maxRooms?: boolean
+    maxStaff?: boolean
+    features?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["planDefinition"]>
 
@@ -35270,9 +35612,16 @@ export namespace Prisma {
   export type PlanDefinitionSelectScalar = {
     id?: boolean
     plan?: boolean
-    features?: boolean
-    price?: boolean
+    displayName?: boolean
+    tagline?: boolean
     description?: boolean
+    originalPrice?: boolean
+    discountedPrice?: boolean
+    discountPercent?: boolean
+    billingCycle?: boolean
+    maxRooms?: boolean
+    maxStaff?: boolean
+    features?: boolean
     updatedAt?: boolean
   }
 
@@ -35283,9 +35632,16 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       plan: $Enums.SubscriptionPlan
-      features: string[]
-      price: number | null
+      displayName: string | null
+      tagline: string | null
       description: string | null
+      originalPrice: number
+      discountedPrice: number
+      discountPercent: number
+      billingCycle: string
+      maxRooms: number
+      maxStaff: number
+      features: string[]
       updatedAt: Date
     }, ExtArgs["result"]["planDefinition"]>
     composites: {}
@@ -35681,9 +36037,16 @@ export namespace Prisma {
   interface PlanDefinitionFieldRefs {
     readonly id: FieldRef<"PlanDefinition", 'String'>
     readonly plan: FieldRef<"PlanDefinition", 'SubscriptionPlan'>
-    readonly features: FieldRef<"PlanDefinition", 'String[]'>
-    readonly price: FieldRef<"PlanDefinition", 'Float'>
+    readonly displayName: FieldRef<"PlanDefinition", 'String'>
+    readonly tagline: FieldRef<"PlanDefinition", 'String'>
     readonly description: FieldRef<"PlanDefinition", 'String'>
+    readonly originalPrice: FieldRef<"PlanDefinition", 'Float'>
+    readonly discountedPrice: FieldRef<"PlanDefinition", 'Float'>
+    readonly discountPercent: FieldRef<"PlanDefinition", 'Float'>
+    readonly billingCycle: FieldRef<"PlanDefinition", 'String'>
+    readonly maxRooms: FieldRef<"PlanDefinition", 'Int'>
+    readonly maxStaff: FieldRef<"PlanDefinition", 'Int'>
+    readonly features: FieldRef<"PlanDefinition", 'String[]'>
     readonly updatedAt: FieldRef<"PlanDefinition", 'DateTime'>
   }
     
@@ -35986,6 +36349,1132 @@ export namespace Prisma {
 
 
   /**
+   * Model PropertySettings
+   */
+
+  export type AggregatePropertySettings = {
+    _count: PropertySettingsCountAggregateOutputType | null
+    _avg: PropertySettingsAvgAggregateOutputType | null
+    _sum: PropertySettingsSumAggregateOutputType | null
+    _min: PropertySettingsMinAggregateOutputType | null
+    _max: PropertySettingsMaxAggregateOutputType | null
+  }
+
+  export type PropertySettingsAvgAggregateOutputType = {
+    gstPercent: number | null
+    serviceChargePercent: number | null
+    luxuryTaxPercent: number | null
+    defaultDiscountPercent: number | null
+  }
+
+  export type PropertySettingsSumAggregateOutputType = {
+    gstPercent: number | null
+    serviceChargePercent: number | null
+    luxuryTaxPercent: number | null
+    defaultDiscountPercent: number | null
+  }
+
+  export type PropertySettingsMinAggregateOutputType = {
+    id: string | null
+    propertyId: string | null
+    gstPercent: number | null
+    serviceChargePercent: number | null
+    luxuryTaxPercent: number | null
+    defaultDiscountPercent: number | null
+    discountLabel: string | null
+    invoicePrefix: string | null
+    invoiceFooter: string | null
+    currency: string | null
+    currencySymbol: string | null
+    checkInTime: string | null
+    checkOutTime: string | null
+    bankAccountName: string | null
+    bankAccountNumber: string | null
+    bankIfscCode: string | null
+    bankName: string | null
+    bankBranch: string | null
+    upiId: string | null
+    razorpayKeyId: string | null
+    razorpayKeySecret: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type PropertySettingsMaxAggregateOutputType = {
+    id: string | null
+    propertyId: string | null
+    gstPercent: number | null
+    serviceChargePercent: number | null
+    luxuryTaxPercent: number | null
+    defaultDiscountPercent: number | null
+    discountLabel: string | null
+    invoicePrefix: string | null
+    invoiceFooter: string | null
+    currency: string | null
+    currencySymbol: string | null
+    checkInTime: string | null
+    checkOutTime: string | null
+    bankAccountName: string | null
+    bankAccountNumber: string | null
+    bankIfscCode: string | null
+    bankName: string | null
+    bankBranch: string | null
+    upiId: string | null
+    razorpayKeyId: string | null
+    razorpayKeySecret: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type PropertySettingsCountAggregateOutputType = {
+    id: number
+    propertyId: number
+    gstPercent: number
+    serviceChargePercent: number
+    luxuryTaxPercent: number
+    defaultDiscountPercent: number
+    discountLabel: number
+    invoicePrefix: number
+    invoiceFooter: number
+    currency: number
+    currencySymbol: number
+    checkInTime: number
+    checkOutTime: number
+    bankAccountName: number
+    bankAccountNumber: number
+    bankIfscCode: number
+    bankName: number
+    bankBranch: number
+    upiId: number
+    razorpayKeyId: number
+    razorpayKeySecret: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type PropertySettingsAvgAggregateInputType = {
+    gstPercent?: true
+    serviceChargePercent?: true
+    luxuryTaxPercent?: true
+    defaultDiscountPercent?: true
+  }
+
+  export type PropertySettingsSumAggregateInputType = {
+    gstPercent?: true
+    serviceChargePercent?: true
+    luxuryTaxPercent?: true
+    defaultDiscountPercent?: true
+  }
+
+  export type PropertySettingsMinAggregateInputType = {
+    id?: true
+    propertyId?: true
+    gstPercent?: true
+    serviceChargePercent?: true
+    luxuryTaxPercent?: true
+    defaultDiscountPercent?: true
+    discountLabel?: true
+    invoicePrefix?: true
+    invoiceFooter?: true
+    currency?: true
+    currencySymbol?: true
+    checkInTime?: true
+    checkOutTime?: true
+    bankAccountName?: true
+    bankAccountNumber?: true
+    bankIfscCode?: true
+    bankName?: true
+    bankBranch?: true
+    upiId?: true
+    razorpayKeyId?: true
+    razorpayKeySecret?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type PropertySettingsMaxAggregateInputType = {
+    id?: true
+    propertyId?: true
+    gstPercent?: true
+    serviceChargePercent?: true
+    luxuryTaxPercent?: true
+    defaultDiscountPercent?: true
+    discountLabel?: true
+    invoicePrefix?: true
+    invoiceFooter?: true
+    currency?: true
+    currencySymbol?: true
+    checkInTime?: true
+    checkOutTime?: true
+    bankAccountName?: true
+    bankAccountNumber?: true
+    bankIfscCode?: true
+    bankName?: true
+    bankBranch?: true
+    upiId?: true
+    razorpayKeyId?: true
+    razorpayKeySecret?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type PropertySettingsCountAggregateInputType = {
+    id?: true
+    propertyId?: true
+    gstPercent?: true
+    serviceChargePercent?: true
+    luxuryTaxPercent?: true
+    defaultDiscountPercent?: true
+    discountLabel?: true
+    invoicePrefix?: true
+    invoiceFooter?: true
+    currency?: true
+    currencySymbol?: true
+    checkInTime?: true
+    checkOutTime?: true
+    bankAccountName?: true
+    bankAccountNumber?: true
+    bankIfscCode?: true
+    bankName?: true
+    bankBranch?: true
+    upiId?: true
+    razorpayKeyId?: true
+    razorpayKeySecret?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type PropertySettingsAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PropertySettings to aggregate.
+     */
+    where?: PropertySettingsWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PropertySettings to fetch.
+     */
+    orderBy?: PropertySettingsOrderByWithRelationInput | PropertySettingsOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: PropertySettingsWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PropertySettings from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PropertySettings.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned PropertySettings
+    **/
+    _count?: true | PropertySettingsCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: PropertySettingsAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: PropertySettingsSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: PropertySettingsMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: PropertySettingsMaxAggregateInputType
+  }
+
+  export type GetPropertySettingsAggregateType<T extends PropertySettingsAggregateArgs> = {
+        [P in keyof T & keyof AggregatePropertySettings]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregatePropertySettings[P]>
+      : GetScalarType<T[P], AggregatePropertySettings[P]>
+  }
+
+
+
+
+  export type PropertySettingsGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PropertySettingsWhereInput
+    orderBy?: PropertySettingsOrderByWithAggregationInput | PropertySettingsOrderByWithAggregationInput[]
+    by: PropertySettingsScalarFieldEnum[] | PropertySettingsScalarFieldEnum
+    having?: PropertySettingsScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: PropertySettingsCountAggregateInputType | true
+    _avg?: PropertySettingsAvgAggregateInputType
+    _sum?: PropertySettingsSumAggregateInputType
+    _min?: PropertySettingsMinAggregateInputType
+    _max?: PropertySettingsMaxAggregateInputType
+  }
+
+  export type PropertySettingsGroupByOutputType = {
+    id: string
+    propertyId: string
+    gstPercent: number
+    serviceChargePercent: number
+    luxuryTaxPercent: number
+    defaultDiscountPercent: number
+    discountLabel: string | null
+    invoicePrefix: string
+    invoiceFooter: string | null
+    currency: string
+    currencySymbol: string
+    checkInTime: string
+    checkOutTime: string
+    bankAccountName: string | null
+    bankAccountNumber: string | null
+    bankIfscCode: string | null
+    bankName: string | null
+    bankBranch: string | null
+    upiId: string | null
+    razorpayKeyId: string | null
+    razorpayKeySecret: string | null
+    createdAt: Date
+    updatedAt: Date
+    _count: PropertySettingsCountAggregateOutputType | null
+    _avg: PropertySettingsAvgAggregateOutputType | null
+    _sum: PropertySettingsSumAggregateOutputType | null
+    _min: PropertySettingsMinAggregateOutputType | null
+    _max: PropertySettingsMaxAggregateOutputType | null
+  }
+
+  type GetPropertySettingsGroupByPayload<T extends PropertySettingsGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<PropertySettingsGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof PropertySettingsGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], PropertySettingsGroupByOutputType[P]>
+            : GetScalarType<T[P], PropertySettingsGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type PropertySettingsSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    propertyId?: boolean
+    gstPercent?: boolean
+    serviceChargePercent?: boolean
+    luxuryTaxPercent?: boolean
+    defaultDiscountPercent?: boolean
+    discountLabel?: boolean
+    invoicePrefix?: boolean
+    invoiceFooter?: boolean
+    currency?: boolean
+    currencySymbol?: boolean
+    checkInTime?: boolean
+    checkOutTime?: boolean
+    bankAccountName?: boolean
+    bankAccountNumber?: boolean
+    bankIfscCode?: boolean
+    bankName?: boolean
+    bankBranch?: boolean
+    upiId?: boolean
+    razorpayKeyId?: boolean
+    razorpayKeySecret?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["propertySettings"]>
+
+
+  export type PropertySettingsSelectScalar = {
+    id?: boolean
+    propertyId?: boolean
+    gstPercent?: boolean
+    serviceChargePercent?: boolean
+    luxuryTaxPercent?: boolean
+    defaultDiscountPercent?: boolean
+    discountLabel?: boolean
+    invoicePrefix?: boolean
+    invoiceFooter?: boolean
+    currency?: boolean
+    currencySymbol?: boolean
+    checkInTime?: boolean
+    checkOutTime?: boolean
+    bankAccountName?: boolean
+    bankAccountNumber?: boolean
+    bankIfscCode?: boolean
+    bankName?: boolean
+    bankBranch?: boolean
+    upiId?: boolean
+    razorpayKeyId?: boolean
+    razorpayKeySecret?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+
+  export type $PropertySettingsPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "PropertySettings"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      propertyId: string
+      gstPercent: number
+      serviceChargePercent: number
+      luxuryTaxPercent: number
+      defaultDiscountPercent: number
+      discountLabel: string | null
+      invoicePrefix: string
+      invoiceFooter: string | null
+      currency: string
+      currencySymbol: string
+      checkInTime: string
+      checkOutTime: string
+      bankAccountName: string | null
+      bankAccountNumber: string | null
+      bankIfscCode: string | null
+      bankName: string | null
+      bankBranch: string | null
+      upiId: string | null
+      razorpayKeyId: string | null
+      razorpayKeySecret: string | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["propertySettings"]>
+    composites: {}
+  }
+
+  type PropertySettingsGetPayload<S extends boolean | null | undefined | PropertySettingsDefaultArgs> = $Result.GetResult<Prisma.$PropertySettingsPayload, S>
+
+  type PropertySettingsCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<PropertySettingsFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: PropertySettingsCountAggregateInputType | true
+    }
+
+  export interface PropertySettingsDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['PropertySettings'], meta: { name: 'PropertySettings' } }
+    /**
+     * Find zero or one PropertySettings that matches the filter.
+     * @param {PropertySettingsFindUniqueArgs} args - Arguments to find a PropertySettings
+     * @example
+     * // Get one PropertySettings
+     * const propertySettings = await prisma.propertySettings.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends PropertySettingsFindUniqueArgs>(args: SelectSubset<T, PropertySettingsFindUniqueArgs<ExtArgs>>): Prisma__PropertySettingsClient<$Result.GetResult<Prisma.$PropertySettingsPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one PropertySettings that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {PropertySettingsFindUniqueOrThrowArgs} args - Arguments to find a PropertySettings
+     * @example
+     * // Get one PropertySettings
+     * const propertySettings = await prisma.propertySettings.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends PropertySettingsFindUniqueOrThrowArgs>(args: SelectSubset<T, PropertySettingsFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PropertySettingsClient<$Result.GetResult<Prisma.$PropertySettingsPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first PropertySettings that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PropertySettingsFindFirstArgs} args - Arguments to find a PropertySettings
+     * @example
+     * // Get one PropertySettings
+     * const propertySettings = await prisma.propertySettings.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends PropertySettingsFindFirstArgs>(args?: SelectSubset<T, PropertySettingsFindFirstArgs<ExtArgs>>): Prisma__PropertySettingsClient<$Result.GetResult<Prisma.$PropertySettingsPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first PropertySettings that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PropertySettingsFindFirstOrThrowArgs} args - Arguments to find a PropertySettings
+     * @example
+     * // Get one PropertySettings
+     * const propertySettings = await prisma.propertySettings.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends PropertySettingsFindFirstOrThrowArgs>(args?: SelectSubset<T, PropertySettingsFindFirstOrThrowArgs<ExtArgs>>): Prisma__PropertySettingsClient<$Result.GetResult<Prisma.$PropertySettingsPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more PropertySettings that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PropertySettingsFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all PropertySettings
+     * const propertySettings = await prisma.propertySettings.findMany()
+     * 
+     * // Get first 10 PropertySettings
+     * const propertySettings = await prisma.propertySettings.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const propertySettingsWithIdOnly = await prisma.propertySettings.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends PropertySettingsFindManyArgs>(args?: SelectSubset<T, PropertySettingsFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PropertySettingsPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a PropertySettings.
+     * @param {PropertySettingsCreateArgs} args - Arguments to create a PropertySettings.
+     * @example
+     * // Create one PropertySettings
+     * const PropertySettings = await prisma.propertySettings.create({
+     *   data: {
+     *     // ... data to create a PropertySettings
+     *   }
+     * })
+     * 
+     */
+    create<T extends PropertySettingsCreateArgs>(args: SelectSubset<T, PropertySettingsCreateArgs<ExtArgs>>): Prisma__PropertySettingsClient<$Result.GetResult<Prisma.$PropertySettingsPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many PropertySettings.
+     * @param {PropertySettingsCreateManyArgs} args - Arguments to create many PropertySettings.
+     * @example
+     * // Create many PropertySettings
+     * const propertySettings = await prisma.propertySettings.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends PropertySettingsCreateManyArgs>(args?: SelectSubset<T, PropertySettingsCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a PropertySettings.
+     * @param {PropertySettingsDeleteArgs} args - Arguments to delete one PropertySettings.
+     * @example
+     * // Delete one PropertySettings
+     * const PropertySettings = await prisma.propertySettings.delete({
+     *   where: {
+     *     // ... filter to delete one PropertySettings
+     *   }
+     * })
+     * 
+     */
+    delete<T extends PropertySettingsDeleteArgs>(args: SelectSubset<T, PropertySettingsDeleteArgs<ExtArgs>>): Prisma__PropertySettingsClient<$Result.GetResult<Prisma.$PropertySettingsPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one PropertySettings.
+     * @param {PropertySettingsUpdateArgs} args - Arguments to update one PropertySettings.
+     * @example
+     * // Update one PropertySettings
+     * const propertySettings = await prisma.propertySettings.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends PropertySettingsUpdateArgs>(args: SelectSubset<T, PropertySettingsUpdateArgs<ExtArgs>>): Prisma__PropertySettingsClient<$Result.GetResult<Prisma.$PropertySettingsPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more PropertySettings.
+     * @param {PropertySettingsDeleteManyArgs} args - Arguments to filter PropertySettings to delete.
+     * @example
+     * // Delete a few PropertySettings
+     * const { count } = await prisma.propertySettings.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends PropertySettingsDeleteManyArgs>(args?: SelectSubset<T, PropertySettingsDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PropertySettings.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PropertySettingsUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many PropertySettings
+     * const propertySettings = await prisma.propertySettings.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends PropertySettingsUpdateManyArgs>(args: SelectSubset<T, PropertySettingsUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one PropertySettings.
+     * @param {PropertySettingsUpsertArgs} args - Arguments to update or create a PropertySettings.
+     * @example
+     * // Update or create a PropertySettings
+     * const propertySettings = await prisma.propertySettings.upsert({
+     *   create: {
+     *     // ... data to create a PropertySettings
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the PropertySettings we want to update
+     *   }
+     * })
+     */
+    upsert<T extends PropertySettingsUpsertArgs>(args: SelectSubset<T, PropertySettingsUpsertArgs<ExtArgs>>): Prisma__PropertySettingsClient<$Result.GetResult<Prisma.$PropertySettingsPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+    /**
+     * Find zero or more PropertySettings that matches the filter.
+     * @param {PropertySettingsFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const propertySettings = await prisma.propertySettings.findRaw({
+     *   filter: { age: { $gt: 25 } } 
+     * })
+     */
+    findRaw(args?: PropertySettingsFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a PropertySettings.
+     * @param {PropertySettingsAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const propertySettings = await prisma.propertySettings.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: PropertySettingsAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
+
+
+    /**
+     * Count the number of PropertySettings.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PropertySettingsCountArgs} args - Arguments to filter PropertySettings to count.
+     * @example
+     * // Count the number of PropertySettings
+     * const count = await prisma.propertySettings.count({
+     *   where: {
+     *     // ... the filter for the PropertySettings we want to count
+     *   }
+     * })
+    **/
+    count<T extends PropertySettingsCountArgs>(
+      args?: Subset<T, PropertySettingsCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], PropertySettingsCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a PropertySettings.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PropertySettingsAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends PropertySettingsAggregateArgs>(args: Subset<T, PropertySettingsAggregateArgs>): Prisma.PrismaPromise<GetPropertySettingsAggregateType<T>>
+
+    /**
+     * Group by PropertySettings.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PropertySettingsGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends PropertySettingsGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: PropertySettingsGroupByArgs['orderBy'] }
+        : { orderBy?: PropertySettingsGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, PropertySettingsGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPropertySettingsGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the PropertySettings model
+   */
+  readonly fields: PropertySettingsFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for PropertySettings.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__PropertySettingsClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the PropertySettings model
+   */ 
+  interface PropertySettingsFieldRefs {
+    readonly id: FieldRef<"PropertySettings", 'String'>
+    readonly propertyId: FieldRef<"PropertySettings", 'String'>
+    readonly gstPercent: FieldRef<"PropertySettings", 'Float'>
+    readonly serviceChargePercent: FieldRef<"PropertySettings", 'Float'>
+    readonly luxuryTaxPercent: FieldRef<"PropertySettings", 'Float'>
+    readonly defaultDiscountPercent: FieldRef<"PropertySettings", 'Float'>
+    readonly discountLabel: FieldRef<"PropertySettings", 'String'>
+    readonly invoicePrefix: FieldRef<"PropertySettings", 'String'>
+    readonly invoiceFooter: FieldRef<"PropertySettings", 'String'>
+    readonly currency: FieldRef<"PropertySettings", 'String'>
+    readonly currencySymbol: FieldRef<"PropertySettings", 'String'>
+    readonly checkInTime: FieldRef<"PropertySettings", 'String'>
+    readonly checkOutTime: FieldRef<"PropertySettings", 'String'>
+    readonly bankAccountName: FieldRef<"PropertySettings", 'String'>
+    readonly bankAccountNumber: FieldRef<"PropertySettings", 'String'>
+    readonly bankIfscCode: FieldRef<"PropertySettings", 'String'>
+    readonly bankName: FieldRef<"PropertySettings", 'String'>
+    readonly bankBranch: FieldRef<"PropertySettings", 'String'>
+    readonly upiId: FieldRef<"PropertySettings", 'String'>
+    readonly razorpayKeyId: FieldRef<"PropertySettings", 'String'>
+    readonly razorpayKeySecret: FieldRef<"PropertySettings", 'String'>
+    readonly createdAt: FieldRef<"PropertySettings", 'DateTime'>
+    readonly updatedAt: FieldRef<"PropertySettings", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * PropertySettings findUnique
+   */
+  export type PropertySettingsFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PropertySettings
+     */
+    select?: PropertySettingsSelect<ExtArgs> | null
+    /**
+     * Filter, which PropertySettings to fetch.
+     */
+    where: PropertySettingsWhereUniqueInput
+  }
+
+  /**
+   * PropertySettings findUniqueOrThrow
+   */
+  export type PropertySettingsFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PropertySettings
+     */
+    select?: PropertySettingsSelect<ExtArgs> | null
+    /**
+     * Filter, which PropertySettings to fetch.
+     */
+    where: PropertySettingsWhereUniqueInput
+  }
+
+  /**
+   * PropertySettings findFirst
+   */
+  export type PropertySettingsFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PropertySettings
+     */
+    select?: PropertySettingsSelect<ExtArgs> | null
+    /**
+     * Filter, which PropertySettings to fetch.
+     */
+    where?: PropertySettingsWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PropertySettings to fetch.
+     */
+    orderBy?: PropertySettingsOrderByWithRelationInput | PropertySettingsOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PropertySettings.
+     */
+    cursor?: PropertySettingsWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PropertySettings from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PropertySettings.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PropertySettings.
+     */
+    distinct?: PropertySettingsScalarFieldEnum | PropertySettingsScalarFieldEnum[]
+  }
+
+  /**
+   * PropertySettings findFirstOrThrow
+   */
+  export type PropertySettingsFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PropertySettings
+     */
+    select?: PropertySettingsSelect<ExtArgs> | null
+    /**
+     * Filter, which PropertySettings to fetch.
+     */
+    where?: PropertySettingsWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PropertySettings to fetch.
+     */
+    orderBy?: PropertySettingsOrderByWithRelationInput | PropertySettingsOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PropertySettings.
+     */
+    cursor?: PropertySettingsWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PropertySettings from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PropertySettings.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PropertySettings.
+     */
+    distinct?: PropertySettingsScalarFieldEnum | PropertySettingsScalarFieldEnum[]
+  }
+
+  /**
+   * PropertySettings findMany
+   */
+  export type PropertySettingsFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PropertySettings
+     */
+    select?: PropertySettingsSelect<ExtArgs> | null
+    /**
+     * Filter, which PropertySettings to fetch.
+     */
+    where?: PropertySettingsWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PropertySettings to fetch.
+     */
+    orderBy?: PropertySettingsOrderByWithRelationInput | PropertySettingsOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing PropertySettings.
+     */
+    cursor?: PropertySettingsWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PropertySettings from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PropertySettings.
+     */
+    skip?: number
+    distinct?: PropertySettingsScalarFieldEnum | PropertySettingsScalarFieldEnum[]
+  }
+
+  /**
+   * PropertySettings create
+   */
+  export type PropertySettingsCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PropertySettings
+     */
+    select?: PropertySettingsSelect<ExtArgs> | null
+    /**
+     * The data needed to create a PropertySettings.
+     */
+    data: XOR<PropertySettingsCreateInput, PropertySettingsUncheckedCreateInput>
+  }
+
+  /**
+   * PropertySettings createMany
+   */
+  export type PropertySettingsCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many PropertySettings.
+     */
+    data: PropertySettingsCreateManyInput | PropertySettingsCreateManyInput[]
+  }
+
+  /**
+   * PropertySettings update
+   */
+  export type PropertySettingsUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PropertySettings
+     */
+    select?: PropertySettingsSelect<ExtArgs> | null
+    /**
+     * The data needed to update a PropertySettings.
+     */
+    data: XOR<PropertySettingsUpdateInput, PropertySettingsUncheckedUpdateInput>
+    /**
+     * Choose, which PropertySettings to update.
+     */
+    where: PropertySettingsWhereUniqueInput
+  }
+
+  /**
+   * PropertySettings updateMany
+   */
+  export type PropertySettingsUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update PropertySettings.
+     */
+    data: XOR<PropertySettingsUpdateManyMutationInput, PropertySettingsUncheckedUpdateManyInput>
+    /**
+     * Filter which PropertySettings to update
+     */
+    where?: PropertySettingsWhereInput
+  }
+
+  /**
+   * PropertySettings upsert
+   */
+  export type PropertySettingsUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PropertySettings
+     */
+    select?: PropertySettingsSelect<ExtArgs> | null
+    /**
+     * The filter to search for the PropertySettings to update in case it exists.
+     */
+    where: PropertySettingsWhereUniqueInput
+    /**
+     * In case the PropertySettings found by the `where` argument doesn't exist, create a new PropertySettings with this data.
+     */
+    create: XOR<PropertySettingsCreateInput, PropertySettingsUncheckedCreateInput>
+    /**
+     * In case the PropertySettings was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<PropertySettingsUpdateInput, PropertySettingsUncheckedUpdateInput>
+  }
+
+  /**
+   * PropertySettings delete
+   */
+  export type PropertySettingsDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PropertySettings
+     */
+    select?: PropertySettingsSelect<ExtArgs> | null
+    /**
+     * Filter which PropertySettings to delete.
+     */
+    where: PropertySettingsWhereUniqueInput
+  }
+
+  /**
+   * PropertySettings deleteMany
+   */
+  export type PropertySettingsDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PropertySettings to delete
+     */
+    where?: PropertySettingsWhereInput
+  }
+
+  /**
+   * PropertySettings findRaw
+   */
+  export type PropertySettingsFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * PropertySettings aggregateRaw
+   */
+  export type PropertySettingsAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * PropertySettings without action
+   */
+  export type PropertySettingsDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PropertySettings
+     */
+    select?: PropertySettingsSelect<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -36021,6 +37510,7 @@ export namespace Prisma {
     checkInStatus: 'checkInStatus',
     checkInCompletedAt: 'checkInCompletedAt',
     language: 'language',
+    createdByPropertyId: 'createdByPropertyId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -36105,6 +37595,16 @@ export namespace Prisma {
     totalAmount: 'totalAmount',
     paidAmount: 'paidAmount',
     paymentStatus: 'paymentStatus',
+    baseAmount: 'baseAmount',
+    gstPercent: 'gstPercent',
+    gstAmount: 'gstAmount',
+    serviceChargePercent: 'serviceChargePercent',
+    serviceChargeAmount: 'serviceChargeAmount',
+    luxuryTaxPercent: 'luxuryTaxPercent',
+    luxuryTaxAmount: 'luxuryTaxAmount',
+    discountPercent: 'discountPercent',
+    discountAmount: 'discountAmount',
+    finalAmount: 'finalAmount',
     specialRequests: 'specialRequests',
     notes: 'notes',
     propertyId: 'propertyId',
@@ -36514,13 +38014,49 @@ export namespace Prisma {
   export const PlanDefinitionScalarFieldEnum: {
     id: 'id',
     plan: 'plan',
-    features: 'features',
-    price: 'price',
+    displayName: 'displayName',
+    tagline: 'tagline',
     description: 'description',
+    originalPrice: 'originalPrice',
+    discountedPrice: 'discountedPrice',
+    discountPercent: 'discountPercent',
+    billingCycle: 'billingCycle',
+    maxRooms: 'maxRooms',
+    maxStaff: 'maxStaff',
+    features: 'features',
     updatedAt: 'updatedAt'
   };
 
   export type PlanDefinitionScalarFieldEnum = (typeof PlanDefinitionScalarFieldEnum)[keyof typeof PlanDefinitionScalarFieldEnum]
+
+
+  export const PropertySettingsScalarFieldEnum: {
+    id: 'id',
+    propertyId: 'propertyId',
+    gstPercent: 'gstPercent',
+    serviceChargePercent: 'serviceChargePercent',
+    luxuryTaxPercent: 'luxuryTaxPercent',
+    defaultDiscountPercent: 'defaultDiscountPercent',
+    discountLabel: 'discountLabel',
+    invoicePrefix: 'invoicePrefix',
+    invoiceFooter: 'invoiceFooter',
+    currency: 'currency',
+    currencySymbol: 'currencySymbol',
+    checkInTime: 'checkInTime',
+    checkOutTime: 'checkOutTime',
+    bankAccountName: 'bankAccountName',
+    bankAccountNumber: 'bankAccountNumber',
+    bankIfscCode: 'bankIfscCode',
+    bankName: 'bankName',
+    bankBranch: 'bankBranch',
+    upiId: 'upiId',
+    razorpayKeyId: 'razorpayKeyId',
+    razorpayKeySecret: 'razorpayKeySecret',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type PropertySettingsScalarFieldEnum = (typeof PropertySettingsScalarFieldEnum)[keyof typeof PropertySettingsScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -37066,6 +38602,7 @@ export namespace Prisma {
     checkInStatus?: EnumCheckInStatusFilter<"Guest"> | $Enums.CheckInStatus
     checkInCompletedAt?: DateTimeNullableFilter<"Guest"> | Date | string | null
     language?: StringFilter<"Guest"> | string
+    createdByPropertyId?: StringNullableFilter<"Guest"> | string | null
     createdAt?: DateTimeFilter<"Guest"> | Date | string
     updatedAt?: DateTimeFilter<"Guest"> | Date | string
     bookings?: BookingListRelationFilter
@@ -37090,6 +38627,7 @@ export namespace Prisma {
     checkInStatus?: SortOrder
     checkInCompletedAt?: SortOrder
     language?: SortOrder
+    createdByPropertyId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     bookings?: BookingOrderByRelationAggregateInput
@@ -37117,6 +38655,7 @@ export namespace Prisma {
     checkInStatus?: EnumCheckInStatusFilter<"Guest"> | $Enums.CheckInStatus
     checkInCompletedAt?: DateTimeNullableFilter<"Guest"> | Date | string | null
     language?: StringFilter<"Guest"> | string
+    createdByPropertyId?: StringNullableFilter<"Guest"> | string | null
     createdAt?: DateTimeFilter<"Guest"> | Date | string
     updatedAt?: DateTimeFilter<"Guest"> | Date | string
     bookings?: BookingListRelationFilter
@@ -37141,6 +38680,7 @@ export namespace Prisma {
     checkInStatus?: SortOrder
     checkInCompletedAt?: SortOrder
     language?: SortOrder
+    createdByPropertyId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: GuestCountOrderByAggregateInput
@@ -37165,6 +38705,7 @@ export namespace Prisma {
     checkInStatus?: EnumCheckInStatusWithAggregatesFilter<"Guest"> | $Enums.CheckInStatus
     checkInCompletedAt?: DateTimeNullableWithAggregatesFilter<"Guest"> | Date | string | null
     language?: StringWithAggregatesFilter<"Guest"> | string
+    createdByPropertyId?: StringNullableWithAggregatesFilter<"Guest"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Guest"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Guest"> | Date | string
   }
@@ -37567,14 +39108,24 @@ export namespace Prisma {
     totalAmount?: FloatFilter<"Booking"> | number
     paidAmount?: FloatFilter<"Booking"> | number
     paymentStatus?: EnumPaymentStatusFilter<"Booking"> | $Enums.PaymentStatus
+    baseAmount?: FloatNullableFilter<"Booking"> | number | null
+    gstPercent?: FloatNullableFilter<"Booking"> | number | null
+    gstAmount?: FloatNullableFilter<"Booking"> | number | null
+    serviceChargePercent?: FloatNullableFilter<"Booking"> | number | null
+    serviceChargeAmount?: FloatNullableFilter<"Booking"> | number | null
+    luxuryTaxPercent?: FloatNullableFilter<"Booking"> | number | null
+    luxuryTaxAmount?: FloatNullableFilter<"Booking"> | number | null
+    discountPercent?: FloatNullableFilter<"Booking"> | number | null
+    discountAmount?: FloatNullableFilter<"Booking"> | number | null
+    finalAmount?: FloatNullableFilter<"Booking"> | number | null
     specialRequests?: StringNullableFilter<"Booking"> | string | null
     notes?: StringNullableFilter<"Booking"> | string | null
-    propertyId?: StringFilter<"Booking"> | string
+    propertyId?: StringNullableFilter<"Booking"> | string | null
     createdAt?: DateTimeFilter<"Booking"> | Date | string
     updatedAt?: DateTimeFilter<"Booking"> | Date | string
     guest?: XOR<GuestRelationFilter, GuestWhereInput>
     room?: XOR<RoomRelationFilter, RoomWhereInput>
-    property?: XOR<PropertyRelationFilter, PropertyWhereInput>
+    property?: XOR<PropertyNullableRelationFilter, PropertyWhereInput> | null
     lostItems?: LostItemListRelationFilter
   }
 
@@ -37592,6 +39143,16 @@ export namespace Prisma {
     totalAmount?: SortOrder
     paidAmount?: SortOrder
     paymentStatus?: SortOrder
+    baseAmount?: SortOrder
+    gstPercent?: SortOrder
+    gstAmount?: SortOrder
+    serviceChargePercent?: SortOrder
+    serviceChargeAmount?: SortOrder
+    luxuryTaxPercent?: SortOrder
+    luxuryTaxAmount?: SortOrder
+    discountPercent?: SortOrder
+    discountAmount?: SortOrder
+    finalAmount?: SortOrder
     specialRequests?: SortOrder
     notes?: SortOrder
     propertyId?: SortOrder
@@ -37620,14 +39181,24 @@ export namespace Prisma {
     totalAmount?: FloatFilter<"Booking"> | number
     paidAmount?: FloatFilter<"Booking"> | number
     paymentStatus?: EnumPaymentStatusFilter<"Booking"> | $Enums.PaymentStatus
+    baseAmount?: FloatNullableFilter<"Booking"> | number | null
+    gstPercent?: FloatNullableFilter<"Booking"> | number | null
+    gstAmount?: FloatNullableFilter<"Booking"> | number | null
+    serviceChargePercent?: FloatNullableFilter<"Booking"> | number | null
+    serviceChargeAmount?: FloatNullableFilter<"Booking"> | number | null
+    luxuryTaxPercent?: FloatNullableFilter<"Booking"> | number | null
+    luxuryTaxAmount?: FloatNullableFilter<"Booking"> | number | null
+    discountPercent?: FloatNullableFilter<"Booking"> | number | null
+    discountAmount?: FloatNullableFilter<"Booking"> | number | null
+    finalAmount?: FloatNullableFilter<"Booking"> | number | null
     specialRequests?: StringNullableFilter<"Booking"> | string | null
     notes?: StringNullableFilter<"Booking"> | string | null
-    propertyId?: StringFilter<"Booking"> | string
+    propertyId?: StringNullableFilter<"Booking"> | string | null
     createdAt?: DateTimeFilter<"Booking"> | Date | string
     updatedAt?: DateTimeFilter<"Booking"> | Date | string
     guest?: XOR<GuestRelationFilter, GuestWhereInput>
     room?: XOR<RoomRelationFilter, RoomWhereInput>
-    property?: XOR<PropertyRelationFilter, PropertyWhereInput>
+    property?: XOR<PropertyNullableRelationFilter, PropertyWhereInput> | null
     lostItems?: LostItemListRelationFilter
   }, "id">
 
@@ -37645,6 +39216,16 @@ export namespace Prisma {
     totalAmount?: SortOrder
     paidAmount?: SortOrder
     paymentStatus?: SortOrder
+    baseAmount?: SortOrder
+    gstPercent?: SortOrder
+    gstAmount?: SortOrder
+    serviceChargePercent?: SortOrder
+    serviceChargeAmount?: SortOrder
+    luxuryTaxPercent?: SortOrder
+    luxuryTaxAmount?: SortOrder
+    discountPercent?: SortOrder
+    discountAmount?: SortOrder
+    finalAmount?: SortOrder
     specialRequests?: SortOrder
     notes?: SortOrder
     propertyId?: SortOrder
@@ -37674,9 +39255,19 @@ export namespace Prisma {
     totalAmount?: FloatWithAggregatesFilter<"Booking"> | number
     paidAmount?: FloatWithAggregatesFilter<"Booking"> | number
     paymentStatus?: EnumPaymentStatusWithAggregatesFilter<"Booking"> | $Enums.PaymentStatus
+    baseAmount?: FloatNullableWithAggregatesFilter<"Booking"> | number | null
+    gstPercent?: FloatNullableWithAggregatesFilter<"Booking"> | number | null
+    gstAmount?: FloatNullableWithAggregatesFilter<"Booking"> | number | null
+    serviceChargePercent?: FloatNullableWithAggregatesFilter<"Booking"> | number | null
+    serviceChargeAmount?: FloatNullableWithAggregatesFilter<"Booking"> | number | null
+    luxuryTaxPercent?: FloatNullableWithAggregatesFilter<"Booking"> | number | null
+    luxuryTaxAmount?: FloatNullableWithAggregatesFilter<"Booking"> | number | null
+    discountPercent?: FloatNullableWithAggregatesFilter<"Booking"> | number | null
+    discountAmount?: FloatNullableWithAggregatesFilter<"Booking"> | number | null
+    finalAmount?: FloatNullableWithAggregatesFilter<"Booking"> | number | null
     specialRequests?: StringNullableWithAggregatesFilter<"Booking"> | string | null
     notes?: StringNullableWithAggregatesFilter<"Booking"> | string | null
-    propertyId?: StringWithAggregatesFilter<"Booking"> | string
+    propertyId?: StringNullableWithAggregatesFilter<"Booking"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Booking"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Booking"> | Date | string
   }
@@ -39747,18 +41338,32 @@ export namespace Prisma {
     NOT?: PlanDefinitionWhereInput | PlanDefinitionWhereInput[]
     id?: StringFilter<"PlanDefinition"> | string
     plan?: EnumSubscriptionPlanFilter<"PlanDefinition"> | $Enums.SubscriptionPlan
-    features?: StringNullableListFilter<"PlanDefinition">
-    price?: FloatNullableFilter<"PlanDefinition"> | number | null
+    displayName?: StringNullableFilter<"PlanDefinition"> | string | null
+    tagline?: StringNullableFilter<"PlanDefinition"> | string | null
     description?: StringNullableFilter<"PlanDefinition"> | string | null
+    originalPrice?: FloatFilter<"PlanDefinition"> | number
+    discountedPrice?: FloatFilter<"PlanDefinition"> | number
+    discountPercent?: FloatFilter<"PlanDefinition"> | number
+    billingCycle?: StringFilter<"PlanDefinition"> | string
+    maxRooms?: IntFilter<"PlanDefinition"> | number
+    maxStaff?: IntFilter<"PlanDefinition"> | number
+    features?: StringNullableListFilter<"PlanDefinition">
     updatedAt?: DateTimeFilter<"PlanDefinition"> | Date | string
   }
 
   export type PlanDefinitionOrderByWithRelationInput = {
     id?: SortOrder
     plan?: SortOrder
-    features?: SortOrder
-    price?: SortOrder
+    displayName?: SortOrder
+    tagline?: SortOrder
     description?: SortOrder
+    originalPrice?: SortOrder
+    discountedPrice?: SortOrder
+    discountPercent?: SortOrder
+    billingCycle?: SortOrder
+    maxRooms?: SortOrder
+    maxStaff?: SortOrder
+    features?: SortOrder
     updatedAt?: SortOrder
   }
 
@@ -39768,18 +41373,32 @@ export namespace Prisma {
     AND?: PlanDefinitionWhereInput | PlanDefinitionWhereInput[]
     OR?: PlanDefinitionWhereInput[]
     NOT?: PlanDefinitionWhereInput | PlanDefinitionWhereInput[]
-    features?: StringNullableListFilter<"PlanDefinition">
-    price?: FloatNullableFilter<"PlanDefinition"> | number | null
+    displayName?: StringNullableFilter<"PlanDefinition"> | string | null
+    tagline?: StringNullableFilter<"PlanDefinition"> | string | null
     description?: StringNullableFilter<"PlanDefinition"> | string | null
+    originalPrice?: FloatFilter<"PlanDefinition"> | number
+    discountedPrice?: FloatFilter<"PlanDefinition"> | number
+    discountPercent?: FloatFilter<"PlanDefinition"> | number
+    billingCycle?: StringFilter<"PlanDefinition"> | string
+    maxRooms?: IntFilter<"PlanDefinition"> | number
+    maxStaff?: IntFilter<"PlanDefinition"> | number
+    features?: StringNullableListFilter<"PlanDefinition">
     updatedAt?: DateTimeFilter<"PlanDefinition"> | Date | string
   }, "id" | "plan">
 
   export type PlanDefinitionOrderByWithAggregationInput = {
     id?: SortOrder
     plan?: SortOrder
-    features?: SortOrder
-    price?: SortOrder
+    displayName?: SortOrder
+    tagline?: SortOrder
     description?: SortOrder
+    originalPrice?: SortOrder
+    discountedPrice?: SortOrder
+    discountPercent?: SortOrder
+    billingCycle?: SortOrder
+    maxRooms?: SortOrder
+    maxStaff?: SortOrder
+    features?: SortOrder
     updatedAt?: SortOrder
     _count?: PlanDefinitionCountOrderByAggregateInput
     _avg?: PlanDefinitionAvgOrderByAggregateInput
@@ -39794,10 +41413,161 @@ export namespace Prisma {
     NOT?: PlanDefinitionScalarWhereWithAggregatesInput | PlanDefinitionScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"PlanDefinition"> | string
     plan?: EnumSubscriptionPlanWithAggregatesFilter<"PlanDefinition"> | $Enums.SubscriptionPlan
-    features?: StringNullableListFilter<"PlanDefinition">
-    price?: FloatNullableWithAggregatesFilter<"PlanDefinition"> | number | null
+    displayName?: StringNullableWithAggregatesFilter<"PlanDefinition"> | string | null
+    tagline?: StringNullableWithAggregatesFilter<"PlanDefinition"> | string | null
     description?: StringNullableWithAggregatesFilter<"PlanDefinition"> | string | null
+    originalPrice?: FloatWithAggregatesFilter<"PlanDefinition"> | number
+    discountedPrice?: FloatWithAggregatesFilter<"PlanDefinition"> | number
+    discountPercent?: FloatWithAggregatesFilter<"PlanDefinition"> | number
+    billingCycle?: StringWithAggregatesFilter<"PlanDefinition"> | string
+    maxRooms?: IntWithAggregatesFilter<"PlanDefinition"> | number
+    maxStaff?: IntWithAggregatesFilter<"PlanDefinition"> | number
+    features?: StringNullableListFilter<"PlanDefinition">
     updatedAt?: DateTimeWithAggregatesFilter<"PlanDefinition"> | Date | string
+  }
+
+  export type PropertySettingsWhereInput = {
+    AND?: PropertySettingsWhereInput | PropertySettingsWhereInput[]
+    OR?: PropertySettingsWhereInput[]
+    NOT?: PropertySettingsWhereInput | PropertySettingsWhereInput[]
+    id?: StringFilter<"PropertySettings"> | string
+    propertyId?: StringFilter<"PropertySettings"> | string
+    gstPercent?: FloatFilter<"PropertySettings"> | number
+    serviceChargePercent?: FloatFilter<"PropertySettings"> | number
+    luxuryTaxPercent?: FloatFilter<"PropertySettings"> | number
+    defaultDiscountPercent?: FloatFilter<"PropertySettings"> | number
+    discountLabel?: StringNullableFilter<"PropertySettings"> | string | null
+    invoicePrefix?: StringFilter<"PropertySettings"> | string
+    invoiceFooter?: StringNullableFilter<"PropertySettings"> | string | null
+    currency?: StringFilter<"PropertySettings"> | string
+    currencySymbol?: StringFilter<"PropertySettings"> | string
+    checkInTime?: StringFilter<"PropertySettings"> | string
+    checkOutTime?: StringFilter<"PropertySettings"> | string
+    bankAccountName?: StringNullableFilter<"PropertySettings"> | string | null
+    bankAccountNumber?: StringNullableFilter<"PropertySettings"> | string | null
+    bankIfscCode?: StringNullableFilter<"PropertySettings"> | string | null
+    bankName?: StringNullableFilter<"PropertySettings"> | string | null
+    bankBranch?: StringNullableFilter<"PropertySettings"> | string | null
+    upiId?: StringNullableFilter<"PropertySettings"> | string | null
+    razorpayKeyId?: StringNullableFilter<"PropertySettings"> | string | null
+    razorpayKeySecret?: StringNullableFilter<"PropertySettings"> | string | null
+    createdAt?: DateTimeFilter<"PropertySettings"> | Date | string
+    updatedAt?: DateTimeFilter<"PropertySettings"> | Date | string
+  }
+
+  export type PropertySettingsOrderByWithRelationInput = {
+    id?: SortOrder
+    propertyId?: SortOrder
+    gstPercent?: SortOrder
+    serviceChargePercent?: SortOrder
+    luxuryTaxPercent?: SortOrder
+    defaultDiscountPercent?: SortOrder
+    discountLabel?: SortOrder
+    invoicePrefix?: SortOrder
+    invoiceFooter?: SortOrder
+    currency?: SortOrder
+    currencySymbol?: SortOrder
+    checkInTime?: SortOrder
+    checkOutTime?: SortOrder
+    bankAccountName?: SortOrder
+    bankAccountNumber?: SortOrder
+    bankIfscCode?: SortOrder
+    bankName?: SortOrder
+    bankBranch?: SortOrder
+    upiId?: SortOrder
+    razorpayKeyId?: SortOrder
+    razorpayKeySecret?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PropertySettingsWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    propertyId?: string
+    AND?: PropertySettingsWhereInput | PropertySettingsWhereInput[]
+    OR?: PropertySettingsWhereInput[]
+    NOT?: PropertySettingsWhereInput | PropertySettingsWhereInput[]
+    gstPercent?: FloatFilter<"PropertySettings"> | number
+    serviceChargePercent?: FloatFilter<"PropertySettings"> | number
+    luxuryTaxPercent?: FloatFilter<"PropertySettings"> | number
+    defaultDiscountPercent?: FloatFilter<"PropertySettings"> | number
+    discountLabel?: StringNullableFilter<"PropertySettings"> | string | null
+    invoicePrefix?: StringFilter<"PropertySettings"> | string
+    invoiceFooter?: StringNullableFilter<"PropertySettings"> | string | null
+    currency?: StringFilter<"PropertySettings"> | string
+    currencySymbol?: StringFilter<"PropertySettings"> | string
+    checkInTime?: StringFilter<"PropertySettings"> | string
+    checkOutTime?: StringFilter<"PropertySettings"> | string
+    bankAccountName?: StringNullableFilter<"PropertySettings"> | string | null
+    bankAccountNumber?: StringNullableFilter<"PropertySettings"> | string | null
+    bankIfscCode?: StringNullableFilter<"PropertySettings"> | string | null
+    bankName?: StringNullableFilter<"PropertySettings"> | string | null
+    bankBranch?: StringNullableFilter<"PropertySettings"> | string | null
+    upiId?: StringNullableFilter<"PropertySettings"> | string | null
+    razorpayKeyId?: StringNullableFilter<"PropertySettings"> | string | null
+    razorpayKeySecret?: StringNullableFilter<"PropertySettings"> | string | null
+    createdAt?: DateTimeFilter<"PropertySettings"> | Date | string
+    updatedAt?: DateTimeFilter<"PropertySettings"> | Date | string
+  }, "id" | "propertyId">
+
+  export type PropertySettingsOrderByWithAggregationInput = {
+    id?: SortOrder
+    propertyId?: SortOrder
+    gstPercent?: SortOrder
+    serviceChargePercent?: SortOrder
+    luxuryTaxPercent?: SortOrder
+    defaultDiscountPercent?: SortOrder
+    discountLabel?: SortOrder
+    invoicePrefix?: SortOrder
+    invoiceFooter?: SortOrder
+    currency?: SortOrder
+    currencySymbol?: SortOrder
+    checkInTime?: SortOrder
+    checkOutTime?: SortOrder
+    bankAccountName?: SortOrder
+    bankAccountNumber?: SortOrder
+    bankIfscCode?: SortOrder
+    bankName?: SortOrder
+    bankBranch?: SortOrder
+    upiId?: SortOrder
+    razorpayKeyId?: SortOrder
+    razorpayKeySecret?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: PropertySettingsCountOrderByAggregateInput
+    _avg?: PropertySettingsAvgOrderByAggregateInput
+    _max?: PropertySettingsMaxOrderByAggregateInput
+    _min?: PropertySettingsMinOrderByAggregateInput
+    _sum?: PropertySettingsSumOrderByAggregateInput
+  }
+
+  export type PropertySettingsScalarWhereWithAggregatesInput = {
+    AND?: PropertySettingsScalarWhereWithAggregatesInput | PropertySettingsScalarWhereWithAggregatesInput[]
+    OR?: PropertySettingsScalarWhereWithAggregatesInput[]
+    NOT?: PropertySettingsScalarWhereWithAggregatesInput | PropertySettingsScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"PropertySettings"> | string
+    propertyId?: StringWithAggregatesFilter<"PropertySettings"> | string
+    gstPercent?: FloatWithAggregatesFilter<"PropertySettings"> | number
+    serviceChargePercent?: FloatWithAggregatesFilter<"PropertySettings"> | number
+    luxuryTaxPercent?: FloatWithAggregatesFilter<"PropertySettings"> | number
+    defaultDiscountPercent?: FloatWithAggregatesFilter<"PropertySettings"> | number
+    discountLabel?: StringNullableWithAggregatesFilter<"PropertySettings"> | string | null
+    invoicePrefix?: StringWithAggregatesFilter<"PropertySettings"> | string
+    invoiceFooter?: StringNullableWithAggregatesFilter<"PropertySettings"> | string | null
+    currency?: StringWithAggregatesFilter<"PropertySettings"> | string
+    currencySymbol?: StringWithAggregatesFilter<"PropertySettings"> | string
+    checkInTime?: StringWithAggregatesFilter<"PropertySettings"> | string
+    checkOutTime?: StringWithAggregatesFilter<"PropertySettings"> | string
+    bankAccountName?: StringNullableWithAggregatesFilter<"PropertySettings"> | string | null
+    bankAccountNumber?: StringNullableWithAggregatesFilter<"PropertySettings"> | string | null
+    bankIfscCode?: StringNullableWithAggregatesFilter<"PropertySettings"> | string | null
+    bankName?: StringNullableWithAggregatesFilter<"PropertySettings"> | string | null
+    bankBranch?: StringNullableWithAggregatesFilter<"PropertySettings"> | string | null
+    upiId?: StringNullableWithAggregatesFilter<"PropertySettings"> | string | null
+    razorpayKeyId?: StringNullableWithAggregatesFilter<"PropertySettings"> | string | null
+    razorpayKeySecret?: StringNullableWithAggregatesFilter<"PropertySettings"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"PropertySettings"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"PropertySettings"> | Date | string
   }
 
   export type UserCreateInput = {
@@ -39919,6 +41689,7 @@ export namespace Prisma {
     checkInStatus?: $Enums.CheckInStatus
     checkInCompletedAt?: Date | string | null
     language?: string
+    createdByPropertyId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     bookings?: BookingCreateNestedManyWithoutGuestInput
@@ -39943,6 +41714,7 @@ export namespace Prisma {
     checkInStatus?: $Enums.CheckInStatus
     checkInCompletedAt?: Date | string | null
     language?: string
+    createdByPropertyId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     bookings?: BookingUncheckedCreateNestedManyWithoutGuestInput
@@ -39966,6 +41738,7 @@ export namespace Prisma {
     checkInStatus?: EnumCheckInStatusFieldUpdateOperationsInput | $Enums.CheckInStatus
     checkInCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     language?: StringFieldUpdateOperationsInput | string
+    createdByPropertyId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bookings?: BookingUpdateManyWithoutGuestNestedInput
@@ -39989,6 +41762,7 @@ export namespace Prisma {
     checkInStatus?: EnumCheckInStatusFieldUpdateOperationsInput | $Enums.CheckInStatus
     checkInCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     language?: StringFieldUpdateOperationsInput | string
+    createdByPropertyId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bookings?: BookingUncheckedUpdateManyWithoutGuestNestedInput
@@ -40013,6 +41787,7 @@ export namespace Prisma {
     checkInStatus?: $Enums.CheckInStatus
     checkInCompletedAt?: Date | string | null
     language?: string
+    createdByPropertyId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -40030,6 +41805,7 @@ export namespace Prisma {
     checkInStatus?: EnumCheckInStatusFieldUpdateOperationsInput | $Enums.CheckInStatus
     checkInCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     language?: StringFieldUpdateOperationsInput | string
+    createdByPropertyId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -40047,6 +41823,7 @@ export namespace Prisma {
     checkInStatus?: EnumCheckInStatusFieldUpdateOperationsInput | $Enums.CheckInStatus
     checkInCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     language?: StringFieldUpdateOperationsInput | string
+    createdByPropertyId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -40503,13 +42280,23 @@ export namespace Prisma {
     totalAmount: number
     paidAmount?: number
     paymentStatus?: $Enums.PaymentStatus
+    baseAmount?: number | null
+    gstPercent?: number | null
+    gstAmount?: number | null
+    serviceChargePercent?: number | null
+    serviceChargeAmount?: number | null
+    luxuryTaxPercent?: number | null
+    luxuryTaxAmount?: number | null
+    discountPercent?: number | null
+    discountAmount?: number | null
+    finalAmount?: number | null
     specialRequests?: string | null
     notes?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     guest: GuestCreateNestedOneWithoutBookingsInput
     room: RoomCreateNestedOneWithoutBookingsInput
-    property: PropertyCreateNestedOneWithoutBookingsInput
+    property?: PropertyCreateNestedOneWithoutBookingsInput
     lostItems?: LostItemCreateNestedManyWithoutBookingInput
   }
 
@@ -40527,9 +42314,19 @@ export namespace Prisma {
     totalAmount: number
     paidAmount?: number
     paymentStatus?: $Enums.PaymentStatus
+    baseAmount?: number | null
+    gstPercent?: number | null
+    gstAmount?: number | null
+    serviceChargePercent?: number | null
+    serviceChargeAmount?: number | null
+    luxuryTaxPercent?: number | null
+    luxuryTaxAmount?: number | null
+    discountPercent?: number | null
+    discountAmount?: number | null
+    finalAmount?: number | null
     specialRequests?: string | null
     notes?: string | null
-    propertyId: string
+    propertyId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     lostItems?: LostItemUncheckedCreateNestedManyWithoutBookingInput
@@ -40546,13 +42343,23 @@ export namespace Prisma {
     totalAmount?: FloatFieldUpdateOperationsInput | number
     paidAmount?: FloatFieldUpdateOperationsInput | number
     paymentStatus?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
+    baseAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    gstPercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    gstAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    serviceChargePercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    serviceChargeAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    luxuryTaxPercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    luxuryTaxAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    discountPercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    discountAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    finalAmount?: NullableFloatFieldUpdateOperationsInput | number | null
     specialRequests?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     guest?: GuestUpdateOneRequiredWithoutBookingsNestedInput
     room?: RoomUpdateOneRequiredWithoutBookingsNestedInput
-    property?: PropertyUpdateOneRequiredWithoutBookingsNestedInput
+    property?: PropertyUpdateOneWithoutBookingsNestedInput
     lostItems?: LostItemUpdateManyWithoutBookingNestedInput
   }
 
@@ -40569,9 +42376,19 @@ export namespace Prisma {
     totalAmount?: FloatFieldUpdateOperationsInput | number
     paidAmount?: FloatFieldUpdateOperationsInput | number
     paymentStatus?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
+    baseAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    gstPercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    gstAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    serviceChargePercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    serviceChargeAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    luxuryTaxPercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    luxuryTaxAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    discountPercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    discountAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    finalAmount?: NullableFloatFieldUpdateOperationsInput | number | null
     specialRequests?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
-    propertyId?: StringFieldUpdateOperationsInput | string
+    propertyId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lostItems?: LostItemUncheckedUpdateManyWithoutBookingNestedInput
@@ -40591,9 +42408,19 @@ export namespace Prisma {
     totalAmount: number
     paidAmount?: number
     paymentStatus?: $Enums.PaymentStatus
+    baseAmount?: number | null
+    gstPercent?: number | null
+    gstAmount?: number | null
+    serviceChargePercent?: number | null
+    serviceChargeAmount?: number | null
+    luxuryTaxPercent?: number | null
+    luxuryTaxAmount?: number | null
+    discountPercent?: number | null
+    discountAmount?: number | null
+    finalAmount?: number | null
     specialRequests?: string | null
     notes?: string | null
-    propertyId: string
+    propertyId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -40609,6 +42436,16 @@ export namespace Prisma {
     totalAmount?: FloatFieldUpdateOperationsInput | number
     paidAmount?: FloatFieldUpdateOperationsInput | number
     paymentStatus?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
+    baseAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    gstPercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    gstAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    serviceChargePercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    serviceChargeAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    luxuryTaxPercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    luxuryTaxAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    discountPercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    discountAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    finalAmount?: NullableFloatFieldUpdateOperationsInput | number | null
     specialRequests?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -40628,9 +42465,19 @@ export namespace Prisma {
     totalAmount?: FloatFieldUpdateOperationsInput | number
     paidAmount?: FloatFieldUpdateOperationsInput | number
     paymentStatus?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
+    baseAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    gstPercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    gstAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    serviceChargePercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    serviceChargeAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    luxuryTaxPercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    luxuryTaxAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    discountPercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    discountAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    finalAmount?: NullableFloatFieldUpdateOperationsInput | number | null
     specialRequests?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
-    propertyId?: StringFieldUpdateOperationsInput | string
+    propertyId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -42845,59 +44692,286 @@ export namespace Prisma {
   export type PlanDefinitionCreateInput = {
     id?: string
     plan: $Enums.SubscriptionPlan
-    features?: PlanDefinitionCreatefeaturesInput | string[]
-    price?: number | null
+    displayName?: string | null
+    tagline?: string | null
     description?: string | null
+    originalPrice?: number
+    discountedPrice?: number
+    discountPercent?: number
+    billingCycle?: string
+    maxRooms?: number
+    maxStaff?: number
+    features?: PlanDefinitionCreatefeaturesInput | string[]
     updatedAt?: Date | string
   }
 
   export type PlanDefinitionUncheckedCreateInput = {
     id?: string
     plan: $Enums.SubscriptionPlan
-    features?: PlanDefinitionCreatefeaturesInput | string[]
-    price?: number | null
+    displayName?: string | null
+    tagline?: string | null
     description?: string | null
+    originalPrice?: number
+    discountedPrice?: number
+    discountPercent?: number
+    billingCycle?: string
+    maxRooms?: number
+    maxStaff?: number
+    features?: PlanDefinitionCreatefeaturesInput | string[]
     updatedAt?: Date | string
   }
 
   export type PlanDefinitionUpdateInput = {
     plan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
-    features?: PlanDefinitionUpdatefeaturesInput | string[]
-    price?: NullableFloatFieldUpdateOperationsInput | number | null
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    tagline?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    originalPrice?: FloatFieldUpdateOperationsInput | number
+    discountedPrice?: FloatFieldUpdateOperationsInput | number
+    discountPercent?: FloatFieldUpdateOperationsInput | number
+    billingCycle?: StringFieldUpdateOperationsInput | string
+    maxRooms?: IntFieldUpdateOperationsInput | number
+    maxStaff?: IntFieldUpdateOperationsInput | number
+    features?: PlanDefinitionUpdatefeaturesInput | string[]
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type PlanDefinitionUncheckedUpdateInput = {
     plan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
-    features?: PlanDefinitionUpdatefeaturesInput | string[]
-    price?: NullableFloatFieldUpdateOperationsInput | number | null
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    tagline?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    originalPrice?: FloatFieldUpdateOperationsInput | number
+    discountedPrice?: FloatFieldUpdateOperationsInput | number
+    discountPercent?: FloatFieldUpdateOperationsInput | number
+    billingCycle?: StringFieldUpdateOperationsInput | string
+    maxRooms?: IntFieldUpdateOperationsInput | number
+    maxStaff?: IntFieldUpdateOperationsInput | number
+    features?: PlanDefinitionUpdatefeaturesInput | string[]
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type PlanDefinitionCreateManyInput = {
     id?: string
     plan: $Enums.SubscriptionPlan
-    features?: PlanDefinitionCreatefeaturesInput | string[]
-    price?: number | null
+    displayName?: string | null
+    tagline?: string | null
     description?: string | null
+    originalPrice?: number
+    discountedPrice?: number
+    discountPercent?: number
+    billingCycle?: string
+    maxRooms?: number
+    maxStaff?: number
+    features?: PlanDefinitionCreatefeaturesInput | string[]
     updatedAt?: Date | string
   }
 
   export type PlanDefinitionUpdateManyMutationInput = {
     plan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
-    features?: PlanDefinitionUpdatefeaturesInput | string[]
-    price?: NullableFloatFieldUpdateOperationsInput | number | null
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    tagline?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    originalPrice?: FloatFieldUpdateOperationsInput | number
+    discountedPrice?: FloatFieldUpdateOperationsInput | number
+    discountPercent?: FloatFieldUpdateOperationsInput | number
+    billingCycle?: StringFieldUpdateOperationsInput | string
+    maxRooms?: IntFieldUpdateOperationsInput | number
+    maxStaff?: IntFieldUpdateOperationsInput | number
+    features?: PlanDefinitionUpdatefeaturesInput | string[]
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type PlanDefinitionUncheckedUpdateManyInput = {
     plan?: EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
-    features?: PlanDefinitionUpdatefeaturesInput | string[]
-    price?: NullableFloatFieldUpdateOperationsInput | number | null
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    tagline?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    originalPrice?: FloatFieldUpdateOperationsInput | number
+    discountedPrice?: FloatFieldUpdateOperationsInput | number
+    discountPercent?: FloatFieldUpdateOperationsInput | number
+    billingCycle?: StringFieldUpdateOperationsInput | string
+    maxRooms?: IntFieldUpdateOperationsInput | number
+    maxStaff?: IntFieldUpdateOperationsInput | number
+    features?: PlanDefinitionUpdatefeaturesInput | string[]
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PropertySettingsCreateInput = {
+    id?: string
+    propertyId: string
+    gstPercent?: number
+    serviceChargePercent?: number
+    luxuryTaxPercent?: number
+    defaultDiscountPercent?: number
+    discountLabel?: string | null
+    invoicePrefix?: string
+    invoiceFooter?: string | null
+    currency?: string
+    currencySymbol?: string
+    checkInTime?: string
+    checkOutTime?: string
+    bankAccountName?: string | null
+    bankAccountNumber?: string | null
+    bankIfscCode?: string | null
+    bankName?: string | null
+    bankBranch?: string | null
+    upiId?: string | null
+    razorpayKeyId?: string | null
+    razorpayKeySecret?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PropertySettingsUncheckedCreateInput = {
+    id?: string
+    propertyId: string
+    gstPercent?: number
+    serviceChargePercent?: number
+    luxuryTaxPercent?: number
+    defaultDiscountPercent?: number
+    discountLabel?: string | null
+    invoicePrefix?: string
+    invoiceFooter?: string | null
+    currency?: string
+    currencySymbol?: string
+    checkInTime?: string
+    checkOutTime?: string
+    bankAccountName?: string | null
+    bankAccountNumber?: string | null
+    bankIfscCode?: string | null
+    bankName?: string | null
+    bankBranch?: string | null
+    upiId?: string | null
+    razorpayKeyId?: string | null
+    razorpayKeySecret?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PropertySettingsUpdateInput = {
+    propertyId?: StringFieldUpdateOperationsInput | string
+    gstPercent?: FloatFieldUpdateOperationsInput | number
+    serviceChargePercent?: FloatFieldUpdateOperationsInput | number
+    luxuryTaxPercent?: FloatFieldUpdateOperationsInput | number
+    defaultDiscountPercent?: FloatFieldUpdateOperationsInput | number
+    discountLabel?: NullableStringFieldUpdateOperationsInput | string | null
+    invoicePrefix?: StringFieldUpdateOperationsInput | string
+    invoiceFooter?: NullableStringFieldUpdateOperationsInput | string | null
+    currency?: StringFieldUpdateOperationsInput | string
+    currencySymbol?: StringFieldUpdateOperationsInput | string
+    checkInTime?: StringFieldUpdateOperationsInput | string
+    checkOutTime?: StringFieldUpdateOperationsInput | string
+    bankAccountName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    bankIfscCode?: NullableStringFieldUpdateOperationsInput | string | null
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankBranch?: NullableStringFieldUpdateOperationsInput | string | null
+    upiId?: NullableStringFieldUpdateOperationsInput | string | null
+    razorpayKeyId?: NullableStringFieldUpdateOperationsInput | string | null
+    razorpayKeySecret?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PropertySettingsUncheckedUpdateInput = {
+    propertyId?: StringFieldUpdateOperationsInput | string
+    gstPercent?: FloatFieldUpdateOperationsInput | number
+    serviceChargePercent?: FloatFieldUpdateOperationsInput | number
+    luxuryTaxPercent?: FloatFieldUpdateOperationsInput | number
+    defaultDiscountPercent?: FloatFieldUpdateOperationsInput | number
+    discountLabel?: NullableStringFieldUpdateOperationsInput | string | null
+    invoicePrefix?: StringFieldUpdateOperationsInput | string
+    invoiceFooter?: NullableStringFieldUpdateOperationsInput | string | null
+    currency?: StringFieldUpdateOperationsInput | string
+    currencySymbol?: StringFieldUpdateOperationsInput | string
+    checkInTime?: StringFieldUpdateOperationsInput | string
+    checkOutTime?: StringFieldUpdateOperationsInput | string
+    bankAccountName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    bankIfscCode?: NullableStringFieldUpdateOperationsInput | string | null
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankBranch?: NullableStringFieldUpdateOperationsInput | string | null
+    upiId?: NullableStringFieldUpdateOperationsInput | string | null
+    razorpayKeyId?: NullableStringFieldUpdateOperationsInput | string | null
+    razorpayKeySecret?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PropertySettingsCreateManyInput = {
+    id?: string
+    propertyId: string
+    gstPercent?: number
+    serviceChargePercent?: number
+    luxuryTaxPercent?: number
+    defaultDiscountPercent?: number
+    discountLabel?: string | null
+    invoicePrefix?: string
+    invoiceFooter?: string | null
+    currency?: string
+    currencySymbol?: string
+    checkInTime?: string
+    checkOutTime?: string
+    bankAccountName?: string | null
+    bankAccountNumber?: string | null
+    bankIfscCode?: string | null
+    bankName?: string | null
+    bankBranch?: string | null
+    upiId?: string | null
+    razorpayKeyId?: string | null
+    razorpayKeySecret?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PropertySettingsUpdateManyMutationInput = {
+    propertyId?: StringFieldUpdateOperationsInput | string
+    gstPercent?: FloatFieldUpdateOperationsInput | number
+    serviceChargePercent?: FloatFieldUpdateOperationsInput | number
+    luxuryTaxPercent?: FloatFieldUpdateOperationsInput | number
+    defaultDiscountPercent?: FloatFieldUpdateOperationsInput | number
+    discountLabel?: NullableStringFieldUpdateOperationsInput | string | null
+    invoicePrefix?: StringFieldUpdateOperationsInput | string
+    invoiceFooter?: NullableStringFieldUpdateOperationsInput | string | null
+    currency?: StringFieldUpdateOperationsInput | string
+    currencySymbol?: StringFieldUpdateOperationsInput | string
+    checkInTime?: StringFieldUpdateOperationsInput | string
+    checkOutTime?: StringFieldUpdateOperationsInput | string
+    bankAccountName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    bankIfscCode?: NullableStringFieldUpdateOperationsInput | string | null
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankBranch?: NullableStringFieldUpdateOperationsInput | string | null
+    upiId?: NullableStringFieldUpdateOperationsInput | string | null
+    razorpayKeyId?: NullableStringFieldUpdateOperationsInput | string | null
+    razorpayKeySecret?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PropertySettingsUncheckedUpdateManyInput = {
+    propertyId?: StringFieldUpdateOperationsInput | string
+    gstPercent?: FloatFieldUpdateOperationsInput | number
+    serviceChargePercent?: FloatFieldUpdateOperationsInput | number
+    luxuryTaxPercent?: FloatFieldUpdateOperationsInput | number
+    defaultDiscountPercent?: FloatFieldUpdateOperationsInput | number
+    discountLabel?: NullableStringFieldUpdateOperationsInput | string | null
+    invoicePrefix?: StringFieldUpdateOperationsInput | string
+    invoiceFooter?: NullableStringFieldUpdateOperationsInput | string | null
+    currency?: StringFieldUpdateOperationsInput | string
+    currencySymbol?: StringFieldUpdateOperationsInput | string
+    checkInTime?: StringFieldUpdateOperationsInput | string
+    checkOutTime?: StringFieldUpdateOperationsInput | string
+    bankAccountName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    bankIfscCode?: NullableStringFieldUpdateOperationsInput | string | null
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankBranch?: NullableStringFieldUpdateOperationsInput | string | null
+    upiId?: NullableStringFieldUpdateOperationsInput | string | null
+    razorpayKeyId?: NullableStringFieldUpdateOperationsInput | string | null
+    razorpayKeySecret?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -43205,6 +45279,7 @@ export namespace Prisma {
     checkInStatus?: SortOrder
     checkInCompletedAt?: SortOrder
     language?: SortOrder
+    createdByPropertyId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -43223,6 +45298,7 @@ export namespace Prisma {
     checkInStatus?: SortOrder
     checkInCompletedAt?: SortOrder
     language?: SortOrder
+    createdByPropertyId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -43241,6 +45317,7 @@ export namespace Prisma {
     checkInStatus?: SortOrder
     checkInCompletedAt?: SortOrder
     language?: SortOrder
+    createdByPropertyId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -43777,6 +45854,16 @@ export namespace Prisma {
     totalAmount?: SortOrder
     paidAmount?: SortOrder
     paymentStatus?: SortOrder
+    baseAmount?: SortOrder
+    gstPercent?: SortOrder
+    gstAmount?: SortOrder
+    serviceChargePercent?: SortOrder
+    serviceChargeAmount?: SortOrder
+    luxuryTaxPercent?: SortOrder
+    luxuryTaxAmount?: SortOrder
+    discountPercent?: SortOrder
+    discountAmount?: SortOrder
+    finalAmount?: SortOrder
     specialRequests?: SortOrder
     notes?: SortOrder
     propertyId?: SortOrder
@@ -43788,6 +45875,16 @@ export namespace Prisma {
     numberOfGuests?: SortOrder
     totalAmount?: SortOrder
     paidAmount?: SortOrder
+    baseAmount?: SortOrder
+    gstPercent?: SortOrder
+    gstAmount?: SortOrder
+    serviceChargePercent?: SortOrder
+    serviceChargeAmount?: SortOrder
+    luxuryTaxPercent?: SortOrder
+    luxuryTaxAmount?: SortOrder
+    discountPercent?: SortOrder
+    discountAmount?: SortOrder
+    finalAmount?: SortOrder
   }
 
   export type BookingMaxOrderByAggregateInput = {
@@ -43804,6 +45901,16 @@ export namespace Prisma {
     totalAmount?: SortOrder
     paidAmount?: SortOrder
     paymentStatus?: SortOrder
+    baseAmount?: SortOrder
+    gstPercent?: SortOrder
+    gstAmount?: SortOrder
+    serviceChargePercent?: SortOrder
+    serviceChargeAmount?: SortOrder
+    luxuryTaxPercent?: SortOrder
+    luxuryTaxAmount?: SortOrder
+    discountPercent?: SortOrder
+    discountAmount?: SortOrder
+    finalAmount?: SortOrder
     specialRequests?: SortOrder
     notes?: SortOrder
     propertyId?: SortOrder
@@ -43825,6 +45932,16 @@ export namespace Prisma {
     totalAmount?: SortOrder
     paidAmount?: SortOrder
     paymentStatus?: SortOrder
+    baseAmount?: SortOrder
+    gstPercent?: SortOrder
+    gstAmount?: SortOrder
+    serviceChargePercent?: SortOrder
+    serviceChargeAmount?: SortOrder
+    luxuryTaxPercent?: SortOrder
+    luxuryTaxAmount?: SortOrder
+    discountPercent?: SortOrder
+    discountAmount?: SortOrder
+    finalAmount?: SortOrder
     specialRequests?: SortOrder
     notes?: SortOrder
     propertyId?: SortOrder
@@ -43836,6 +45953,16 @@ export namespace Prisma {
     numberOfGuests?: SortOrder
     totalAmount?: SortOrder
     paidAmount?: SortOrder
+    baseAmount?: SortOrder
+    gstPercent?: SortOrder
+    gstAmount?: SortOrder
+    serviceChargePercent?: SortOrder
+    serviceChargeAmount?: SortOrder
+    luxuryTaxPercent?: SortOrder
+    luxuryTaxAmount?: SortOrder
+    discountPercent?: SortOrder
+    discountAmount?: SortOrder
+    finalAmount?: SortOrder
   }
 
   export type EnumBookingStatusWithAggregatesFilter<$PrismaModel = never> = {
@@ -45437,34 +47564,155 @@ export namespace Prisma {
   export type PlanDefinitionCountOrderByAggregateInput = {
     id?: SortOrder
     plan?: SortOrder
-    features?: SortOrder
-    price?: SortOrder
+    displayName?: SortOrder
+    tagline?: SortOrder
     description?: SortOrder
+    originalPrice?: SortOrder
+    discountedPrice?: SortOrder
+    discountPercent?: SortOrder
+    billingCycle?: SortOrder
+    maxRooms?: SortOrder
+    maxStaff?: SortOrder
+    features?: SortOrder
     updatedAt?: SortOrder
   }
 
   export type PlanDefinitionAvgOrderByAggregateInput = {
-    price?: SortOrder
+    originalPrice?: SortOrder
+    discountedPrice?: SortOrder
+    discountPercent?: SortOrder
+    maxRooms?: SortOrder
+    maxStaff?: SortOrder
   }
 
   export type PlanDefinitionMaxOrderByAggregateInput = {
     id?: SortOrder
     plan?: SortOrder
-    price?: SortOrder
+    displayName?: SortOrder
+    tagline?: SortOrder
     description?: SortOrder
+    originalPrice?: SortOrder
+    discountedPrice?: SortOrder
+    discountPercent?: SortOrder
+    billingCycle?: SortOrder
+    maxRooms?: SortOrder
+    maxStaff?: SortOrder
     updatedAt?: SortOrder
   }
 
   export type PlanDefinitionMinOrderByAggregateInput = {
     id?: SortOrder
     plan?: SortOrder
-    price?: SortOrder
+    displayName?: SortOrder
+    tagline?: SortOrder
     description?: SortOrder
+    originalPrice?: SortOrder
+    discountedPrice?: SortOrder
+    discountPercent?: SortOrder
+    billingCycle?: SortOrder
+    maxRooms?: SortOrder
+    maxStaff?: SortOrder
     updatedAt?: SortOrder
   }
 
   export type PlanDefinitionSumOrderByAggregateInput = {
-    price?: SortOrder
+    originalPrice?: SortOrder
+    discountedPrice?: SortOrder
+    discountPercent?: SortOrder
+    maxRooms?: SortOrder
+    maxStaff?: SortOrder
+  }
+
+  export type PropertySettingsCountOrderByAggregateInput = {
+    id?: SortOrder
+    propertyId?: SortOrder
+    gstPercent?: SortOrder
+    serviceChargePercent?: SortOrder
+    luxuryTaxPercent?: SortOrder
+    defaultDiscountPercent?: SortOrder
+    discountLabel?: SortOrder
+    invoicePrefix?: SortOrder
+    invoiceFooter?: SortOrder
+    currency?: SortOrder
+    currencySymbol?: SortOrder
+    checkInTime?: SortOrder
+    checkOutTime?: SortOrder
+    bankAccountName?: SortOrder
+    bankAccountNumber?: SortOrder
+    bankIfscCode?: SortOrder
+    bankName?: SortOrder
+    bankBranch?: SortOrder
+    upiId?: SortOrder
+    razorpayKeyId?: SortOrder
+    razorpayKeySecret?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PropertySettingsAvgOrderByAggregateInput = {
+    gstPercent?: SortOrder
+    serviceChargePercent?: SortOrder
+    luxuryTaxPercent?: SortOrder
+    defaultDiscountPercent?: SortOrder
+  }
+
+  export type PropertySettingsMaxOrderByAggregateInput = {
+    id?: SortOrder
+    propertyId?: SortOrder
+    gstPercent?: SortOrder
+    serviceChargePercent?: SortOrder
+    luxuryTaxPercent?: SortOrder
+    defaultDiscountPercent?: SortOrder
+    discountLabel?: SortOrder
+    invoicePrefix?: SortOrder
+    invoiceFooter?: SortOrder
+    currency?: SortOrder
+    currencySymbol?: SortOrder
+    checkInTime?: SortOrder
+    checkOutTime?: SortOrder
+    bankAccountName?: SortOrder
+    bankAccountNumber?: SortOrder
+    bankIfscCode?: SortOrder
+    bankName?: SortOrder
+    bankBranch?: SortOrder
+    upiId?: SortOrder
+    razorpayKeyId?: SortOrder
+    razorpayKeySecret?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PropertySettingsMinOrderByAggregateInput = {
+    id?: SortOrder
+    propertyId?: SortOrder
+    gstPercent?: SortOrder
+    serviceChargePercent?: SortOrder
+    luxuryTaxPercent?: SortOrder
+    defaultDiscountPercent?: SortOrder
+    discountLabel?: SortOrder
+    invoicePrefix?: SortOrder
+    invoiceFooter?: SortOrder
+    currency?: SortOrder
+    currencySymbol?: SortOrder
+    checkInTime?: SortOrder
+    checkOutTime?: SortOrder
+    bankAccountName?: SortOrder
+    bankAccountNumber?: SortOrder
+    bankIfscCode?: SortOrder
+    bankName?: SortOrder
+    bankBranch?: SortOrder
+    upiId?: SortOrder
+    razorpayKeyId?: SortOrder
+    razorpayKeySecret?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PropertySettingsSumOrderByAggregateInput = {
+    gstPercent?: SortOrder
+    serviceChargePercent?: SortOrder
+    luxuryTaxPercent?: SortOrder
+    defaultDiscountPercent?: SortOrder
   }
 
   export type PropertyCreateNestedOneWithoutWorkerListInput = {
@@ -46868,10 +49116,12 @@ export namespace Prisma {
     update?: XOR<XOR<RoomUpdateToOneWithWhereWithoutBookingsInput, RoomUpdateWithoutBookingsInput>, RoomUncheckedUpdateWithoutBookingsInput>
   }
 
-  export type PropertyUpdateOneRequiredWithoutBookingsNestedInput = {
+  export type PropertyUpdateOneWithoutBookingsNestedInput = {
     create?: XOR<PropertyCreateWithoutBookingsInput, PropertyUncheckedCreateWithoutBookingsInput>
     connectOrCreate?: PropertyCreateOrConnectWithoutBookingsInput
     upsert?: PropertyUpsertWithoutBookingsInput
+    disconnect?: boolean
+    delete?: PropertyWhereInput | boolean
     connect?: PropertyWhereUniqueInput
     update?: XOR<XOR<PropertyUpdateToOneWithWhereWithoutBookingsInput, PropertyUpdateWithoutBookingsInput>, PropertyUncheckedUpdateWithoutBookingsInput>
   }
@@ -49031,12 +51281,22 @@ export namespace Prisma {
     totalAmount: number
     paidAmount?: number
     paymentStatus?: $Enums.PaymentStatus
+    baseAmount?: number | null
+    gstPercent?: number | null
+    gstAmount?: number | null
+    serviceChargePercent?: number | null
+    serviceChargeAmount?: number | null
+    luxuryTaxPercent?: number | null
+    luxuryTaxAmount?: number | null
+    discountPercent?: number | null
+    discountAmount?: number | null
+    finalAmount?: number | null
     specialRequests?: string | null
     notes?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     room: RoomCreateNestedOneWithoutBookingsInput
-    property: PropertyCreateNestedOneWithoutBookingsInput
+    property?: PropertyCreateNestedOneWithoutBookingsInput
     lostItems?: LostItemCreateNestedManyWithoutBookingInput
   }
 
@@ -49053,9 +51313,19 @@ export namespace Prisma {
     totalAmount: number
     paidAmount?: number
     paymentStatus?: $Enums.PaymentStatus
+    baseAmount?: number | null
+    gstPercent?: number | null
+    gstAmount?: number | null
+    serviceChargePercent?: number | null
+    serviceChargeAmount?: number | null
+    luxuryTaxPercent?: number | null
+    luxuryTaxAmount?: number | null
+    discountPercent?: number | null
+    discountAmount?: number | null
+    finalAmount?: number | null
     specialRequests?: string | null
     notes?: string | null
-    propertyId: string
+    propertyId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     lostItems?: LostItemUncheckedCreateNestedManyWithoutBookingInput
@@ -49306,9 +51576,19 @@ export namespace Prisma {
     totalAmount?: FloatFilter<"Booking"> | number
     paidAmount?: FloatFilter<"Booking"> | number
     paymentStatus?: EnumPaymentStatusFilter<"Booking"> | $Enums.PaymentStatus
+    baseAmount?: FloatNullableFilter<"Booking"> | number | null
+    gstPercent?: FloatNullableFilter<"Booking"> | number | null
+    gstAmount?: FloatNullableFilter<"Booking"> | number | null
+    serviceChargePercent?: FloatNullableFilter<"Booking"> | number | null
+    serviceChargeAmount?: FloatNullableFilter<"Booking"> | number | null
+    luxuryTaxPercent?: FloatNullableFilter<"Booking"> | number | null
+    luxuryTaxAmount?: FloatNullableFilter<"Booking"> | number | null
+    discountPercent?: FloatNullableFilter<"Booking"> | number | null
+    discountAmount?: FloatNullableFilter<"Booking"> | number | null
+    finalAmount?: FloatNullableFilter<"Booking"> | number | null
     specialRequests?: StringNullableFilter<"Booking"> | string | null
     notes?: StringNullableFilter<"Booking"> | string | null
-    propertyId?: StringFilter<"Booking"> | string
+    propertyId?: StringNullableFilter<"Booking"> | string | null
     createdAt?: DateTimeFilter<"Booking"> | Date | string
     updatedAt?: DateTimeFilter<"Booking"> | Date | string
   }
@@ -49503,6 +51783,7 @@ export namespace Prisma {
     checkInStatus?: $Enums.CheckInStatus
     checkInCompletedAt?: Date | string | null
     language?: string
+    createdByPropertyId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     bookings?: BookingCreateNestedManyWithoutGuestInput
@@ -49526,6 +51807,7 @@ export namespace Prisma {
     checkInStatus?: $Enums.CheckInStatus
     checkInCompletedAt?: Date | string | null
     language?: string
+    createdByPropertyId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     bookings?: BookingUncheckedCreateNestedManyWithoutGuestInput
@@ -49619,6 +51901,7 @@ export namespace Prisma {
     checkInStatus?: EnumCheckInStatusFieldUpdateOperationsInput | $Enums.CheckInStatus
     checkInCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     language?: StringFieldUpdateOperationsInput | string
+    createdByPropertyId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bookings?: BookingUpdateManyWithoutGuestNestedInput
@@ -49641,6 +51924,7 @@ export namespace Prisma {
     checkInStatus?: EnumCheckInStatusFieldUpdateOperationsInput | $Enums.CheckInStatus
     checkInCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     language?: StringFieldUpdateOperationsInput | string
+    createdByPropertyId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bookings?: BookingUncheckedUpdateManyWithoutGuestNestedInput
@@ -50040,6 +52324,16 @@ export namespace Prisma {
     totalAmount: number
     paidAmount?: number
     paymentStatus?: $Enums.PaymentStatus
+    baseAmount?: number | null
+    gstPercent?: number | null
+    gstAmount?: number | null
+    serviceChargePercent?: number | null
+    serviceChargeAmount?: number | null
+    luxuryTaxPercent?: number | null
+    luxuryTaxAmount?: number | null
+    discountPercent?: number | null
+    discountAmount?: number | null
+    finalAmount?: number | null
     specialRequests?: string | null
     notes?: string | null
     createdAt?: Date | string
@@ -50063,6 +52357,16 @@ export namespace Prisma {
     totalAmount: number
     paidAmount?: number
     paymentStatus?: $Enums.PaymentStatus
+    baseAmount?: number | null
+    gstPercent?: number | null
+    gstAmount?: number | null
+    serviceChargePercent?: number | null
+    serviceChargeAmount?: number | null
+    luxuryTaxPercent?: number | null
+    luxuryTaxAmount?: number | null
+    discountPercent?: number | null
+    discountAmount?: number | null
+    finalAmount?: number | null
     specialRequests?: string | null
     notes?: string | null
     createdAt?: Date | string
@@ -50933,12 +53237,22 @@ export namespace Prisma {
     totalAmount: number
     paidAmount?: number
     paymentStatus?: $Enums.PaymentStatus
+    baseAmount?: number | null
+    gstPercent?: number | null
+    gstAmount?: number | null
+    serviceChargePercent?: number | null
+    serviceChargeAmount?: number | null
+    luxuryTaxPercent?: number | null
+    luxuryTaxAmount?: number | null
+    discountPercent?: number | null
+    discountAmount?: number | null
+    finalAmount?: number | null
     specialRequests?: string | null
     notes?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     guest: GuestCreateNestedOneWithoutBookingsInput
-    property: PropertyCreateNestedOneWithoutBookingsInput
+    property?: PropertyCreateNestedOneWithoutBookingsInput
     lostItems?: LostItemCreateNestedManyWithoutBookingInput
   }
 
@@ -50955,9 +53269,19 @@ export namespace Prisma {
     totalAmount: number
     paidAmount?: number
     paymentStatus?: $Enums.PaymentStatus
+    baseAmount?: number | null
+    gstPercent?: number | null
+    gstAmount?: number | null
+    serviceChargePercent?: number | null
+    serviceChargeAmount?: number | null
+    luxuryTaxPercent?: number | null
+    luxuryTaxAmount?: number | null
+    discountPercent?: number | null
+    discountAmount?: number | null
+    finalAmount?: number | null
     specialRequests?: string | null
     notes?: string | null
-    propertyId: string
+    propertyId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     lostItems?: LostItemUncheckedCreateNestedManyWithoutBookingInput
@@ -51279,6 +53603,7 @@ export namespace Prisma {
     checkInStatus?: $Enums.CheckInStatus
     checkInCompletedAt?: Date | string | null
     language?: string
+    createdByPropertyId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     serviceRequests?: ServiceRequestCreateNestedManyWithoutGuestInput
@@ -51302,6 +53627,7 @@ export namespace Prisma {
     checkInStatus?: $Enums.CheckInStatus
     checkInCompletedAt?: Date | string | null
     language?: string
+    createdByPropertyId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     serviceRequests?: ServiceRequestUncheckedCreateNestedManyWithoutGuestInput
@@ -51542,6 +53868,7 @@ export namespace Prisma {
     checkInStatus?: EnumCheckInStatusFieldUpdateOperationsInput | $Enums.CheckInStatus
     checkInCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     language?: StringFieldUpdateOperationsInput | string
+    createdByPropertyId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     serviceRequests?: ServiceRequestUpdateManyWithoutGuestNestedInput
@@ -51564,6 +53891,7 @@ export namespace Prisma {
     checkInStatus?: EnumCheckInStatusFieldUpdateOperationsInput | $Enums.CheckInStatus
     checkInCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     language?: StringFieldUpdateOperationsInput | string
+    createdByPropertyId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     serviceRequests?: ServiceRequestUncheckedUpdateManyWithoutGuestNestedInput
@@ -51750,6 +54078,7 @@ export namespace Prisma {
     checkInStatus?: $Enums.CheckInStatus
     checkInCompletedAt?: Date | string | null
     language?: string
+    createdByPropertyId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     bookings?: BookingCreateNestedManyWithoutGuestInput
@@ -51773,6 +54102,7 @@ export namespace Prisma {
     checkInStatus?: $Enums.CheckInStatus
     checkInCompletedAt?: Date | string | null
     language?: string
+    createdByPropertyId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     bookings?: BookingUncheckedCreateNestedManyWithoutGuestInput
@@ -52083,6 +54413,7 @@ export namespace Prisma {
     checkInStatus?: EnumCheckInStatusFieldUpdateOperationsInput | $Enums.CheckInStatus
     checkInCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     language?: StringFieldUpdateOperationsInput | string
+    createdByPropertyId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bookings?: BookingUpdateManyWithoutGuestNestedInput
@@ -52105,6 +54436,7 @@ export namespace Prisma {
     checkInStatus?: EnumCheckInStatusFieldUpdateOperationsInput | $Enums.CheckInStatus
     checkInCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     language?: StringFieldUpdateOperationsInput | string
+    createdByPropertyId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bookings?: BookingUncheckedUpdateManyWithoutGuestNestedInput
@@ -53565,6 +55897,7 @@ export namespace Prisma {
     checkInStatus?: $Enums.CheckInStatus
     checkInCompletedAt?: Date | string | null
     language?: string
+    createdByPropertyId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     bookings?: BookingCreateNestedManyWithoutGuestInput
@@ -53588,6 +55921,7 @@ export namespace Prisma {
     checkInStatus?: $Enums.CheckInStatus
     checkInCompletedAt?: Date | string | null
     language?: string
+    createdByPropertyId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     bookings?: BookingUncheckedCreateNestedManyWithoutGuestInput
@@ -53679,6 +56013,7 @@ export namespace Prisma {
     checkInStatus?: EnumCheckInStatusFieldUpdateOperationsInput | $Enums.CheckInStatus
     checkInCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     language?: StringFieldUpdateOperationsInput | string
+    createdByPropertyId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bookings?: BookingUpdateManyWithoutGuestNestedInput
@@ -53701,6 +56036,7 @@ export namespace Prisma {
     checkInStatus?: EnumCheckInStatusFieldUpdateOperationsInput | $Enums.CheckInStatus
     checkInCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     language?: StringFieldUpdateOperationsInput | string
+    createdByPropertyId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bookings?: BookingUncheckedUpdateManyWithoutGuestNestedInput
@@ -54665,6 +57001,7 @@ export namespace Prisma {
     checkInStatus?: $Enums.CheckInStatus
     checkInCompletedAt?: Date | string | null
     language?: string
+    createdByPropertyId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     bookings?: BookingCreateNestedManyWithoutGuestInput
@@ -54688,6 +57025,7 @@ export namespace Prisma {
     checkInStatus?: $Enums.CheckInStatus
     checkInCompletedAt?: Date | string | null
     language?: string
+    createdByPropertyId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     bookings?: BookingUncheckedCreateNestedManyWithoutGuestInput
@@ -54714,13 +57052,23 @@ export namespace Prisma {
     totalAmount: number
     paidAmount?: number
     paymentStatus?: $Enums.PaymentStatus
+    baseAmount?: number | null
+    gstPercent?: number | null
+    gstAmount?: number | null
+    serviceChargePercent?: number | null
+    serviceChargeAmount?: number | null
+    luxuryTaxPercent?: number | null
+    luxuryTaxAmount?: number | null
+    discountPercent?: number | null
+    discountAmount?: number | null
+    finalAmount?: number | null
     specialRequests?: string | null
     notes?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     guest: GuestCreateNestedOneWithoutBookingsInput
     room: RoomCreateNestedOneWithoutBookingsInput
-    property: PropertyCreateNestedOneWithoutBookingsInput
+    property?: PropertyCreateNestedOneWithoutBookingsInput
   }
 
   export type BookingUncheckedCreateWithoutLostItemsInput = {
@@ -54737,9 +57085,19 @@ export namespace Prisma {
     totalAmount: number
     paidAmount?: number
     paymentStatus?: $Enums.PaymentStatus
+    baseAmount?: number | null
+    gstPercent?: number | null
+    gstAmount?: number | null
+    serviceChargePercent?: number | null
+    serviceChargeAmount?: number | null
+    luxuryTaxPercent?: number | null
+    luxuryTaxAmount?: number | null
+    discountPercent?: number | null
+    discountAmount?: number | null
+    finalAmount?: number | null
     specialRequests?: string | null
     notes?: string | null
-    propertyId: string
+    propertyId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -54999,6 +57357,7 @@ export namespace Prisma {
     checkInStatus?: EnumCheckInStatusFieldUpdateOperationsInput | $Enums.CheckInStatus
     checkInCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     language?: StringFieldUpdateOperationsInput | string
+    createdByPropertyId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bookings?: BookingUpdateManyWithoutGuestNestedInput
@@ -55021,6 +57380,7 @@ export namespace Prisma {
     checkInStatus?: EnumCheckInStatusFieldUpdateOperationsInput | $Enums.CheckInStatus
     checkInCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     language?: StringFieldUpdateOperationsInput | string
+    createdByPropertyId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bookings?: BookingUncheckedUpdateManyWithoutGuestNestedInput
@@ -55052,13 +57412,23 @@ export namespace Prisma {
     totalAmount?: FloatFieldUpdateOperationsInput | number
     paidAmount?: FloatFieldUpdateOperationsInput | number
     paymentStatus?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
+    baseAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    gstPercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    gstAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    serviceChargePercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    serviceChargeAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    luxuryTaxPercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    luxuryTaxAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    discountPercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    discountAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    finalAmount?: NullableFloatFieldUpdateOperationsInput | number | null
     specialRequests?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     guest?: GuestUpdateOneRequiredWithoutBookingsNestedInput
     room?: RoomUpdateOneRequiredWithoutBookingsNestedInput
-    property?: PropertyUpdateOneRequiredWithoutBookingsNestedInput
+    property?: PropertyUpdateOneWithoutBookingsNestedInput
   }
 
   export type BookingUncheckedUpdateWithoutLostItemsInput = {
@@ -55074,9 +57444,19 @@ export namespace Prisma {
     totalAmount?: FloatFieldUpdateOperationsInput | number
     paidAmount?: FloatFieldUpdateOperationsInput | number
     paymentStatus?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
+    baseAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    gstPercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    gstAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    serviceChargePercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    serviceChargeAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    luxuryTaxPercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    luxuryTaxAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    discountPercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    discountAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    finalAmount?: NullableFloatFieldUpdateOperationsInput | number | null
     specialRequests?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
-    propertyId?: StringFieldUpdateOperationsInput | string
+    propertyId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -56169,6 +58549,7 @@ export namespace Prisma {
     checkInStatus?: $Enums.CheckInStatus
     checkInCompletedAt?: Date | string | null
     language?: string
+    createdByPropertyId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     bookings?: BookingCreateNestedManyWithoutGuestInput
@@ -56192,6 +58573,7 @@ export namespace Prisma {
     checkInStatus?: $Enums.CheckInStatus
     checkInCompletedAt?: Date | string | null
     language?: string
+    createdByPropertyId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     bookings?: BookingUncheckedCreateNestedManyWithoutGuestInput
@@ -56339,6 +58721,7 @@ export namespace Prisma {
     checkInStatus?: EnumCheckInStatusFieldUpdateOperationsInput | $Enums.CheckInStatus
     checkInCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     language?: StringFieldUpdateOperationsInput | string
+    createdByPropertyId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bookings?: BookingUpdateManyWithoutGuestNestedInput
@@ -56361,6 +58744,7 @@ export namespace Prisma {
     checkInStatus?: EnumCheckInStatusFieldUpdateOperationsInput | $Enums.CheckInStatus
     checkInCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     language?: StringFieldUpdateOperationsInput | string
+    createdByPropertyId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bookings?: BookingUncheckedUpdateManyWithoutGuestNestedInput
@@ -56666,9 +59050,19 @@ export namespace Prisma {
     totalAmount: number
     paidAmount?: number
     paymentStatus?: $Enums.PaymentStatus
+    baseAmount?: number | null
+    gstPercent?: number | null
+    gstAmount?: number | null
+    serviceChargePercent?: number | null
+    serviceChargeAmount?: number | null
+    luxuryTaxPercent?: number | null
+    luxuryTaxAmount?: number | null
+    discountPercent?: number | null
+    discountAmount?: number | null
+    finalAmount?: number | null
     specialRequests?: string | null
     notes?: string | null
-    propertyId: string
+    propertyId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -56760,12 +59154,22 @@ export namespace Prisma {
     totalAmount?: FloatFieldUpdateOperationsInput | number
     paidAmount?: FloatFieldUpdateOperationsInput | number
     paymentStatus?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
+    baseAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    gstPercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    gstAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    serviceChargePercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    serviceChargeAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    luxuryTaxPercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    luxuryTaxAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    discountPercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    discountAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    finalAmount?: NullableFloatFieldUpdateOperationsInput | number | null
     specialRequests?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     room?: RoomUpdateOneRequiredWithoutBookingsNestedInput
-    property?: PropertyUpdateOneRequiredWithoutBookingsNestedInput
+    property?: PropertyUpdateOneWithoutBookingsNestedInput
     lostItems?: LostItemUpdateManyWithoutBookingNestedInput
   }
 
@@ -56781,9 +59185,19 @@ export namespace Prisma {
     totalAmount?: FloatFieldUpdateOperationsInput | number
     paidAmount?: FloatFieldUpdateOperationsInput | number
     paymentStatus?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
+    baseAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    gstPercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    gstAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    serviceChargePercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    serviceChargeAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    luxuryTaxPercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    luxuryTaxAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    discountPercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    discountAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    finalAmount?: NullableFloatFieldUpdateOperationsInput | number | null
     specialRequests?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
-    propertyId?: StringFieldUpdateOperationsInput | string
+    propertyId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lostItems?: LostItemUncheckedUpdateManyWithoutBookingNestedInput
@@ -56801,9 +59215,19 @@ export namespace Prisma {
     totalAmount?: FloatFieldUpdateOperationsInput | number
     paidAmount?: FloatFieldUpdateOperationsInput | number
     paymentStatus?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
+    baseAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    gstPercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    gstAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    serviceChargePercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    serviceChargeAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    luxuryTaxPercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    luxuryTaxAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    discountPercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    discountAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    finalAmount?: NullableFloatFieldUpdateOperationsInput | number | null
     specialRequests?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
-    propertyId?: StringFieldUpdateOperationsInput | string
+    propertyId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -57144,6 +59568,16 @@ export namespace Prisma {
     totalAmount: number
     paidAmount?: number
     paymentStatus?: $Enums.PaymentStatus
+    baseAmount?: number | null
+    gstPercent?: number | null
+    gstAmount?: number | null
+    serviceChargePercent?: number | null
+    serviceChargeAmount?: number | null
+    luxuryTaxPercent?: number | null
+    luxuryTaxAmount?: number | null
+    discountPercent?: number | null
+    discountAmount?: number | null
+    finalAmount?: number | null
     specialRequests?: string | null
     notes?: string | null
     createdAt?: Date | string
@@ -57630,6 +60064,16 @@ export namespace Prisma {
     totalAmount?: FloatFieldUpdateOperationsInput | number
     paidAmount?: FloatFieldUpdateOperationsInput | number
     paymentStatus?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
+    baseAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    gstPercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    gstAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    serviceChargePercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    serviceChargeAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    luxuryTaxPercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    luxuryTaxAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    discountPercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    discountAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    finalAmount?: NullableFloatFieldUpdateOperationsInput | number | null
     specialRequests?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -57652,6 +60096,16 @@ export namespace Prisma {
     totalAmount?: FloatFieldUpdateOperationsInput | number
     paidAmount?: FloatFieldUpdateOperationsInput | number
     paymentStatus?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
+    baseAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    gstPercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    gstAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    serviceChargePercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    serviceChargeAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    luxuryTaxPercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    luxuryTaxAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    discountPercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    discountAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    finalAmount?: NullableFloatFieldUpdateOperationsInput | number | null
     specialRequests?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -57672,6 +60126,16 @@ export namespace Prisma {
     totalAmount?: FloatFieldUpdateOperationsInput | number
     paidAmount?: FloatFieldUpdateOperationsInput | number
     paymentStatus?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
+    baseAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    gstPercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    gstAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    serviceChargePercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    serviceChargeAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    luxuryTaxPercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    luxuryTaxAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    discountPercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    discountAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    finalAmount?: NullableFloatFieldUpdateOperationsInput | number | null
     specialRequests?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -58011,9 +60475,19 @@ export namespace Prisma {
     totalAmount: number
     paidAmount?: number
     paymentStatus?: $Enums.PaymentStatus
+    baseAmount?: number | null
+    gstPercent?: number | null
+    gstAmount?: number | null
+    serviceChargePercent?: number | null
+    serviceChargeAmount?: number | null
+    luxuryTaxPercent?: number | null
+    luxuryTaxAmount?: number | null
+    discountPercent?: number | null
+    discountAmount?: number | null
+    finalAmount?: number | null
     specialRequests?: string | null
     notes?: string | null
-    propertyId: string
+    propertyId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -58084,12 +60558,22 @@ export namespace Prisma {
     totalAmount?: FloatFieldUpdateOperationsInput | number
     paidAmount?: FloatFieldUpdateOperationsInput | number
     paymentStatus?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
+    baseAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    gstPercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    gstAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    serviceChargePercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    serviceChargeAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    luxuryTaxPercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    luxuryTaxAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    discountPercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    discountAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    finalAmount?: NullableFloatFieldUpdateOperationsInput | number | null
     specialRequests?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     guest?: GuestUpdateOneRequiredWithoutBookingsNestedInput
-    property?: PropertyUpdateOneRequiredWithoutBookingsNestedInput
+    property?: PropertyUpdateOneWithoutBookingsNestedInput
     lostItems?: LostItemUpdateManyWithoutBookingNestedInput
   }
 
@@ -58105,9 +60589,19 @@ export namespace Prisma {
     totalAmount?: FloatFieldUpdateOperationsInput | number
     paidAmount?: FloatFieldUpdateOperationsInput | number
     paymentStatus?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
+    baseAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    gstPercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    gstAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    serviceChargePercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    serviceChargeAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    luxuryTaxPercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    luxuryTaxAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    discountPercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    discountAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    finalAmount?: NullableFloatFieldUpdateOperationsInput | number | null
     specialRequests?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
-    propertyId?: StringFieldUpdateOperationsInput | string
+    propertyId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lostItems?: LostItemUncheckedUpdateManyWithoutBookingNestedInput
@@ -58125,9 +60619,19 @@ export namespace Prisma {
     totalAmount?: FloatFieldUpdateOperationsInput | number
     paidAmount?: FloatFieldUpdateOperationsInput | number
     paymentStatus?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
+    baseAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    gstPercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    gstAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    serviceChargePercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    serviceChargeAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    luxuryTaxPercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    luxuryTaxAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    discountPercent?: NullableFloatFieldUpdateOperationsInput | number | null
+    discountAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    finalAmount?: NullableFloatFieldUpdateOperationsInput | number | null
     specialRequests?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
-    propertyId?: StringFieldUpdateOperationsInput | string
+    propertyId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -59116,6 +61620,10 @@ export namespace Prisma {
      * @deprecated Use PlanDefinitionDefaultArgs instead
      */
     export type PlanDefinitionArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = PlanDefinitionDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use PropertySettingsDefaultArgs instead
+     */
+    export type PropertySettingsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = PropertySettingsDefaultArgs<ExtArgs>
 
   /**
    * Batch Payload for updateMany & deleteMany & createMany

@@ -3,149 +3,285 @@ import { prisma } from '@/lib/db'
 import { requireAuth } from '@/lib/auth/middleware'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/options'
+import { serverError } from '@/lib/api-response'
+import { subHours, format } from 'date-fns'
 
 export const dynamic = 'force-dynamic'
 
-/**
- * GET /api/admin/infrastructure
- * Get infrastructure monitoring data
- */
 export async function GET(req: NextRequest) {
     try {
-        const authResult = await requireAuth(req, ['SUPER_ADMIN', 'HOTEL_ADMIN'])
+        const authResult = await requireAuth(req, ['SUPER_ADMIN', 'HOTEL_ADMIN', 'MANAGER', 'RECEPTIONIST'])
         if (authResult instanceof NextResponse) return authResult
 
         const { searchParams } = new URL(req.url)
         const queryPropertyId = searchParams.get('propertyId')
         const session = await getServerSession(authOptions)
 
-        let whereProperty: any = {}
+        let propertyId: string | null = null
         if (session?.user?.role === 'SUPER_ADMIN') {
-            if (queryPropertyId && queryPropertyId !== 'ALL') {
-                whereProperty = { propertyId: queryPropertyId }
-            }
+            if (queryPropertyId && queryPropertyId !== 'ALL') propertyId = queryPropertyId
         } else {
-            const propertyId = session?.user?.propertyId
-            if (propertyId) whereProperty = { propertyId }
+            propertyId = session?.user?.propertyId ?? null
         }
 
-        // ── 1. Fetch System Nodes with Resilient Fallback ──
-        let nodes = []
-        try {
-            if (prisma && (prisma as any).systemNode) {
-                nodes = await (prisma as any).systemNode.findMany({
-                    where: whereProperty
-                })
+        const where: any = propertyId ? { propertyId } : {}
+        const now = new Date()
+        const startOfToday = new Date(now); startOfToday.setHours(0, 0, 0, 0)
+        const endOfToday = new Date(now); endOfToday.setHours(23, 59, 59, 999)
 
-                // Seed nodes if none exist
-                if (nodes.length === 0 && whereProperty.propertyId) {
-                    await (prisma as any).systemNode.createMany({
-                        data: [
-                            { name: 'Front-Desk-POS-01', type: 'Retail Hardware', ipAddress: '192.168.1.104', uptime: '14d 06h', status: 'Online', propertyId: whereProperty.propertyId },
-                            { name: 'Core-Switch-Main', type: 'Network Layer', ipAddress: '10.0.0.1', uptime: '342d 12h', status: 'Online', propertyId: whereProperty.propertyId },
-                            { name: 'North-AP-03', type: 'Wi-Fi Access Point', ipAddress: '10.0.1.23', uptime: '-', status: 'Disconnected', propertyId: whereProperty.propertyId },
-                            { name: 'IoT-Gateway-West', type: 'Smart Hub', ipAddress: '192.168.5.12', uptime: '3d 11h', status: 'High Load', propertyId: whereProperty.propertyId }
-                        ]
-                    })
-                    nodes = await (prisma as any).systemNode.findMany({ where: whereProperty })
+        // ── Fetch everything in parallel ──────────────────────────────────────
+        const [
+            // Staff on duty (punched in, not punched out)
+            staffOnDuty,
+            // Active bookings (checked in right now)
+            activeBookings,
+            // Today's arrivals (reserved, checking in today)
+            todayArrivals,
+            // Today's departures
+            todayDepartures,
+            // Pending service requests
+            pendingServices,
+            // SLA breaches (pending > 1 hour)
+            slaBreaches,
+            // Rooms being cleaned
+            cleaningRooms,
+            // Rooms under maintenance
+            maintenanceRooms,
+            // Total rooms
+            totalRooms,
+            // Recent bookings (last 24h for activity chart)
+            recentBookings,
+            // Razorpay: recent payments
+            recentPayments,
+        ] = await Promise.all([
+            // Staff on duty
+            prisma.staff.findMany({
+                where: {
+                    ...where,
+                    attendances: { some: { punchOut: null, punchIn: { gte: subHours(now, 16) } } }
+                },
+                include: {
+                    user: { select: { name: true } },
+                    attendances: {
+                        where: { punchOut: null },
+                        orderBy: { punchIn: 'desc' },
+                        take: 1,
+                    }
+                },
+                take: 20,
+            }),
+
+            // Currently checked-in guests
+            prisma.booking.findMany({
+                where: { ...where, status: 'CHECKED_IN' },
+                include: {
+                    guest: { select: { name: true } },
+                    room: { select: { roomNumber: true } },
+                },
+                orderBy: { checkIn: 'desc' },
+                take: 10,
+            }),
+
+            // Today's arrivals
+            prisma.booking.count({
+                where: { ...where, status: 'RESERVED', checkIn: { gte: startOfToday, lte: endOfToday } }
+            }),
+
+            // Today's departures
+            prisma.booking.count({
+                where: { ...where, status: 'CHECKED_IN', checkOut: { gte: startOfToday, lte: endOfToday } }
+            }),
+
+            // Pending services
+            prisma.serviceRequest.findMany({
+                where: { ...where, status: { in: ['PENDING', 'ACCEPTED', 'IN_PROGRESS'] } },
+                include: {
+                    room: { select: { roomNumber: true } },
+                    assignedTo: { include: { user: { select: { name: true } } } },
+                },
+                orderBy: { createdAt: 'asc' },
+                take: 10,
+            }),
+
+            // SLA breaches
+            prisma.serviceRequest.count({
+                where: {
+                    ...where,
+                    status: { in: ['PENDING', 'ACCEPTED'] },
+                    createdAt: { lte: subHours(now, 1) },
                 }
-            } else {
-                throw new Error('SystemNode model missing')
-            }
-        } catch (e) {
-            console.warn('SystemNode model not yet generated. Using mock data.')
-            nodes = [
-                { name: 'Front-Desk-POS-01', type: 'Retail Hardware', ipAddress: '192.168.1.104', uptime: '14d 06h', status: 'Online' },
-                { name: 'Core-Switch-Main', type: 'Network Layer', ipAddress: '10.0.0.1', uptime: '342d 12h', status: 'Online' },
-                { name: 'North-AP-03', type: 'Wi-Fi Access Point', ipAddress: '10.0.1.23', uptime: '-', status: 'Disconnected' },
-                { name: 'IoT-Gateway-West', type: 'Smart Hub', ipAddress: '192.168.5.12', uptime: '3d 11h', status: 'High Load' }
-            ]
-        }
+            }),
 
-        // ── 2. Fetch Alerts with Resilient Fallback ──
-        let alerts = []
-        try {
-            if (prisma && (prisma as any).systemAlert) {
-                alerts = await (prisma as any).systemAlert.findMany({
-                    where: whereProperty,
-                    orderBy: { timestamp: 'desc' },
-                    take: 10
-                })
+            // Rooms being cleaned
+            prisma.room.findMany({
+                where: { ...where, status: 'CLEANING' },
+                select: { roomNumber: true, type: true },
+            }),
 
-                // Seed alerts if none exist
-                if (alerts.length === 0 && whereProperty.propertyId) {
-                    await (prisma as any).systemAlert.createMany({
-                        data: [
-                            { message: 'Room 402 AC Unit Failure', description: 'IoT sensor reported high vibration and shutdown.', type: 'CRITICAL', category: 'IoT', propertyId: whereProperty.propertyId },
-                            { message: 'WI-FI AP Node 08 High Latency', description: 'North Wing corridor coverage may be spotty.', type: 'WARNING', category: 'Wi-Fi', propertyId: whereProperty.propertyId },
-                            { message: 'Channel Manager Auto-Reconnected', description: 'Expedia sync recovered successfully.', type: 'INFO', category: 'Channel Manager', propertyId: whereProperty.propertyId },
-                            { message: 'Low Battery: Door Lock 215', description: 'Battery level below 5%.', type: 'CRITICAL', category: 'IoT', propertyId: whereProperty.propertyId }
-                        ]
-                    })
-                    alerts = await (prisma as any).systemAlert.findMany({ where: whereProperty, orderBy: { timestamp: 'desc' } })
-                }
-            } else {
-                throw new Error('SystemAlert model missing')
-            }
-        } catch (e) {
-            console.warn('SystemAlert model not yet generated. Using mock data.')
-            alerts = [
-                { id: '1', message: 'Room 402 AC Unit Failure', description: 'IoT sensor reported high vibration and shutdown.', type: 'CRITICAL', category: 'IoT', timestamp: new Date() },
-                { id: '2', message: 'WI-FI AP Node 08 High Latency', description: 'North Wing corridor coverage may be spotty.', type: 'WARNING', category: 'Wi-Fi', timestamp: new Date() },
-                { id: '3', message: 'Channel Manager Auto-Reconnected', description: 'Expedia sync recovered successfully.', type: 'INFO', category: 'Channel Manager', timestamp: new Date() },
-                { id: '4', message: 'Low Battery: Door Lock 215', description: 'Battery level below 5%.', type: 'CRITICAL', category: 'IoT', timestamp: new Date() }
-            ]
-        }
+            // Rooms under maintenance
+            prisma.room.findMany({
+                where: { ...where, status: 'MAINTENANCE' },
+                select: { roomNumber: true, type: true },
+            }),
 
-        // 3. Real Stats Calculation
-        const totalNodesCount = nodes.length || 1
-        const onlineNodes = nodes.filter((n: any) => n.status === 'Online').length
-        const highLoadNodes = nodes.filter((n: any) => n.status === 'High Load').length
-        const offlineNodes = nodes.filter((n: any) => n.status === 'Offline' || n.status === 'Disconnected').length
+            // Total rooms
+            prisma.room.count({ where }),
 
-        const posUptime = Math.round((onlineNodes / totalNodesCount) * 100)
-        const wifiHealth = Math.round(((onlineNodes + highLoadNodes * 0.5) / totalNodesCount) * 100)
-        
-        const criticalAlerts = alerts.filter((a: any) => a.type === 'CRITICAL')
-        const iotCritical = criticalAlerts.filter((a: any) => a.category === 'IoT').length
+            // Recent bookings for activity chart (last 24h)
+            prisma.booking.findMany({
+                where: { ...where, createdAt: { gte: subHours(now, 24) } },
+                select: { createdAt: true },
+                orderBy: { createdAt: 'asc' },
+            }),
 
-        // 4. Uptime Data (Last 24 hours simulation based on current node health)
-        // In a real system you'd fetch this from a logs/timeseries table
-        const uptimeData = Array.from({ length: 12 }, (_, i) => {
-            const seed = (Math.sin(i) + 1) / 2 // deterministic pseudo-random
-            const healthBase = i === 11 ? wifiHealth : (85 + seed * 14)
+            // Recent payments
+            prisma.booking.findMany({
+                where: {
+                    ...where,
+                    paymentStatus: 'PAID',
+                    updatedAt: { gte: subHours(now, 24) },
+                },
+                select: { totalAmount: true, finalAmount: true, updatedAt: true },
+                orderBy: { updatedAt: 'desc' },
+                take: 5,
+            }),
+        ])
+
+        const occupiedRooms = activeBookings.length
+        const occupancyRate = totalRooms > 0 ? Math.round((occupiedRooms / totalRooms) * 100) : 0
+
+        // ── Activity chart: bookings per 2h bucket ────────────────────────────
+        const activityChart = Array.from({ length: 12 }, (_, i) => {
+            const bucketStart = subHours(now, (11 - i) * 2)
+            const bucketEnd = subHours(now, (10 - i) * 2)
+            const count = recentBookings.filter(
+                b => b.createdAt >= bucketStart && b.createdAt < bucketEnd
+            ).length
             return {
-                time: `${(i * 2).toString().padStart(2, '0')}:00`,
-                value: healthBase,
-                status: healthBase < 85 ? 'error' : healthBase < 92 ? 'warning' : 'ok'
+                time: format(bucketStart, 'HH:mm'),
+                bookings: count,
+                value: Math.min(100, 60 + count * 8), // visual height
             }
         })
+
+        // ── Payment gateway status ────────────────────────────────────────────
+        const razorpayConfigured = !!(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET)
+        const twilioConfigured = !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN)
+        const recentPaymentTotal = recentPayments.reduce((s, p) => s + (p.finalAmount ?? p.totalAmount ?? 0), 0)
+
+        // ── Build alerts from real data ───────────────────────────────────────
+        const alerts: any[] = []
+
+        if (slaBreaches > 0) {
+            alerts.push({
+                type: 'CRITICAL',
+                message: `${slaBreaches} SLA Breach${slaBreaches > 1 ? 'es' : ''}`,
+                description: `${slaBreaches} service request${slaBreaches > 1 ? 's' : ''} pending for over 1 hour without resolution.`,
+                category: 'Services',
+                time: format(now, 'HH:mm'),
+            })
+        }
+
+        maintenanceRooms.forEach(r => {
+            alerts.push({
+                type: 'WARNING',
+                message: `Room ${r.roomNumber} Under Maintenance`,
+                description: `${r.type} room is blocked. Verify if work is complete.`,
+                category: 'Rooms',
+                time: format(now, 'HH:mm'),
+            })
+        })
+
+        pendingServices.filter(s => s.status === 'PENDING' && !s.assignedTo).forEach(s => {
+            alerts.push({
+                type: 'WARNING',
+                message: `Unassigned: ${s.title}`,
+                description: `Room ${s.room?.roomNumber ?? '?'} — no staff assigned yet.`,
+                category: s.type.replace('_', ' '),
+                time: format(s.createdAt, 'HH:mm'),
+            })
+        })
+
+        if (alerts.length === 0) {
+            alerts.push({
+                type: 'INFO',
+                message: 'All Systems Operational',
+                description: 'No active alerts. Hotel operations running smoothly.',
+                category: 'System',
+                time: format(now, 'HH:mm'),
+            })
+        }
 
         return NextResponse.json({
-            nodes,
-            alerts: alerts.map((a: any) => ({
-                id: a.id,
-                message: a.message,
-                description: a.description,
-                type: a.type,
-                time: a.timestamp ? new Date(a.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }) : 'Just now',
-                category: a.category
-            })),
-            stats: {
-                posStatus: onlineNodes > (totalNodesCount / 2) ? 'Stable' : 'Degraded',
-                posUptime: `${posUptime}% Node Uptime`,
-                channelManagerStatus: 'Connected',
-                lastSync: 'Last sync 45s ago',
-                wifiHealth: `${wifiHealth}% Coverage`,
-                offlineAPs: `${offlineNodes} Nodes Offline`,
-                iotAlerts: `${criticalAlerts.length} Alerts Active`,
-                batteryAlerts: `Critical IoT: ${iotCritical}`
+            success: true,
+            data: {
+                // Live counts
+                live: {
+                    staffOnDuty: staffOnDuty.length,
+                    staffList: staffOnDuty.map(s => ({
+                        name: s.user.name,
+                        department: s.department,
+                        punchIn: s.attendances[0]?.punchIn
+                            ? format(new Date(s.attendances[0].punchIn), 'HH:mm')
+                            : '—',
+                    })),
+                    guestsInHouse: occupiedRooms,
+                    guestList: activeBookings.map(b => ({
+                        name: b.guest.name,
+                        room: b.room.roomNumber,
+                        checkOut: format(new Date(b.checkOut), 'dd MMM'),
+                    })),
+                    todayArrivals,
+                    todayDepartures,
+                    cleaningRooms: cleaningRooms.length,
+                    maintenanceRooms: maintenanceRooms.length,
+                    occupancyRate,
+                    totalRooms,
+                    pendingServices: pendingServices.length,
+                    slaBreaches,
+                    activeServices: pendingServices.map(s => ({
+                        title: s.title,
+                        room: s.room?.roomNumber ?? '?',
+                        type: s.type,
+                        status: s.status,
+                        assignedTo: s.assignedTo?.user?.name ?? null,
+                        age: Math.round((now.getTime() - new Date(s.createdAt).getTime()) / 60000), // minutes
+                    })),
+                },
+                // Payment gateways
+                gateways: [
+                    {
+                        name: 'Razorpay',
+                        type: 'Payment Gateway',
+                        status: razorpayConfigured ? 'Live' : 'Not Configured',
+                        detail: razorpayConfigured
+                            ? `₹${recentPaymentTotal.toLocaleString('en-IN')} collected (24h)`
+                            : 'Add RAZORPAY_KEY_ID to .env',
+                    },
+                    {
+                        name: 'Twilio',
+                        type: 'SMS / WhatsApp',
+                        status: twilioConfigured ? 'Live' : 'Not Configured',
+                        detail: twilioConfigured ? 'SMS & WhatsApp active' : 'Add TWILIO credentials to .env',
+                    },
+                    {
+                        name: 'Database',
+                        type: 'Guest & Booking Data',
+                        status: 'Live',
+                        detail: 'All records connected & syncing',
+                    },
+                    {
+                        name: 'Authentication',
+                        type: 'Staff Login & Security',
+                        status: 'Live',
+                        detail: 'Staff sessions active & secure',
+                    },
+                ],
+                alerts,
+                activityChart,
             },
-            uptimeData
         })
-
-    } catch (error: any) {
-        console.error('[INFRA_GET_ERROR]', error)
-        return NextResponse.json({ error: 'Internal Error' }, { status: 500 })
+    } catch (error) {
+        return serverError(error, 'INFRA_GET')
     }
 }

@@ -40,11 +40,12 @@ const SOURCE_LABELS: Record<string, string> = {
 }
 
 const CHECKIN_STATUS_CONFIG: Record<string, { label: string; color: string; dot: string }> = {
-    PENDING: { label: 'Pending', color: 'text-gray-400', dot: 'bg-gray-500' },
-    LINK_SENT: { label: 'Sent', color: 'text-[#4A9EFF]', dot: 'bg-[#4A9EFF]' },
-    LINK_OPENED: { label: 'Opened', color: 'text-[#d4aa00]', dot: 'bg-[#d4aa00]' },
-    COMPLETED: { label: 'Completed', color: 'text-[#1db954]', dot: 'bg-[#1db954]' },
-    VERIFIED: { label: 'Verified', color: 'text-[#1db954]', dot: 'bg-[#1db954]' },
+    PENDING:    { label: 'Pending',   color: 'text-gray-400',  dot: 'bg-gray-500' },
+    LINK_SENT:  { label: 'Sent',      color: 'text-[#4A9EFF]', dot: 'bg-[#4A9EFF]' },
+    LINK_OPENED:{ label: 'Opened',    color: 'text-[#d4aa00]', dot: 'bg-[#d4aa00]' },
+    COMPLETED:  { label: 'Completed', color: 'text-[#1db954]', dot: 'bg-[#1db954]' },
+    VERIFIED:   { label: 'Verified',  color: 'text-[#1db954]', dot: 'bg-[#1db954]' },
+    NO_BOOKING: { label: 'No Booking',color: 'text-gray-500',  dot: 'bg-gray-600' },
 }
 
 export default function CheckInManagerPage() {
@@ -65,9 +66,10 @@ export default function CheckInManagerPage() {
     const fetchData = useCallback(async (isAuto = false) => {
         if (!isAuto) setLoading(true)
         try {
-            const res = await fetch(`/api/admin/checkin?filter=${filter}`)
+            const res = await fetch(`/api/admin/checkin?filter=${filter}&propertyId=${typeof window !== 'undefined' ? (localStorage.getItem('super_admin_property_context') || '') : ''}`)
             if (res.ok) {
-                const data = await res.json()
+                const json = await res.json()
+                const data = json?.data ?? json
                 setBookings(data.bookings || [])
                 setStats(data.stats ? {
                     ...data.stats,
@@ -239,14 +241,10 @@ export default function CheckInManagerPage() {
     }
 
     const formatArrival = (booking: any) => {
-        // Preference: 
-        // 1. Actual completion time of online check-in (most relevant for arrivals list)
-        // 2. Actual check-in time (if already checked in)
-        // 3. Planned check-in date
-        const dateStr = booking.checkInCompletedAt || booking.actualCheckIn || booking.checkIn
+        if (!booking.checkIn && !booking.checkInCompletedAt) return '—'
+        const dateStr = booking.checkInCompletedAt || booking.checkIn
         const d = new Date(dateStr)
         const timeStr = format(d, 'hh:mm a')
-        
         if (isToday(d)) return `Today ${timeStr}`
         if (isTomorrow(d)) return `Tomorrow ${timeStr}`
         return format(d, 'dd MMM hh:mm a')
@@ -259,7 +257,7 @@ export default function CheckInManagerPage() {
             <div className="shrink-0 flex items-center gap-2 px-5 pt-4 pb-1">
                 <span className="text-[12px] text-gray-500">Operations</span>
                 <ChevronRight className="w-3 h-3 text-gray-600" />
-                <span className="text-[12px] text-[#4A9EFF]">Arrivals Today</span>
+                <span className="text-[12px] text-[#4A9EFF]">Front Desk</span>
             </div>
 
             {/* ===== STAT CARDS ===== */}
@@ -271,7 +269,7 @@ export default function CheckInManagerPage() {
                     </div>
                     <p className="text-[11px] text-gray-500 font-medium mb-2">Expected Today</p>
                     <p className="text-4xl font-bold text-white">{stats.expected}</p>
-                    <p className="text-[11px] text-gray-500 mt-1">Arrivals</p>
+                    <p className="text-[11px] text-gray-500 mt-1">Today&apos;s arrivals</p>
                     <div className="mt-3 h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
                         <div
                             className="h-full bg-[#4A9EFF] rounded-full"
@@ -285,7 +283,7 @@ export default function CheckInManagerPage() {
                     <div className="absolute right-4 top-4 opacity-10">
                         <CheckCheck className="w-10 h-10 text-[#1db954]" />
                     </div>
-                    <p className="text-[11px] text-gray-500 font-medium mb-2">Completed Online</p>
+                    <p className="text-[11px] text-gray-500 font-medium mb-2">Currently In-House</p>
                     <p className="text-4xl font-bold text-white">{stats.completed}</p>
                     <p className={cn(
                         "text-[11px] mt-1 flex items-center gap-1",
@@ -336,7 +334,7 @@ export default function CheckInManagerPage() {
                                         filter === tab ? 'bg-white text-black' : 'text-gray-400 hover:text-white'
                                     )}
                                 >
-                                    {tab === 'all' ? 'All Guests' : tab.charAt(0).toUpperCase() + tab.slice(1)}
+                                    {tab === 'all' ? 'All Guests' : tab === 'pending' ? 'Pending Check-in' : 'Checked In'}
                                 </button>
                             ))}
                         </div>
@@ -394,7 +392,7 @@ export default function CheckInManagerPage() {
                         ) : filtered.length === 0 ? (
                             <div className="flex flex-col items-center justify-center h-40 gap-2">
                                 <User className="w-8 h-8 text-gray-600" />
-                                <p className="text-[12px] text-gray-500">No arrivals found</p>
+                                <p className="text-[12px] text-gray-500">No guests found</p>
                             </div>
                         ) : (
                             filtered.map(booking => {

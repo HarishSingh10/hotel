@@ -366,7 +366,7 @@ export default function PropertiesPage() {
 
                     <div className="pt-4 border-t border-white/10 space-y-4">
                         <div className="flex items-center justify-between">
-                            <h4 className="text-[11px] font-black text-gray-400 uppercase tracking-widest italic flex items-center gap-2">
+                            <h4 className="text-[11px] font-black text-gray-400 uppercase tracking-widest  flex items-center gap-2">
                                 <MapPin className="w-3.5 h-3.5 text-primary" /> Spatial Coordinates
                             </h4>
                             <button 

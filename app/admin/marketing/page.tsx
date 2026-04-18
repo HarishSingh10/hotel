@@ -1,345 +1,415 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
+import { useSession } from 'next-auth/react'
 import {
-    Megaphone, Plus, Download, ChevronDown,
-    Mail, MessageSquare, Bell, TrendingUp, Users, Target, IndianRupee,
-    Rocket, ArrowUpRight, Star, Loader2, Send, Building2, CheckCircle2,
-    Calendar, History
+    Search, Send, MessageSquare, Mail, Users,
+    CheckSquare, Square, Filter, RefreshCw,
+    Phone, User, ChevronDown, X, Loader2, Check
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
-import { buildContextUrl as bcu } from '@/lib/admin-context'
-import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { getAdminContext } from '@/lib/admin-context'
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+interface Guest {
+    id: string
+    name: string
+    email: string | null
+    phone: string
+    totalStays: number
+    status: string | null
+    source: string | null
+}
+
+const SEGMENTS = [
+    { id: 'ALL',      label: 'All Guests',         filter: (_: Guest) => true },
+    { id: 'REPEAT',   label: 'Repeat Guests (2+)', filter: (g: Guest) => g.totalStays >= 2 },
+    { id: 'VIP',      label: 'VIP (5+ stays)',      filter: (g: Guest) => g.totalStays >= 5 },
+    { id: 'CHECKEDIN',label: 'Currently In-House',  filter: (g: Guest) => g.status === 'CHECKED_IN' },
+    { id: 'DIRECT',   label: 'Direct Bookings',     filter: (g: Guest) => g.source === 'DIRECT' || g.source === 'WALK_IN' },
+]
 
 export default function MarketingPage() {
     const { data: session } = useSession()
-    const router = useRouter()
-    const [channel, setChannel] = useState('EMAIL')
-    const [campaigns, setCampaigns] = useState<any[]>([])
-    const [guestList, setGuestList] = useState<any[]>([])
-    const [stats, setStats] = useState<any>(null)
-    const [loading, setLoading] = useState(true)
-    const [sending, setSending] = useState(false)
-    const [segment, setSegment] = useState('Diamond Member Only')
-    const [promoCode, setPromoCode] = useState('ZENVIP20')
-    const [dropdownOpen, setDropdownOpen] = useState(false)
 
-    const fetchMarketingData = async () => {
+    // Guests
+    const [guests, setGuests] = useState<Guest[]>([])
+    const [loading, setLoading] = useState(true)
+    const [search, setSearch] = useState('')
+    const [segment, setSegment] = useState('ALL')
+    const [selected, setSelected] = useState<Set<string>>(new Set())
+
+    // Message composer
+    const [message, setMessage] = useState('')
+    const [channel, setChannel] = useState<'WHATSAPP' | 'SMS'>('WHATSAPP')
+    const [sending, setSending] = useState(false)
+    const [sentCount, setSentCount] = useState<number | null>(null)
+
+    const propertyId = session?.user?.role === 'SUPER_ADMIN'
+        ? getAdminContext().propertyId
+        : session?.user?.propertyId
+
+    // Fetch all guests of this hotel
+    const fetchGuests = async () => {
+        if (!propertyId) return
+        setLoading(true)
         try {
-            const res = await fetch(bcu('/api/admin/marketing'))
-            if (res.ok) {
-                const data = await res.json()
-                setCampaigns(data.campaigns || [])
-                setGuestList(data.guestList || [])
-                setStats(data.stats)
-            }
-        } catch (error) {
-            toast.error('Failed to load marketing analytics')
+            const res = await fetch(`/api/admin/guests?propertyId=${propertyId}&limit=200`)
+            const json = await res.json()
+            const data: Guest[] = Array.isArray(json) ? json : (json?.data ?? [])
+            setGuests(data)
+        } catch {
+            toast.error('Failed to load guests')
         } finally {
             setLoading(false)
         }
     }
 
     useEffect(() => {
-        if (session && !['SUPER_ADMIN', 'HOTEL_ADMIN', 'MANAGER'].includes(session.user.role)) {
-            router.push('/admin/dashboard')
-            return
+        if (session) fetchGuests()
+    }, [session, propertyId])
+
+    // Filter guests
+    const segmentFn = SEGMENTS.find(s => s.id === segment)?.filter ?? (() => true)
+    const filtered = useMemo(() => {
+        const q = search.toLowerCase()
+        return guests.filter(g => {
+            const matchSearch = !q ||
+                g.name.toLowerCase().includes(q) ||
+                (g.email || '').toLowerCase().includes(q) ||
+                g.phone.includes(q)
+            return matchSearch && segmentFn(g)
+        })
+    }, [guests, search, segment])
+
+    // Select / deselect
+    const toggleOne = (id: string) => {
+        setSelected(prev => {
+            const next = new Set(prev)
+            next.has(id) ? next.delete(id) : next.add(id)
+            return next
+        })
+    }
+    const toggleAll = () => {
+        if (selected.size === filtered.length) {
+            setSelected(new Set())
+        } else {
+            setSelected(new Set(filtered.map(g => g.id)))
         }
-        fetchMarketingData()
-    }, [session, router])
+    }
+    const allSelected = filtered.length > 0 && selected.size === filtered.length
 
-    const filteredGuests = guestList.filter(g => {
-        if (segment.includes('Diamond')) return g.stays >= 5
-        if (segment.includes('Platinum')) return g.stays >= 3
-        if (segment.includes('Gold')) return g.stays >= 1
-        return true
-    })
+    // Send messages
+    const handleSend = async () => {
+        if (selected.size === 0) { toast.error('Select at least one guest'); return }
+        if (!message.trim()) { toast.error('Write a message first'); return }
 
-    const handleSendBlast = async () => {
-        if (filteredGuests.length === 0) return toast.error('No guests in selected segment')
-        setSending(true)
-        try {
-            const res = await fetch('/api/admin/marketing', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    action: 'BLAST',
-                    name: `Blast - ${segment}`,
-                    segment,
-                    channel,
-                    promoCode
-                })
-            })
-            if (res.ok) {
-                toast.success('Campaign Dispatched Successfully')
-                fetchMarketingData()
+        const targets = guests.filter(g => selected.has(g.id))
+
+        if (channel === 'WHATSAPP') {
+            // Open WhatsApp for each selected guest (browser-based)
+            let opened = 0
+            for (const g of targets) {
+                const clean = g.phone.replace(/\D/g, '')
+                const num = clean.length === 10 ? `91${clean}` : clean
+                if (!num) continue
+                const url = `https://wa.me/${num}?text=${encodeURIComponent(message)}`
+                setTimeout(() => window.open(url, '_blank'), opened * 600)
+                opened++
             }
-        } catch { toast.error('System error during dispatch') }
-        finally { setSending(false) }
+            toast.success(`Opening WhatsApp for ${opened} guest${opened !== 1 ? 's' : ''}`)
+            setSentCount(opened)
+        } else {
+            // SMS via backend
+            setSending(true)
+            try {
+                const res = await fetch('/api/admin/marketing', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'BLAST',
+                        channel: 'SMS',
+                        name: `Campaign ${new Date().toLocaleDateString('en-IN')}`,
+                        segment: SEGMENTS.find(s => s.id === segment)?.label ?? 'Custom',
+                        propertyId,
+                        guestIds: Array.from(selected),
+                        message,
+                    }),
+                })
+                const data = await res.json()
+                if (data.success) {
+                    toast.success(`SMS sent to ${data.count} guest${data.count !== 1 ? 's' : ''}`)
+                    setSentCount(data.count)
+                } else {
+                    toast.error(data.error ?? 'Failed to send')
+                }
+            } catch {
+                toast.error('Connection error')
+            } finally {
+                setSending(false)
+            }
+        }
     }
 
-    const handleExport = () => {
-        if (filteredGuests.length === 0) return toast.error('No data to export')
-        const headers = ['Name', 'Email', 'Phone', 'Stays']
-        const csv = [headers.join(','), ...filteredGuests.map(g => [g.name, g.email, g.phone, g.stays].join(','))].join('\n')
-        const blob = new Blob([csv], { type: 'text/csv' })
-        const url = window.URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = `guests_${segment.toLowerCase().replace(/ /g, '_')}.csv`
-        a.click()
+    const clearSelection = () => {
+        setSelected(new Set())
+        setMessage('')
+        setSentCount(null)
     }
-
-    if (loading) return (
-        <div className="flex items-center justify-center min-h-[60vh]">
-            <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
-        </div>
-    )
 
     return (
-        <div className="p-6 md:p-10 space-y-10 animate-in fade-in duration-500">
-            
-            {/* --- HEADER --- */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="space-y-6 animate-fade-in">
+            {/* Header */}
+            <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-white tracking-tight">Marketing Analytics</h1>
-                    <p className="text-xs text-gray-500 mt-1 uppercase tracking-widest font-medium">Outreach & Visibility Management</p>
+                    <h1 className="text-2xl font-bold text-white">Marketing</h1>
+                    <p className="text-text-secondary text-sm mt-0.5">
+                        Select guests and send them a message via WhatsApp or SMS
+                    </p>
                 </div>
-                <div className="flex items-center gap-3">
-                    <button 
-                        onClick={handleExport}
-                        className="px-5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-xs font-bold text-gray-300 hover:bg-white/10 transition-all flex items-center gap-2"
-                    >
-                        <Download className="w-4 h-4" /> EXPORT
-                    </button>
-                    <button className="px-5 py-2.5 bg-blue-600 rounded-xl text-xs font-bold text-white hover:bg-blue-500 transition-all shadow-lg shadow-blue-600/20 flex items-center gap-2">
-                        <Plus className="w-4 h-4" /> CAMPAIGN
-                    </button>
-                </div>
+                <button onClick={fetchGuests} className="p-2 bg-surface-light border border-border rounded-xl text-text-secondary hover:text-white transition-all" title="Refresh">
+                    <RefreshCw className="w-4 h-4" />
+                </button>
             </div>
 
-            {/* --- STATS GRID --- */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {[
-                    { label: 'Active', value: stats?.activeCampaigns || 0, trend: '+2.4%', icon: Rocket },
-                    { label: 'VIP Reach', value: stats?.vipSegmentSize || 0, trend: '+5.1%', icon: Star },
-                    { label: 'Conv Rate', value: stats?.conversionRate || '0%', trend: '+1.2%', icon: Target },
-                    { label: 'Revenue', value: stats?.marketingRevenue ? `₹${stats.marketingRevenue.toLocaleString()}` : '₹0', trend: '+15.8%', icon: IndianRupee },
-                ].map((s, i) => (
-                    <div key={i} className="bg-[#111827] border border-white/[0.06] p-6 rounded-2xl shadow-sm relative group overflow-hidden">
-                        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3">{s.label}</p>
-                        <div className="flex items-end justify-between relative z-10">
-                            <h2 className="text-3xl font-bold text-white">{s.value}</h2>
-                            <span className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-lg flex items-center gap-1">
-                                {s.trend} <ArrowUpRight className="w-3 h-3" />
-                            </span>
-                        </div>
-                        <s.icon className="absolute -right-2 -bottom-2 w-16 h-16 opacity-[0.03] text-blue-500 group-hover:scale-110 transition-transform duration-500" />
-                    </div>
-                ))}
-            </div>
-
-            {/* --- MIDDLE SECTION --- */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                
-                {/* Instant Blast Module */}
-                <div className="lg:col-span-1 bg-[#111827] border border-white/[0.06] p-8 rounded-[2rem] space-y-8 shadow-sm h-fit">
-                    <div className="flex items-center gap-4">
-                        <div className="p-3 bg-blue-600/10 rounded-xl">
-                            <Send className="w-5 h-5 text-blue-500" />
-                        </div>
-                        <div>
-                            <h3 className="text-lg font-bold text-white">Instant Blast</h3>
-                            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Notification Chain</p>
-                        </div>
-                    </div>
-
-                    <div className="space-y-6">
-                        <div className="space-y-2">
-                             <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest ml-1">Segment</label>
-                             <div className="relative">
-                                <button 
-                                    onClick={() => setDropdownOpen(!dropdownOpen)}
-                                    className="w-full bg-black/30 border border-white/5 rounded-xl px-5 py-3.5 text-xs font-bold text-white flex items-center justify-between hover:border-white/10 transition-all uppercase tracking-tight"
-                                >
-                                    {segment}
-                                    <ChevronDown className={cn("w-4 h-4 text-gray-500 transition-transform", dropdownOpen && "rotate-180")} />
-                                </button>
-                                
-                                {dropdownOpen && (
-                                    <div className="absolute top-full left-0 right-0 mt-2 bg-[#161b22] border border-white/10 rounded-xl overflow-hidden z-50 shadow-2xl animate-in fade-in slide-in-from-top-2 duration-200">
-                                        {['Diamond Member Only', 'Platinum & Above', 'Gold & Above', 'All Past Guests'].map((opt) => (
-                                            <button
-                                                key={opt}
-                                                onClick={() => {
-                                                    setSegment(opt)
-                                                    setDropdownOpen(false)
-                                                }}
-                                                className="w-full px-5 py-3 text-left text-xs font-bold text-gray-300 hover:bg-blue-600 hover:text-white transition-colors border-b border-white/5 last:border-0 uppercase tracking-tight"
-                                            >
-                                                {opt}
-                                            </button>
-                                        ))}
-                                    </div>
-                                )}
-                             </div>
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr,380px] gap-6">
+                {/* ── LEFT: Guest List ── */}
+                <div className="bg-surface border border-border rounded-2xl overflow-hidden flex flex-col">
+                    {/* Filters */}
+                    <div className="p-4 border-b border-border space-y-3">
+                        {/* Search */}
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary" />
+                            <input
+                                value={search}
+                                onChange={e => setSearch(e.target.value)}
+                                placeholder="Search by name, email or phone..."
+                                className="w-full pl-9 pr-4 py-2.5 bg-surface-light border border-border rounded-xl text-sm text-white placeholder:text-text-tertiary focus:ring-1 focus:ring-primary outline-none"
+                            />
                         </div>
 
-                        <div className="space-y-2">
-                             <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest ml-1">Promo Bundle</label>
-                             <input 
-                                value={promoCode}
-                                onChange={e => setPromoCode(e.target.value)}
-                                className="w-full bg-black/20 border border-white/5 rounded-xl px-5 py-3.5 text-xs font-bold text-white outline-none focus:border-blue-500/50 transition-all"
-                                placeholder="SAVE20OFF"
-                             />
-                        </div>
-
-                        <div className="grid grid-cols-3 gap-3">
-                            {[
-                                { id: 'EMAIL', icon: Mail, label: 'Email' },
-                                { id: 'WHATSAPP', icon: MessageSquare, label: 'WhatsApp' },
-                                { id: 'PUSH', icon: Bell, label: 'Push' },
-                            ].map(t => (
+                        {/* Segment pills */}
+                        <div className="flex gap-2 flex-wrap">
+                            {SEGMENTS.map(s => (
                                 <button
-                                    key={t.id}
-                                    onClick={() => setChannel(t.id)}
+                                    key={s.id}
+                                    onClick={() => { setSegment(s.id); setSelected(new Set()) }}
                                     className={cn(
-                                        "flex flex-col items-center gap-2 p-4 rounded-xl border transition-all",
-                                        channel === t.id 
-                                            ? "bg-blue-600/10 border-blue-600/30 text-blue-500" 
-                                            : "bg-white/[0.02] border-white/5 text-gray-500 hover:bg-white/5 hover:border-white/10"
+                                        'px-3 py-1.5 rounded-xl text-xs font-medium transition-all border',
+                                        segment === s.id
+                                            ? 'bg-primary text-white border-primary'
+                                            : 'bg-surface-light text-text-secondary border-border hover:text-white'
                                     )}
                                 >
-                                    <t.icon className="w-4 h-4" />
-                                    <span className="text-[9px] font-bold uppercase tracking-wider">{t.label}</span>
+                                    {s.label}
                                 </button>
                             ))}
                         </div>
 
-                        <button 
-                            onClick={handleSendBlast}
-                            disabled={sending || filteredGuests.length === 0}
-                            className="w-full py-4 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white rounded-xl text-xs font-bold uppercase tracking-widest shadow-xl shadow-blue-600/20 transition-all flex items-center justify-center gap-3 active:scale-[0.98]"
-                        >
-                            {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Rocket className="w-4 h-4" />}
-                            {sending ? 'Sending...' : 'Execute Sequence Blast'}
-                        </button>
+                        {/* Select all bar */}
+                        <div className="flex items-center justify-between">
+                            <button onClick={toggleAll} className="flex items-center gap-2 text-xs font-medium text-text-secondary hover:text-white transition-colors">
+                                {allSelected
+                                    ? <CheckSquare className="w-4 h-4 text-primary" />
+                                    : <Square className="w-4 h-4" />}
+                                {allSelected ? 'Deselect all' : `Select all ${filtered.length}`}
+                            </button>
+                            {selected.size > 0 && (
+                                <span className="text-xs font-semibold text-primary">
+                                    {selected.size} selected
+                                </span>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Guest rows */}
+                    <div className="flex-1 overflow-y-auto divide-y divide-border">
+                        {loading ? (
+                            <div className="flex items-center justify-center py-16">
+                                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                            </div>
+                        ) : filtered.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center py-16 text-text-tertiary">
+                                <Users className="w-8 h-8 mb-3 opacity-40" />
+                                <p className="text-sm">No guests found</p>
+                            </div>
+                        ) : (
+                            filtered.map(guest => {
+                                const isSelected = selected.has(guest.id)
+                                return (
+                                    <div
+                                        key={guest.id}
+                                        onClick={() => toggleOne(guest.id)}
+                                        className={cn(
+                                            'flex items-center gap-4 px-4 py-3.5 cursor-pointer transition-colors',
+                                            isSelected ? 'bg-primary/5' : 'hover:bg-surface-light'
+                                        )}
+                                    >
+                                        {/* Checkbox */}
+                                        <div className={cn(
+                                            'w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all',
+                                            isSelected ? 'bg-primary border-primary' : 'border-border'
+                                        )}>
+                                            {isSelected && <Check className="w-3 h-3 text-white" />}
+                                        </div>
+
+                                        {/* Avatar */}
+                                        <div className="w-9 h-9 rounded-full bg-surface-light border border-border flex items-center justify-center shrink-0 text-sm font-bold text-text-secondary">
+                                            {guest.name.charAt(0).toUpperCase()}
+                                        </div>
+
+                                        {/* Info */}
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-semibold text-white truncate">{guest.name}</p>
+                                            <div className="flex items-center gap-3 mt-0.5">
+                                                <span className="text-[11px] text-text-tertiary flex items-center gap-1">
+                                                    <Phone className="w-3 h-3" />{guest.phone}
+                                                </span>
+                                                {guest.email && (
+                                                    <span className="text-[11px] text-text-tertiary truncate hidden sm:flex items-center gap-1">
+                                                        <Mail className="w-3 h-3" />{guest.email}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* Stays badge */}
+                                        <div className="shrink-0 text-right">
+                                            <span className={cn(
+                                                'text-[10px] font-bold px-2 py-0.5 rounded-full border',
+                                                guest.totalStays >= 5 ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' :
+                                                guest.totalStays >= 2 ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
+                                                'bg-surface-light text-text-tertiary border-border'
+                                            )}>
+                                                {guest.totalStays} stay{guest.totalStays !== 1 ? 's' : ''}
+                                            </span>
+                                        </div>
+                                    </div>
+                                )
+                            })
+                        )}
+                    </div>
+
+                    {/* Footer count */}
+                    <div className="px-4 py-3 border-t border-border bg-surface-light">
+                        <p className="text-xs text-text-tertiary">
+                            Showing {filtered.length} of {guests.length} guests
+                        </p>
                     </div>
                 </div>
 
-                {/* --- ACTIVE SEQUENCES --- */}
-                <div className="lg:col-span-2 bg-[#111827] border border-white/[0.06] rounded-[2rem] overflow-hidden flex flex-col shadow-sm">
-                    <div className="p-8 border-b border-white/[0.06] flex items-center justify-between bg-white/[0.01]">
+                {/* ── RIGHT: Message Composer ── */}
+                <div className="space-y-4">
+                    <div className="bg-surface border border-border rounded-2xl p-5 space-y-5">
+                        <h3 className="text-base font-semibold text-white">Compose Message</h3>
+
+                        {/* Channel selector */}
                         <div>
-                            <h3 className="text-lg font-bold text-white uppercase tracking-tight">Active Sequences</h3>
-                            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">Live Campaigns & Dispatch Records</p>
-                        </div>
-                        <History className="w-5 h-5 text-gray-600" />
-                    </div>
-                    <div className="flex-1 overflow-x-auto min-h-[300px]">
-                        <table className="w-full text-left">
-                            <thead>
-                                <tr className="text-[10px] font-bold text-gray-500 uppercase tracking-widest border-b border-white/5">
-                                    <th className="px-8 py-4">Sequence Name</th>
-                                    <th className="px-8 py-4">Segment</th>
-                                    <th className="px-8 py-4">Performance</th>
-                                    <th className="px-8 py-4 text-right">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-white/[0.03]">
-                                {campaigns.map((c, i) => (
-                                    <tr key={i} className="text-xs group hover:bg-white/[0.02] transition-colors">
-                                        <td className="px-8 py-5">
-                                            <div className="flex items-center gap-3 font-bold text-white uppercase tracking-tight">
-                                                <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-                                                {c.name}
-                                            </div>
-                                        </td>
-                                        <td className="px-8 py-5 text-gray-400 font-medium">
-                                            {c.segment}
-                                        </td>
-                                        <td className="px-8 py-5">
-                                            <div className="w-full max-w-[100px] h-1.5 bg-black/40 rounded-full overflow-hidden border border-white/5">
-                                                <div className="h-full bg-blue-600" style={{ width: `${c.performance}%` }} />
-                                            </div>
-                                        </td>
-                                        <td className="px-8 py-5 text-right font-bold text-emerald-500 uppercase text-[9px]">
-                                            {c.status}
-                                        </td>
-                                    </tr>
+                            <label className="text-xs font-semibold text-text-secondary block mb-2">Send via</label>
+                            <div className="grid grid-cols-2 gap-2">
+                                {[
+                                    { id: 'WHATSAPP', label: 'WhatsApp', icon: MessageSquare, color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/30' },
+                                    { id: 'SMS',      label: 'SMS',       icon: Phone,         color: 'text-blue-400',   bg: 'bg-blue-500/10',   border: 'border-blue-500/30' },
+                                ].map(c => (
+                                    <button
+                                        key={c.id}
+                                        onClick={() => setChannel(c.id as any)}
+                                        className={cn(
+                                            'flex items-center gap-2.5 p-3 rounded-xl border transition-all',
+                                            channel === c.id
+                                                ? `${c.bg} ${c.border} ${c.color}`
+                                                : 'bg-surface-light border-border text-text-secondary hover:text-white'
+                                        )}
+                                    >
+                                        <c.icon className="w-4 h-4" />
+                                        <span className="text-sm font-semibold">{c.label}</span>
+                                    </button>
                                 ))}
-                                {campaigns.length === 0 && (
-                                    <tr>
-                                        <td colSpan={4} className="px-8 py-20 text-center text-gray-600">
-                                            <p className="text-[10px] font-bold uppercase tracking-widest opacity-20">No active sequences recorded</p>
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            {/* --- AUDIENCE MATRIX (Bottom Horizontal) --- */}
-            <div className="bg-[#111827] border border-white/[0.06] rounded-[2.5rem] overflow-hidden flex flex-col shadow-sm">
-                 <div className="p-8 border-b border-white/[0.06] flex items-center justify-between bg-white/[0.01]">
-                    <div className="flex items-center gap-4">
-                        <Users className="w-5 h-5 text-blue-500" />
-                        <div>
-                            <h3 className="text-lg font-bold text-white uppercase tracking-tight">Audience Matrix</h3>
-                            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">Real-time Segment Tracking</p>
+                            </div>
                         </div>
+
+                        {/* Message */}
+                        <div>
+                            <label className="text-xs font-semibold text-text-secondary block mb-2">Message</label>
+                            <textarea
+                                rows={5}
+                                value={message}
+                                onChange={e => setMessage(e.target.value)}
+                                placeholder={`Hi {guest_name}, we have a special offer for you at our hotel! Use code SAVE20 for 20% off your next stay. Book now at...`}
+                                className="w-full bg-surface-light border border-border rounded-xl px-4 py-3 text-sm text-white placeholder:text-text-tertiary focus:ring-1 focus:ring-primary outline-none resize-none"
+                            />
+                            <p className="text-[11px] text-text-tertiary mt-1.5">{message.length} characters</p>
+                        </div>
+
+                        {/* Quick templates */}
+                        <div>
+                            <label className="text-xs font-semibold text-text-secondary block mb-2">Quick Templates</label>
+                            <div className="space-y-2">
+                                {[
+                                    { label: 'Special Offer', text: 'Hi! We have an exclusive offer for you. Use code SAVE20 for 20% off your next stay. Book directly at our hotel for the best rates!' },
+                                    { label: 'Seasonal Greetings', text: 'Wishing you a wonderful season! As a valued guest, enjoy special rates on your next visit. We look forward to welcoming you back.' },
+                                    { label: 'Feedback Request', text: 'Thank you for staying with us! We would love to hear about your experience. Your feedback helps us serve you better.' },
+                                ].map(t => (
+                                    <button
+                                        key={t.label}
+                                        onClick={() => setMessage(t.text)}
+                                        className="w-full text-left px-3 py-2 bg-surface-light border border-border rounded-xl text-xs text-text-secondary hover:text-white hover:border-primary/40 transition-all"
+                                    >
+                                        <span className="font-semibold text-text-primary">{t.label}</span>
+                                        <span className="text-text-tertiary ml-2 line-clamp-1">{t.text.slice(0, 50)}…</span>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Send button */}
+                        <button
+                            onClick={handleSend}
+                            disabled={sending || selected.size === 0 || !message.trim()}
+                            className={cn(
+                                'w-full py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all',
+                                selected.size > 0 && message.trim()
+                                    ? 'bg-primary hover:bg-primary/90 text-white active:scale-95'
+                                    : 'bg-surface-light text-text-tertiary cursor-not-allowed border border-border'
+                            )}
+                        >
+                            {sending ? (
+                                <><Loader2 className="w-4 h-4 animate-spin" /> Sending…</>
+                            ) : (
+                                <><Send className="w-4 h-4" />
+                                    {selected.size > 0
+                                        ? `Send to ${selected.size} guest${selected.size !== 1 ? 's' : ''} via ${channel === 'WHATSAPP' ? 'WhatsApp' : 'SMS'}`
+                                        : 'Select guests to send'
+                                    }
+                                </>
+                            )}
+                        </button>
+
+                        {/* Success state */}
+                        {sentCount !== null && (
+                            <div className="flex items-center justify-between p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
+                                <div className="flex items-center gap-2 text-emerald-400 text-sm font-semibold">
+                                    <Check className="w-4 h-4" />
+                                    Sent to {sentCount} guest{sentCount !== 1 ? 's' : ''}
+                                </div>
+                                <button onClick={clearSelection} className="text-xs text-text-tertiary hover:text-white transition-colors">
+                                    Clear
+                                </button>
+                            </div>
+                        )}
                     </div>
-                    <div className="px-4 py-1.5 bg-blue-600/10 border border-blue-600/20 rounded-lg text-[9px] font-bold text-blue-500 uppercase tracking-widest">
-                        {filteredGuests.length} IN SEGMENT
+
+                    {/* Info box */}
+                    <div className="bg-amber-500/5 border border-amber-500/15 rounded-2xl p-4">
+                        <p className="text-xs text-amber-400 font-semibold mb-1">How it works</p>
+                        <ul className="text-xs text-text-secondary space-y-1">
+                            <li>• <strong className="text-white">WhatsApp</strong> — opens WhatsApp web for each guest. Works without Twilio.</li>
+                            <li>• <strong className="text-white">SMS</strong> — sends via Twilio. Requires TWILIO credentials in .env.</li>
+                            <li>• Select guests using the checkboxes on the left.</li>
+                            <li>• Use segment filters to target specific groups.</li>
+                        </ul>
                     </div>
-                </div>
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left">
-                        <thead>
-                            <tr className="text-[10px] font-bold text-gray-500 uppercase tracking-widest border-b border-white/5 bg-black/10">
-                                <th className="px-8 py-4">Participant</th>
-                                <th className="px-8 py-4 hidden md:table-cell">Contact</th>
-                                <th className="px-8 py-4">Status</th>
-                                <th className="px-8 py-4 text-right">Loyalty Index</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-white/[0.03]">
-                            {filteredGuests.map((g, i) => (
-                                <tr key={i} className="text-xs group hover:bg-white/[0.02] transition-colors">
-                                    <td className="px-8 py-5">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-lg bg-blue-600/10 flex items-center justify-center text-blue-500 font-bold border border-blue-600/20">
-                                                {g.name.charAt(0)}
-                                            </div>
-                                            <span className="font-bold text-white uppercase tracking-tight">{g.name}</span>
-                                        </div>
-                                    </td>
-                                    <td className="px-8 py-5 hidden md:table-cell text-gray-500">
-                                        {g.email || g.phone}
-                                    </td>
-                                    <td className="px-8 py-5">
-                                        <span className="flex items-center gap-2">
-                                            <CheckCircle2 className="w-3 h-3 text-emerald-500" />
-                                            <span className="text-[9px] font-bold text-gray-400 uppercase">Verified</span>
-                                        </span>
-                                    </td>
-                                    <td className="px-8 py-5 text-right">
-                                        <div className="flex items-center justify-end gap-1">
-                                            {[...Array(Math.min(3, g.stays))].map((_, star) => (
-                                                <Star key={star} className="w-2.5 h-2.5 text-amber-500 fill-amber-500" />
-                                            ))}
-                                            <span className="ml-2 font-bold text-white">{g.stays}</span>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
                 </div>
             </div>
         </div>

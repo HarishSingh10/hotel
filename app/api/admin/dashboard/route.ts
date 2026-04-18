@@ -183,12 +183,14 @@ export async function GET(req: NextRequest) {
                 _count: true
             }),
 
-            // SLA Breaches (requests that exceeded 30 mins)
+            // SLA Breaches: completed requests that took longer than their SLA
             prisma.serviceRequest.count({
                 where: {
                     ...whereProperty,
                     status: 'COMPLETED',
                     updatedAt: { gte: startOfDay(today) },
+                    // acceptedAt is set when assigned; if completedAt - createdAt > slaMinutes it's a breach
+                    // We approximate: updatedAt - createdAt > slaMinutes * 60000
                 }
             })
         ])
@@ -270,6 +272,31 @@ export async function GET(req: NextRequest) {
             }))
         ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 6)
 
+        // Calculate real SLA breaches: completed requests where time taken > slaMinutes
+        const completedToday = await prisma.serviceRequest.findMany({
+            where: {
+                ...whereProperty,
+                status: 'COMPLETED',
+                updatedAt: { gte: startOfDay(today) },
+                acceptedAt: { not: null },
+            },
+            select: { createdAt: true, updatedAt: true, slaMinutes: true },
+        })
+        const slaBreaches = completedToday.filter(r => {
+            const takenMs = new Date(r.updatedAt).getTime() - new Date(r.createdAt).getTime()
+            const takenMin = takenMs / 60000
+            return takenMin > (r.slaMinutes ?? 30)
+        }).length
+
+        // Active food orders
+        const activeFoodOrders = await prisma.serviceRequest.count({
+            where: {
+                ...whereProperty,
+                type: 'FOOD_ORDER',
+                status: { in: ['PENDING', 'ACCEPTED', 'IN_PROGRESS'] },
+            },
+        })
+
         const pendingArrivals = await prisma.booking.count({
             where: {
                 ...whereProperty,
@@ -296,8 +323,8 @@ export async function GET(req: NextRequest) {
             avgMonthlyOccupancy: avgMonthlyOccupancy,
             availableRooms: totalRooms - occupiedRoomsCount,
             pendingHousekeeping: pendingServices,
-            activeFoodOrders: activeServices,
-            slaBreaches: 0, 
+            activeFoodOrders,
+            slaBreaches,
             onDutyStaff: onDutyStaffFull.length,
             onDutyStaffNames: onDutyStaffFull.map((s: any) => s.user.name),
             onDutyStaffDetails: onDutyStaffFull.map((s: any) => ({

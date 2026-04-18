@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, type Variants } from 'framer-motion'
 import { 
     Building2, 
     ArrowLeft, 
@@ -131,9 +131,9 @@ export default function ForgotPasswordPage() {
         }
     }
 
-    const containerVariants = {
+    const containerVariants: Variants = {
         hidden: { opacity: 0, y: 20 },
-        visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
+        visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: 'easeOut' as const } },
         exit: { opacity: 0, y: -20, transition: { duration: 0.3 } }
     }
 
@@ -165,7 +165,7 @@ export default function ForgotPasswordPage() {
                                     <div className="w-12 h-12 rounded-2xl bg-[#4A9EFF]/10 border border-[#4A9EFF]/20 flex items-center justify-center text-[#4A9EFF] mb-4">
                                         <Smartphone size={24} strokeWidth={1.5} />
                                     </div>
-                                    <h2 className="text-xl font-bold text-white uppercase italic tracking-tight">Identity Handshake</h2>
+                                    <h2 className="text-xl font-bold text-white uppercase  tracking-tight">Identity Handshake</h2>
                                     <p className="text-sm text-white/40 leading-relaxed">Enter your registered mobile number to initiate the verification protocol.</p>
                                 </div>
 
@@ -175,7 +175,7 @@ export default function ForgotPasswordPage() {
                                         type="tel"
                                         value={formData.phone}
                                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                        className="bg-black/50 border-white/5 rounded-2xl p-6 text-white text-lg font-bold placeholder:text-white/10 italic"
+                                        className="bg-black/50 border-white/5 rounded-2xl p-6 text-white text-lg font-bold placeholder:text-white/10 "
                                         required
                                     />
                                     <Button 
@@ -195,7 +195,7 @@ export default function ForgotPasswordPage() {
                                     <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 mb-4">
                                         <ShieldCheck size={24} strokeWidth={1.5} />
                                     </div>
-                                    <h2 className="text-xl font-bold text-white uppercase italic tracking-tight">Handshake Verification</h2>
+                                    <h2 className="text-xl font-bold text-white uppercase  tracking-tight">Handshake Verification</h2>
                                     <p className="text-sm text-white/40 leading-relaxed">A specialized security code has been transmitted to <span className="text-white font-bold">+{formData.phone}</span>.</p>
                                 </div>
 
@@ -235,7 +235,7 @@ export default function ForgotPasswordPage() {
                                     <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 mb-4">
                                         <Lock size={24} strokeWidth={1.5} />
                                     </div>
-                                    <h2 className="text-xl font-bold text-white uppercase italic tracking-tight">Security Update</h2>
+                                    <h2 className="text-xl font-bold text-white uppercase  tracking-tight">Security Update</h2>
                                     <p className="text-sm text-white/40 leading-relaxed">Establish a new administrative cipher for your terminal access.</p>
                                 </div>
 
@@ -282,7 +282,7 @@ export default function ForgotPasswordPage() {
                                     </div>
                                 </div>
                                 <div className="space-y-3">
-                                    <h2 className="text-2xl font-black text-white italic tracking-tight uppercase">Security Restored</h2>
+                                    <h2 className="text-2xl font-black text-white  tracking-tight uppercase">Security Restored</h2>
                                     <p className="text-sm text-white/40 leading-relaxed">Your terminal credentials have been successfully synchronized across the Zenbourg network.</p>
                                 </div>
                                 <Button 
@@ -304,7 +304,7 @@ export default function ForgotPasswordPage() {
                 </div>
 
                 <div className="mt-16 pt-8 border-t border-white/[0.03] text-center">
-                    <p className="text-[10px] text-white/10 font-black tracking-[0.5em] uppercase italic">&copy; 2026 ZENBOURG SYSTEMS. ARCHITECTURE ENFORCED.</p>
+                    <p className="text-[10px] text-white/10 font-black tracking-[0.5em] uppercase ">&copy; 2026 ZENBOURG SYSTEMS. ARCHITECTURE ENFORCED.</p>
                 </div>
             </div>
         </div>

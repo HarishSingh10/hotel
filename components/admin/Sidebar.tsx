@@ -75,6 +75,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const userDept = (session?.user as any)?.department
 
   const [serviceCount, setServiceCount] = useState(0)
+  const [unreadMessages, setUnreadMessages] = useState(0)
 
   const fetchServiceCount = async () => {
     try {
@@ -86,16 +87,42 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     } catch { }
   }
 
+  const fetchUnreadMessages = async () => {
+    try {
+      // Count unread: open tickets + unread team messages
+      const [ticketsRes, msgsRes] = await Promise.all([
+        fetch('/api/admin/support'),
+        fetch('/api/admin/messages'),
+      ])
+      let count = 0
+      if (ticketsRes.ok) {
+        const t = await ticketsRes.json()
+        count += (t.tickets || []).filter((tk: any) => tk.status === 'OPEN').length
+      }
+      if (msgsRes.ok) {
+        const m = await msgsRes.json()
+        count += (m.contacts || []).reduce((s: number, c: any) => s + (c.unreadCount || 0), 0)
+      }
+      setUnreadMessages(count)
+    } catch { }
+  }
+
   useEffect(() => {
     fetchServiceCount()
-    const interval = setInterval(fetchServiceCount, 30000)
-    return () => clearInterval(interval)
+    fetchUnreadMessages()
+    const i1 = setInterval(fetchServiceCount, 30000)
+    const i2 = setInterval(fetchUnreadMessages, 15000)
+    return () => { clearInterval(i1); clearInterval(i2) }
   }, [])
 
   const visibleItems = navItems
     .map(item => ({
       ...item,
-      badge: item.href === '/admin/services' ? serviceCount : undefined,
+      badge: item.href === '/admin/services'
+        ? serviceCount
+        : item.href === '/admin/support'
+        ? unreadMessages
+        : undefined,
     }))
     .filter(item => {
       // Properties & Subscription page: SUPER_ADMIN only

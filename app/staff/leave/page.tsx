@@ -1,16 +1,18 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import useSWR from 'swr'
 import {
     Calendar, ChevronLeft, Send,
-    Clock, CheckCircle2, AlertCircle, X,
-    Umbrella, Stethoscope, Briefcase, Loader2, Sparkles, Zap, ShieldCheck, ArrowRight
+    Clock, CheckCircle2, X,
+    Umbrella, Stethoscope, Briefcase, Loader2, Paperclip
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
-import { format, differenceInDays, isAfter } from 'date-fns'
+import { format, differenceInDays } from 'date-fns'
+
+const fetcher = (url: string) => fetch(url).then(r => r.json())
 
 export default function LeavePage() {
     const router = useRouter()
@@ -20,88 +22,73 @@ export default function LeavePage() {
     const [startDate, setStartDate] = useState('')
     const [endDate, setEndDate] = useState('')
     const [evidence, setEvidence] = useState('')
-    const { data: rawData, mutate, isValidating: loading } = useSWR('/api/staff/leave', (url) => fetch(url).then(res => res.json()), {
+
+    const { data: rawData, mutate, isValidating: loading } = useSWR('/api/staff/leave', fetcher, {
         revalidateOnFocus: true,
-        dedupingInterval: 2000
+        dedupingInterval: 2000,
     })
 
-    const data = {
-        balances: rawData?.balances || {},
-        history: Array.isArray(rawData?.history) ? rawData.history : []
-    }
+    const balances = rawData?.balances || {}
+    const history: any[] = Array.isArray(rawData?.history) ? rawData.history : []
 
-    const fetchLeaveData = () => mutate()
-
-    const totalDays = (startDate && endDate)
+    const totalDays = startDate && endDate
         ? differenceInDays(new Date(endDate), new Date(startDate)) + 1
         : 0
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!startDate || !endDate || !reason) {
-            toast.error('Please fill all fields')
-            return
-        }
-        if (totalDays <= 0) {
-            toast.error('End date must be after start date')
-            return
-        }
+        if (!startDate || !endDate || !reason) { toast.error('Please fill all fields'); return }
+        if (totalDays <= 0) { toast.error('End date must be after start date'); return }
 
         setSubmitting(true)
         try {
             const res = await fetch('/api/staff/leave', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    leaveType,
-                    startDate,
-                    endDate,
-                    totalDays,
-                    reason,
-                    evidence
-                })
+                body: JSON.stringify({ leaveType, startDate, endDate, totalDays, reason, evidence }),
             })
-
             if (res.ok) {
-                toast.success('Leave request submitted successfully')
-                setReason('')
-                setStartDate('')
-                setEndDate('')
-                setEvidence('')
-                fetchLeaveData()
+                toast.success('Leave request submitted')
+                setReason(''); setStartDate(''); setEndDate(''); setEvidence('')
+                mutate()
             } else {
                 toast.error('Failed to submit request')
             }
-        } catch (error) {
-            toast.error('Something went wrong')
-        } finally {
-            setSubmitting(false)
-        }
+        } catch { toast.error('Something went wrong') }
+        finally { setSubmitting(false) }
     }
 
-    const leaveStats = [
-        { label: 'Annual Balance', value: `${data.balances.annual || 0} Units`, icon: Umbrella, color: 'text-emerald-500', bg: 'bg-emerald-500/10', progress: 'bg-emerald-500', current: data.balances.annual, max: 15 },
-        { label: 'Medical Reserve', value: `${data.balances.sick || 0} Units`, icon: Stethoscope, color: 'text-amber-500', bg: 'bg-amber-500/10', progress: 'bg-amber-500', current: data.balances.sick, max: 10 },
-        { label: 'Casual Ops', value: `${data.balances.casual || 0} Units`, icon: Briefcase, color: 'text-purple-500', bg: 'bg-purple-500/10', progress: 'bg-purple-500', current: data.balances.casual, max: 7 },
+    const leaveTypes = [
+        { value: 'ANNUAL',  label: 'Annual Leave' },
+        { value: 'SICK',    label: 'Sick Leave' },
+        { value: 'CASUAL',  label: 'Casual Leave' },
+        { value: 'UNPAID',  label: 'Unpaid Leave' },
+    ]
+
+    const balanceCards = [
+        { label: 'Annual Leave',  days: balances.annual ?? 0,  max: 15, icon: Umbrella,    color: 'text-blue-400',   bg: 'bg-blue-500/10',   bar: 'bg-blue-500' },
+        { label: 'Sick Leave',    days: balances.sick ?? 0,    max: 10, icon: Stethoscope, color: 'text-amber-400',  bg: 'bg-amber-500/10',  bar: 'bg-amber-500' },
+        { label: 'Casual Leave',  days: balances.casual ?? 0,  max: 7,  icon: Briefcase,   color: 'text-purple-400', bg: 'bg-purple-500/10', bar: 'bg-purple-500' },
     ]
 
     if (!rawData && loading) return (
-        <div className="space-y-10 animate-pulse px-4 pb-16">
+        <div className="space-y-8 animate-pulse px-4 pb-16">
             <div className="flex justify-between items-center">
                 <div className="h-10 w-10 bg-white/5 rounded-xl" />
-                <div className="h-10 w-48 bg-white/5 rounded-xl" />
+                <div className="h-6 w-40 bg-white/5 rounded-xl" />
                 <div className="w-10" />
             </div>
-            <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2">
-                {[1, 2].map(i => <div key={i} className="h-44 min-w-[280px] bg-white/5 rounded-[35px]" />)}
+            <div className="grid grid-cols-3 gap-3">
+                {[1,2,3].map(i => <div key={i} className="h-32 bg-white/5 rounded-3xl" />)}
             </div>
-            <div className="h-96 w-full bg-white/5 rounded-[45px]" />
+            <div className="h-80 w-full bg-white/5 rounded-[40px]" />
         </div>
     )
 
     return (
-        <div className="space-y-10 animate-fade-in pb-16">
-            {/* Header: Premium Centered Identity */}
+        <div className="space-y-8 animate-fade-in pb-16">
+
+            {/* Header */}
             <div className="flex items-center justify-between">
                 <button
                     onClick={() => router.back()}
@@ -109,223 +96,243 @@ export default function LeavePage() {
                 >
                     <ChevronLeft className="w-5 h-5" />
                 </button>
-                <div className="flex flex-col items-center px-4">
-                    <h1 className="text-xl font-black text-white tracking-tight italic">Absence Management</h1>
-                    <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest mt-0.5 italic">Resource Capacity Planning</p>
+                <div className="text-center">
+                    <h1 className="text-xl font-black text-white tracking-tight">Leave Requests</h1>
+                    <p className="text-[10px] font-semibold text-blue-500 uppercase tracking-widest mt-0.5">Apply & track your leaves</p>
                 </div>
-                <div className="w-10"></div>
+                <div className="w-10" />
             </div>
 
-            {/* Premium Balances Horizontal Scroll */}
-            <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2 px-1">
-                {leaveStats.map((stat, i) => (
-                    <div key={i} className="bg-[#161b22] border border-white/[0.05] rounded-[35px] p-6 min-w-[280px] relative overflow-hidden group shadow-2xl shadow-black/40">
-                        <div className="absolute top-0 right-0 w-24 h-24 bg-white/[0.02] rounded-full translate-x-8 -translate-y-8"></div>
-                        <div className="flex items-center justify-between mb-6">
-                            <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center border border-white/[0.05] shadow-inner", stat.bg)}>
-                                <stat.icon className={cn("w-6 h-6", stat.color)} />
+            {/* Balance Cards — proper grid, no horizontal scroll */}
+            <div className="grid grid-cols-3 gap-3">
+                {balanceCards.map((card, i) => {
+                    const pct = card.max > 0 ? Math.min(100, Math.round((card.days / card.max) * 100)) : 0
+                    return (
+                        <div key={i} className="bg-[#161b22] border border-white/[0.05] rounded-3xl p-4 space-y-3">
+                            <div className={cn('w-9 h-9 rounded-xl flex items-center justify-center', card.bg)}>
+                                <card.icon className={cn('w-4 h-4', card.color)} />
                             </div>
-                            <div className="text-right">
-                                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-600 mb-1 font-mono italic">{stat.label}</p>
-                                <p className="text-2xl font-black text-white italic tracking-tighter">{stat.value}</p>
+                            <div>
+                                <p className="text-[9px] font-bold text-gray-500 uppercase tracking-wider leading-tight">{card.label}</p>
+                                <p className="text-2xl font-black text-white mt-0.5">{card.days}</p>
+                                <p className="text-[9px] text-gray-600 font-medium">of {card.max} days</p>
+                            </div>
+                            <div className="h-1.5 w-full bg-white/[0.04] rounded-full overflow-hidden">
+                                <div
+                                    className={cn('h-full rounded-full transition-all duration-700', card.bar)}
+                                    style={{ width: `${pct}%` }}
+                                />
                             </div>
                         </div>
-                        <div className="h-2 w-full bg-white/[0.03] rounded-full overflow-hidden border border-white/5">
-                            <div
-                                className={cn("h-full rounded-full transition-all duration-1000 group-hover:opacity-80", stat.progress)}
-                                style={{ width: `${(stat.current / stat.max) * 100}%` }}
-                            ></div>
-                        </div>
-                        <div className="flex justify-between items-center mt-3">
-                            <span className="text-[8px] font-black text-gray-700 uppercase tracking-widest">Efficiency Rate: {Math.round((stat.current / stat.max) * 100)}%</span>
-                            <Sparkles className="w-3 h-3 text-gray-800" />
-                        </div>
-                    </div>
-                ))}
+                    )
+                })}
             </div>
 
-            {/* Request Form: High-End Terminal Style */}
-            <form onSubmit={handleSubmit} className="bg-[#161b22] border border-white/[0.05] rounded-[45px] p-8 space-y-8 shadow-2xl shadow-black/40 relative overflow-hidden">
-                <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-blue-500/20 to-transparent"></div>
-                
-                <div>
-                    <label className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 mb-4 block text-center italic opacity-60">Selection of Dispatch Type</label>
-                    <div className="grid grid-cols-2 gap-2 bg-[#0d1117] p-1.5 rounded-[22px] border border-white/[0.05] shadow-inner">
-                        {['ANNUAL', 'SICK', 'CASUAL', 'UNPAID'].map((type) => (
+            {/* Request Form */}
+            <form onSubmit={handleSubmit} className="bg-[#161b22] border border-white/[0.05] rounded-[40px] p-6 space-y-6 shadow-xl shadow-black/30">
+
+                {/* Leave Type Selector */}
+                <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest block">Leave Type</label>
+                    <div className="grid grid-cols-2 gap-2">
+                        {leaveTypes.map(({ value, label }) => (
                             <button
-                                key={type}
+                                key={value}
                                 type="button"
-                                onClick={() => setLeaveType(type)}
+                                onClick={() => setLeaveType(value)}
                                 className={cn(
-                                    "py-3 rounded-[15px] text-[9px] font-black uppercase tracking-widest transition-all active:scale-95",
-                                    leaveType === type ? "bg-blue-600 text-white shadow-xl shadow-blue-600/20" : "text-gray-600 hover:text-gray-400"
+                                    'py-3 px-4 rounded-2xl text-xs font-bold transition-all active:scale-95 text-left',
+                                    leaveType === value
+                                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
+                                        : 'bg-white/[0.03] border border-white/[0.05] text-gray-500 hover:text-gray-300'
                                 )}
                             >
-                                {type === 'ANNUAL' ? 'Vacation Ops' : type === 'SICK' ? 'Medical Reserve' : type === 'CASUAL' ? 'Emergency' : 'Unpaid Hub'}
+                                {label}
                             </button>
                         ))}
                     </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                {/* Date Range */}
+                <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-2">
-                        <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 ml-4 font-mono">Initiation Date</label>
+                        <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest block">Start Date</label>
                         <div className="relative">
                             <input
                                 type="date"
                                 value={startDate}
-                                onChange={(e) => setStartDate(e.target.value)}
-                                className="w-full bg-[#0d1117] border border-white/[0.05] rounded-[20px] px-6 py-4 text-xs text-white outline-none focus:border-blue-500/50 transition-all font-black"
+                                onChange={e => setStartDate(e.target.value)}
+                                className="w-full bg-[#0d1117] border border-white/[0.05] rounded-2xl px-4 py-3.5 text-sm text-white outline-none focus:border-blue-500/50 transition-all [color-scheme:dark]"
+                                required
                             />
-                            <Calendar className="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-700 pointer-events-none" />
                         </div>
                     </div>
                     <div className="space-y-2">
-                        <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 ml-4 font-mono">Termination Date</label>
+                        <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest block">End Date</label>
                         <div className="relative">
                             <input
                                 type="date"
                                 value={endDate}
-                                onChange={(e) => setEndDate(e.target.value)}
-                                className="w-full bg-[#0d1117] border border-white/[0.05] rounded-[20px] px-6 py-4 text-xs text-white outline-none focus:border-blue-500/50 transition-all font-black"
+                                min={startDate}
+                                onChange={e => setEndDate(e.target.value)}
+                                className="w-full bg-[#0d1117] border border-white/[0.05] rounded-2xl px-4 py-3.5 text-sm text-white outline-none focus:border-blue-500/50 transition-all [color-scheme:dark]"
+                                required
                             />
-                            <Calendar className="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-700 pointer-events-none" />
                         </div>
                     </div>
                 </div>
 
+                {/* Duration preview */}
+                {totalDays > 0 && (
+                    <div className="flex items-center justify-between bg-blue-600/5 border border-blue-500/10 rounded-2xl px-5 py-3">
+                        <div className="flex items-center gap-2">
+                            <Calendar className="w-4 h-4 text-blue-400" />
+                            <span className="text-sm font-bold text-white">{totalDays} day{totalDays > 1 ? 's' : ''}</span>
+                        </div>
+                        <span className="text-xs text-blue-400 font-medium">
+                            Returns: {format(new Date(endDate), 'dd MMM yyyy')}
+                        </span>
+                    </div>
+                )}
+
+                {/* Reason */}
                 <div className="space-y-2">
-                    <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 ml-4 font-mono">Strategic Justification</label>
+                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest block">Reason</label>
                     <textarea
                         rows={3}
                         value={reason}
-                        onChange={(e) => setReason(e.target.value)}
-                        placeholder="Provide detailed context for operational absence..."
-                        className="w-full bg-[#0d1117] border border-white/[0.05] rounded-[25px] px-6 py-6 text-xs text-white outline-none focus:border-blue-500/50 transition-all font-black placeholder:text-gray-800 resize-none italic"
-                    ></textarea>
+                        onChange={e => setReason(e.target.value)}
+                        placeholder="Briefly explain the reason for your leave..."
+                        className="w-full bg-[#0d1117] border border-white/[0.05] rounded-2xl px-4 py-3.5 text-sm text-white outline-none focus:border-blue-500/50 transition-all placeholder:text-gray-700 resize-none"
+                        required
+                    />
                 </div>
 
-                <div className="space-y-4">
-                    <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 ml-4 font-mono">Evidence Capture (Optional)</label>
-                    <div className="flex items-center gap-6 p-6 bg-[#0d1117] border border-white/[0.05] rounded-[30px] shadow-inner relative overflow-hidden group">
-                        <div className="w-20 h-20 bg-[#161b22] border border-white/[0.05] rounded-2xl overflow-hidden flex items-center justify-center relative shrink-0 transition-all group-hover:border-blue-500/30">
-                            {evidence ? (
-                                <img src={evidence} className="w-full h-full object-cover" alt="preview" />
-                            ) : (
-                                <Briefcase className="w-8 h-8 text-gray-800" />
-                            )}
-                        </div>
-                        <div className="flex-1">
+                {/* Supporting document (optional) */}
+                <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest block">
+                        Supporting Document <span className="text-gray-700 normal-case font-normal">(optional)</span>
+                    </label>
+                    <div className="flex items-center gap-4 bg-[#0d1117] border border-white/[0.05] rounded-2xl p-4">
+                        {evidence ? (
+                            <div className="relative w-14 h-14 rounded-xl overflow-hidden shrink-0">
+                                <img src={evidence} className="w-full h-full object-cover" alt="proof" />
+                                <button
+                                    type="button"
+                                    onClick={() => setEvidence('')}
+                                    className="absolute top-0.5 right-0.5 w-5 h-5 bg-black/70 rounded-full flex items-center justify-center"
+                                >
+                                    <X className="w-3 h-3 text-white" />
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="w-14 h-14 rounded-xl bg-white/[0.03] border border-white/[0.05] flex items-center justify-center shrink-0">
+                                <Paperclip className="w-5 h-5 text-gray-700" />
+                            </div>
+                        )}
+                        <div>
                             <input
                                 type="file"
                                 id="leave-evidence"
                                 className="hidden"
                                 accept="image/*"
-                                onChange={(e) => {
+                                onChange={e => {
                                     const file = e.target.files?.[0]
                                     if (file) {
                                         const reader = new FileReader()
-                                        reader.onloadend = () => {
-                                            setEvidence(reader.result as string)
-                                        }
+                                        reader.onloadend = () => setEvidence(reader.result as string)
                                         reader.readAsDataURL(file)
                                     }
                                 }}
                             />
-                            <label 
+                            <label
                                 htmlFor="leave-evidence"
-                                className="inline-flex items-center gap-3 px-6 py-3 bg-blue-600/10 border border-blue-600/20 text-blue-500 text-[10px] font-black uppercase tracking-widest rounded-xl cursor-pointer hover:bg-blue-600 hover:text-white transition-all active:scale-95 shadow-lg shadow-blue-500/5"
+                                className="inline-flex items-center gap-2 px-4 py-2 bg-white/[0.04] border border-white/[0.08] text-gray-300 text-xs font-semibold rounded-xl cursor-pointer hover:bg-white/[0.08] transition-all"
                             >
-                                <Zap className="w-4 h-4" /> Upload Proof
+                                <Paperclip className="w-3.5 h-3.5" />
+                                {evidence ? 'Change file' : 'Attach file'}
                             </label>
-                            <p className="text-[9px] text-gray-700 mt-2.5 font-black uppercase tracking-[0.2em] ml-1">Medical/Legal Attachments</p>
+                            <p className="text-[10px] text-gray-700 mt-1.5">Medical certificate, etc.</p>
                         </div>
                     </div>
                 </div>
 
-                {startDate && endDate && totalDays > 0 && (
-                    <div className="bg-blue-600/5 border border-blue-500/10 rounded-[25px] p-6 flex items-center justify-between animate-fade-in shadow-inner relative overflow-hidden group">
-                        <div className="absolute inset-0 bg-blue-500/[0.02] animate-pulse"></div>
-                        <div className="relative z-10">
-                            <p className="text-[9px] font-black uppercase tracking-widest text-gray-600 mb-1 italic">Total Off-Cycle Units</p>
-                            <p className="text-xl font-black text-white italic tracking-tighter">{totalDays} Operational Days</p>
-                        </div>
-                        <div className="text-right relative z-10">
-                            <p className="text-[9px] font-black uppercase tracking-widest text-gray-600 mb-1 italic">Return Protocol</p>
-                            <p className="text-[11px] font-black text-blue-400 uppercase tracking-widest">{format(new Date(endDate), 'dd MMM yyyy')}</p>
-                        </div>
-                    </div>
-                )}
-
                 <button
+                    type="submit"
                     disabled={submitting}
-                    className="w-full h-16 bg-blue-600 hover:bg-blue-500 text-white rounded-[25px] font-black text-[10px] uppercase tracking-[0.3em] shadow-2xl shadow-blue-600/30 transition-all flex items-center justify-center gap-4 active:scale-[0.98] disabled:opacity-50 group italic"
+                    className="w-full h-14 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-bold text-sm shadow-xl shadow-blue-600/20 transition-all flex items-center justify-center gap-3 active:scale-[0.98] disabled:opacity-50"
                 >
-                    {submitting ? (
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                    ) : (
-                        <>
-                            <span>Authorize Request</span>
-                            <Send className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-                        </>
-                    )}
+                    {submitting
+                        ? <Loader2 className="w-5 h-5 animate-spin" />
+                        : <><Send className="w-4 h-4" /> Submit Request</>
+                    }
                 </button>
             </form>
 
-            {/* Recent Requests: Premium Identity History */}
-            <div className="space-y-6">
-                <div className="flex items-center justify-between px-2">
-                    <h3 className="text-xs font-black text-white uppercase tracking-[0.3em] italic">Dispatch Logs</h3>
-                    <ShieldCheck className="w-4 h-4 text-gray-800" />
-                </div>
-                <div className="space-y-4">
-                    {data.history.length === 0 ? (
-                        <div className="py-20 text-center bg-[#161b22] rounded-[40px] border border-dashed border-white/5 opacity-20">
-                            <Umbrella className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                            <p className="text-[9px] font-black uppercase tracking-widest text-gray-600">Archival history is empty</p>
-                        </div>
-                    ) : (
-                        data.history.map((req: any, i: number) => (
-                            <div key={i} className="bg-[#161b22] border border-white/[0.05] p-6 rounded-[35px] flex items-center justify-between group cursor-pointer hover:bg-white/[0.02] transition-all active:scale-[0.98] shadow-xl shadow-black/30 relative overflow-hidden">
-                                <div className={cn(
-                                    "absolute top-0 bottom-0 left-0 w-2",
-                                    req.status === 'APPROVED' ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]' :
-                                        req.status === 'REJECTED' ? 'bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.3)]' : 'bg-blue-600'
-                                )}></div>
-                                
-                                <div className="flex items-center gap-5 relative z-10">
-                                    <div className={cn(
-                                        "w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border border-white/[0.05]",
-                                        req.status === 'APPROVED' ? 'bg-emerald-500/10' :
-                                            req.status === 'REJECTED' ? 'bg-rose-500/10' : 'bg-blue-500/10'
-                                    )}>
-                                        {req.status === 'APPROVED' ? <CheckCircle2 className="w-6 h-6 text-emerald-500" /> :
-                                            req.status === 'REJECTED' ? <X className="w-6 h-6 text-rose-500" /> : <Clock className="w-6 h-6 text-blue-500" />}
-                                    </div>
-                                    <div>
-                                        <div className="flex items-center gap-3 mb-1">
-                                            <h4 className="text-[14px] font-black text-white italic tracking-tight">{req.leaveType} DISPATCH</h4>
-                                            <div className="flex items-center gap-1.5 bg-white/[0.03] px-2 py-0.5 rounded border border-white/5">
-                                                <Zap className="w-3 h-3 text-amber-500" />
-                                                <span className="text-[8px] font-black text-gray-600 uppercase tracking-widest">{req.totalDays}D</span>
-                                            </div>
-                                        </div>
-                                        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] italic">
-                                            {format(new Date(req.startDate), 'dd MMM')} → {format(new Date(req.endDate), 'dd MMM yyyy')}
-                                        </p>
-                                    </div>
-                                </div>
-                                <div className={cn(
-                                    "px-4 py-1.5 rounded-xl text-[8px] font-black uppercase tracking-widest border italic transition-all group-hover:scale-105",
-                                    req.status === 'APPROVED' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' :
-                                        req.status === 'REJECTED' ? 'bg-rose-500/10 border-rose-500/20 text-rose-500' : 'bg-blue-500/10 border-blue-500/20 text-blue-500'
-                                )}>
-                                    {req.status}
-                                </div>
+            {/* Leave History */}
+            <div className="space-y-4">
+                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest px-1">My Leave History</h3>
+
+                {history.length === 0 ? (
+                    <div className="py-16 text-center bg-[#161b22] rounded-[35px] border border-dashed border-white/5">
+                        <Umbrella className="w-10 h-10 text-gray-800 mx-auto mb-3" />
+                        <p className="text-xs text-gray-600 font-medium">No leave requests yet</p>
+                    </div>
+                ) : (
+                    history.map((req: any, i: number) => (
+                        <div
+                            key={i}
+                            className="bg-[#161b22] border border-white/[0.05] p-5 rounded-3xl flex items-center gap-4 relative overflow-hidden"
+                        >
+                            {/* Status stripe */}
+                            <div className={cn(
+                                'absolute top-0 bottom-0 left-0 w-1 rounded-l-3xl',
+                                req.status === 'APPROVED' ? 'bg-emerald-500' :
+                                req.status === 'REJECTED' ? 'bg-rose-500' : 'bg-blue-500'
+                            )} />
+
+                            {/* Icon */}
+                            <div className={cn(
+                                'w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 ml-2',
+                                req.status === 'APPROVED' ? 'bg-emerald-500/10' :
+                                req.status === 'REJECTED' ? 'bg-rose-500/10' : 'bg-blue-500/10'
+                            )}>
+                                {req.status === 'APPROVED'
+                                    ? <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                                    : req.status === 'REJECTED'
+                                    ? <X className="w-5 h-5 text-rose-500" />
+                                    : <Clock className="w-5 h-5 text-blue-500" />
+                                }
                             </div>
-                        ))
-                    )}
-                </div>
+
+                            {/* Info */}
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-0.5">
+                                    <p className="text-sm font-bold text-white capitalize">
+                                        {req.leaveType.charAt(0) + req.leaveType.slice(1).toLowerCase()} Leave
+                                    </p>
+                                    <span className="text-[10px] text-gray-600 font-medium">· {req.totalDays}d</span>
+                                </div>
+                                <p className="text-xs text-gray-500">
+                                    {format(new Date(req.startDate), 'dd MMM')} – {format(new Date(req.endDate), 'dd MMM yyyy')}
+                                </p>
+                                {req.reason && (
+                                    <p className="text-[11px] text-gray-600 mt-1 truncate">{req.reason}</p>
+                                )}
+                            </div>
+
+                            {/* Status badge */}
+                            <span className={cn(
+                                'text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-xl shrink-0',
+                                req.status === 'APPROVED' ? 'bg-emerald-500/10 text-emerald-400' :
+                                req.status === 'REJECTED' ? 'bg-rose-500/10 text-rose-400' :
+                                'bg-blue-500/10 text-blue-400'
+                            )}>
+                                {req.status}
+                            </span>
+                        </div>
+                    ))
+                )}
             </div>
         </div>
     )

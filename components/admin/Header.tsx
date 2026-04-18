@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { Bell, Search, LogOut, User, Settings, Building2, Menu } from 'lucide-react'
+import { Bell, Search, LogOut, User, Settings, Camera } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import Avatar from '@/components/common/Avatar'
@@ -19,13 +19,39 @@ export default function Header({ onMenuClick }: HeaderProps) {
   const [showNotifications, setShowNotifications] = useState(false)
   const [expandedNotifications, setExpandedNotifications] = useState(false)
   const [showProfile, setShowProfile] = useState(false)
+  const [profilePhoto, setProfilePhoto] = useState<string | null>(null)
+  const photoInputRef = useRef<HTMLInputElement>(null)
   const { data: session } = useSession()
+
+  // Load saved profile photo from localStorage
+  useEffect(() => {
+    if (session?.user?.id) {
+      const saved = localStorage.getItem(`profile_photo_${session.user.id}`)
+      if (saved) setProfilePhoto(saved)
+    }
+  }, [session?.user?.id])
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (file.size > 2 * 1024 * 1024) { toast.error('Photo must be under 2MB'); return }
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      const dataUrl = reader.result as string
+      setProfilePhoto(dataUrl)
+      if (session?.user?.id) {
+        localStorage.setItem(`profile_photo_${session.user.id}`, dataUrl)
+      }
+      toast.success('Profile photo updated')
+    }
+    reader.readAsDataURL(file)
+  }
 
   const user = {
     name: session?.user?.name || 'User',
     email: session?.user?.email || 'user@example.com',
     role: session?.user?.role || 'STAFF',
-    photo: null,
+    photo: profilePhoto,
   }
 
   const [notifications, setNotifications] = useState<any[]>([])
@@ -33,39 +59,41 @@ export default function Header({ onMenuClick }: HeaderProps) {
 
   const fetchNotifications = async () => {
     try {
-      const res = await fetch('/api/admin/services')
+      const res = await fetch('/api/admin/notifications')
       if (res.ok) {
         const data = await res.json()
-        const formatted = data.map((d: any) => ({
-          id: d.id,
-          message: `Room ${d.room}: ${d.type.replace('_', ' ')} requested`,
-          time: new Date(d.requestTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          unread: d.status === 'PENDING'
+        const formatted = (data.notifications ?? []).map((n: any) => ({
+          id: n.id,
+          message: n.description || n.title,
+          title: n.title,
+          time: new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          unread: !n.isRead,
+          type: n.type,
         }))
         setNotifications(formatted)
-        setUnreadCount(formatted.filter((n: any) => n.unread).length)
+        setUnreadCount(data.unreadCount ?? 0)
       }
+    } catch (e) { console.error(e) }
+  }
+
+  const markAllRead = async () => {
+    try {
+      await fetch('/api/admin/notifications', { method: 'PATCH' })
+      setNotifications(prev => prev.map(n => ({ ...n, unread: false })))
+      setUnreadCount(0)
     } catch (e) { console.error(e) }
   }
 
   useEffect(() => {
     fetchNotifications()
-    const interval = setInterval(fetchNotifications, 30000)
+    const interval = setInterval(fetchNotifications, 15000)
     return () => clearInterval(interval)
   }, [])
 
   return (
     <header className="sticky top-0 z-30 flex items-center justify-between h-16 px-4 md:px-6 bg-[#0d1117] border-b border-white/[0.08]">
-      {/* Search & Menu */}
+      {/* Search */}
       <div className="flex items-center gap-4 flex-1 mr-4">
-        {/* Mobile Menu Toggle */}
-        <button 
-          onClick={onMenuClick}
-          className="md:hidden p-2 text-gray-400 hover:text-white transition-colors"
-        >
-          <Menu className="w-5 h-5" />
-        </button>
-
         <div className="hidden sm:block flex-1 max-w-xl">
           <div className="relative group">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary transition-colors group-focus-within:text-primary" />
@@ -124,11 +152,21 @@ export default function Header({ onMenuClick }: HeaderProps) {
                 onClick={() => { setShowNotifications(false); setExpandedNotifications(false); }}
               />
               <div className="absolute right-0 mt-2 w-80 bg-surface border border-border rounded-lg shadow-xl z-50 animate-fade-in">
-                <div className="p-4 border-b border-border">
-                  <h3 className="font-semibold">Notifications</h3>
-                  <p className="text-xs text-text-secondary mt-0.5">
-                    You have {unreadCount} unread notifications
-                  </p>
+                <div className="p-4 border-b border-border flex items-center justify-between">
+                  <div>
+                    <h3 className="font-semibold">Notifications</h3>
+                    <p className="text-xs text-text-secondary mt-0.5">
+                      {unreadCount > 0 ? `${unreadCount} unread` : 'All caught up'}
+                    </p>
+                  </div>
+                  {unreadCount > 0 && (
+                    <button
+                      onClick={markAllRead}
+                      className="text-xs text-primary hover:text-primary/80 transition-colors font-medium"
+                    >
+                      Mark all read
+                    </button>
+                  )}
                 </div>
                 <div className={cn(
                   "overflow-y-auto transition-all duration-300",
@@ -142,7 +180,11 @@ export default function Header({ onMenuClick }: HeaderProps) {
                         notif.unread && 'bg-primary/5'
                       )}
                     >
-                      <p className="text-sm text-text-primary">{notif.message}</p>
+                      {notif.unread && (
+                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary mr-2 mb-0.5 align-middle" />
+                      )}
+                      <p className="text-sm text-text-primary font-medium inline">{notif.title}</p>
+                      <p className="text-xs text-text-secondary mt-0.5">{notif.message}</p>
                       <p className="text-xs text-text-tertiary mt-1">{notif.time}</p>
                     </button>
                   ))}
@@ -189,8 +231,26 @@ export default function Header({ onMenuClick }: HeaderProps) {
               />
               <div className="absolute right-0 mt-2 w-56 bg-surface border border-border rounded-lg shadow-xl z-50 animate-fade-in">
                 <div className="p-3 border-b border-border">
-                  <p className="font-medium text-text-primary">{user.name}</p>
-                  <p className="text-sm text-text-secondary">{user.email}</p>
+                  {/* Avatar with upload button */}
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="relative group cursor-pointer" onClick={() => photoInputRef.current?.click()}>
+                      <Avatar name={user.name} src={user.photo} size="md" />
+                      <div className="absolute inset-0 bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <Camera className="w-3.5 h-3.5 text-white" />
+                      </div>
+                    </div>
+                    <div>
+                      <p className="font-medium text-text-primary text-sm">{user.name}</p>
+                      <p className="text-xs text-text-secondary">{user.email}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => photoInputRef.current?.click()}
+                    className="w-full text-xs text-primary hover:text-primary/80 text-left transition-colors"
+                  >
+                    Change profile photo
+                  </button>
+                  <input ref={photoInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
                 </div>
                 <div className="p-2">
                   <button

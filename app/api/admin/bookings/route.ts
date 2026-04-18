@@ -1,107 +1,193 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/options'
 import { prisma } from '@/lib/db'
+import { sendBookingConfirmation } from '@/lib/email'
+import { sendSMS } from '@/lib/twilio'
+import { badRequest, unauthorized, serverError } from '@/lib/api-response'
+import { calculatePricing } from '@/lib/pricing'
+import { format, differenceInCalendarDays } from 'date-fns'
 
 export const dynamic = 'force-dynamic'
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
     const session = await getServerSession(authOptions)
-    if (!session) return new NextResponse('Unauthorized', { status: 401 })
+    if (!session) return unauthorized()
 
     const { searchParams } = new URL(request.url)
     const start = searchParams.get('start')
     const end = searchParams.get('end')
     const queryPropertyId = searchParams.get('propertyId')
+    const status = searchParams.get('status')
+    const page = parseInt(searchParams.get('page') ?? '1')
+    const limit = Math.min(parseInt(searchParams.get('limit') ?? '50'), 200)
 
-    const whereClause: any = {}
+    const where: any = {}
 
-    // RBAC: Super Admin can see everything or filter by specific property
     if (session.user.role === 'SUPER_ADMIN') {
         if (queryPropertyId && queryPropertyId !== 'ALL') {
-            whereClause.propertyId = queryPropertyId
+            where.propertyId = queryPropertyId
         }
     } else {
         const propertyId = session.user.propertyId
-        if (propertyId) {
-            whereClause.propertyId = propertyId
-        }
+        if (propertyId) where.propertyId = propertyId
     }
 
-    // If date range provided (for calendar)
-    // We want any booking that OVERLAPS with this range:
-    // (checkIn <= end) AND (checkOut >= start)
+    if (status && status !== 'ALL') where.status = status
+
+    // Overlap filter for calendar view
     if (start && end) {
-        whereClause.checkIn = { lte: new Date(end) }
-        whereClause.checkOut = { gte: new Date(start) }
+        where.checkIn = { lte: new Date(end) }
+        where.checkOut = { gte: new Date(start) }
     }
 
     try {
-        const bookings = await prisma.booking.findMany({
-            where: whereClause,
-            include: {
-                guest: { select: { name: true, phone: true } },
-                room: { select: { roomNumber: true } }
-            },
-            orderBy: { checkIn: 'asc' }
+        const [bookings, total] = await Promise.all([
+            prisma.booking.findMany({
+                where,
+                include: {
+                    guest: { select: { name: true, phone: true, email: true } },
+                    room: { select: { roomNumber: true, type: true, category: true } },
+                },
+                orderBy: { checkIn: 'asc' },
+                skip: (page - 1) * limit,
+                take: limit,
+            }),
+            prisma.booking.count({ where }),
+        ])
+
+        return NextResponse.json({
+            data: bookings,
+            pagination: { page, limit, total, pages: Math.ceil(total / limit) },
         })
-
-        // Transform for UI if needed, but returning raw is fine for now
-        return NextResponse.json(bookings)
-
     } catch (error) {
-        return new NextResponse('Internal Server Error', { status: 500 })
+        return serverError(error, 'BOOKINGS_GET')
     }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions)
-    if (!session) return new NextResponse('Unauthorized', { status: 401 })
+    if (!session) return unauthorized()
 
     try {
         const body = await request.json()
         const { searchParams } = new URL(request.url)
         const queryPropertyId = searchParams.get('propertyId')
-        
-        // RBAC: Use user's propertyId, or allow SUPER_ADMIN to specify one
+
         let propertyId = session.user.propertyId
         if (session.user.role === 'SUPER_ADMIN') {
             propertyId = body.propertyId || queryPropertyId
         }
 
         if (!propertyId || propertyId === 'ALL') {
-            return new NextResponse('Missing property ID context', { status: 400 })
+            return badRequest('Missing property ID context')
         }
+
+        const { guestId, roomId, checkIn, checkOut, numberOfGuests, totalAmount, source, discountPercent: manualDiscount } = body
+
+        if (!guestId || !roomId || !checkIn || !checkOut) {
+            return badRequest('guestId, roomId, checkIn and checkOut are required')
+        }
+
+        // Check room availability
+        const conflicting = await prisma.booking.findFirst({
+            where: {
+                roomId,
+                status: { in: ['RESERVED', 'CHECKED_IN'] },
+                checkIn: { lt: new Date(checkOut) },
+                checkOut: { gt: new Date(checkIn) },
+            },
+        })
+        if (conflicting) {
+            return NextResponse.json(
+                { success: false, error: 'Room is not available for the selected dates' },
+                { status: 409 }
+            )
+        }
+
+        // Fetch room base price
+        const room = await prisma.room.findUnique({
+            where: { id: roomId },
+            select: { basePrice: true, roomNumber: true, type: true },
+        })
+        if (!room) return badRequest('Room not found')
+
+        // Fetch property financial settings for tax calculation
+        let pricingSettings = {
+            gstPercent: 18.0,
+            serviceChargePercent: 0.0,
+            luxuryTaxPercent: 0.0,
+            defaultDiscountPercent: 0.0,
+        }
+        try {
+            const propSettings = await (prisma as any).propertySettings.findUnique({
+                where: { propertyId },
+            })
+            if (propSettings) pricingSettings = propSettings
+        } catch { /* PropertySettings table may not exist yet */ }
+
+        // Calculate nights
+        const nights = Math.max(1, differenceInCalendarDays(new Date(checkOut), new Date(checkIn)))
+        const baseAmount = totalAmount ?? (room.basePrice * nights)
+
+        // Apply pricing
+        const pricing = calculatePricing(baseAmount, pricingSettings, manualDiscount)
 
         const booking = await prisma.booking.create({
             data: {
-                propertyId: propertyId,
-                guestId: body.guestId,
-                roomId: body.roomId,
-                checkIn: new Date(body.checkIn),
-                checkOut: new Date(body.checkOut),
-                numberOfGuests: body.numberOfGuests,
-                totalAmount: body.totalAmount,
+                propertyId,
+                guestId,
+                roomId,
+                checkIn: new Date(checkIn),
+                checkOut: new Date(checkOut),
+                numberOfGuests: numberOfGuests ?? 1,
+                totalAmount: pricing.totalAmount,
+                // Tax breakdown
+                baseAmount: pricing.baseAmount,
+                gstPercent: pricing.gstPercent,
+                gstAmount: pricing.gstAmount,
+                serviceChargePercent: pricing.serviceChargePercent,
+                serviceChargeAmount: pricing.serviceChargeAmount,
+                luxuryTaxPercent: pricing.luxuryTaxPercent,
+                luxuryTaxAmount: pricing.luxuryTaxAmount,
+                discountPercent: pricing.discountPercent,
+                discountAmount: pricing.discountAmount,
+                finalAmount: pricing.finalAmount,
                 status: 'RESERVED',
-                source: body.source || 'DIRECT'
+                source: source ?? 'DIRECT',
             },
             include: {
-                guest: { select: { name: true, phone: true } },
-                room: { select: { roomNumber: true } }
-            }
+                guest: { select: { name: true, phone: true, email: true } },
+                room: { select: { roomNumber: true, type: true } },
+                property: { select: { name: true } },
+            },
         })
 
-        // Mock Notification System
-        // In a real app, you'd trigger an SMS/WhatsApp here via Twilio/etc.
-        console.log(`[NOTIFICATION] New booking confirmed for ${booking.guest.name} in Room ${booking.room.roomNumber}`)
+        // Send confirmation notifications (non-blocking)
+        const checkInStr = format(new Date(checkIn), 'MMM dd, yyyy')
+        const checkOutStr = format(new Date(checkOut), 'MMM dd, yyyy')
 
-        return NextResponse.json({
-            ...booking,
-            notificationSent: true,
-            message: `Booking confirmed for ${booking.guest.name}`
-        })
+        if (booking.guest.email) {
+            sendBookingConfirmation({
+                to: booking.guest.email,
+                guestName: booking.guest.name,
+                roomNumber: booking.room.roomNumber,
+                checkIn: checkInStr,
+                checkOut: checkOutStr,
+                totalAmount: `₹${totalAmount ?? 0}`,
+                hotelName: (booking as any).property?.name ?? 'Zenbourg',
+            }).catch(() => {})
+        }
+
+        if (booking.guest.phone) {
+            sendSMS(
+                booking.guest.phone,
+                `Booking confirmed at ${(booking as any).property?.name ?? 'Zenbourg'}! Room ${booking.room.roomNumber}, Check-in: ${checkInStr}. Ref: ${booking.id.slice(-6).toUpperCase()}`
+            ).catch(() => {})
+        }
+
+        return NextResponse.json({ success: true, data: booking }, { status: 201 })
     } catch (error) {
-        console.error(error)
-        return new NextResponse('Internal Server Error', { status: 500 })
+        return serverError(error, 'BOOKINGS_POST')
     }
 }

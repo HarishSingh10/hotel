@@ -1,32 +1,35 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/options'
 import { prisma } from '@/lib/db'
+import { unauthorized, forbidden, badRequest, conflict, serverError } from '@/lib/api-response'
 
 export const dynamic = 'force-dynamic'
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
     const session = await getServerSession(authOptions)
-    if (!session) return new NextResponse('Unauthorized', { status: 401 })
+    if (!session) return unauthorized()
 
     const { searchParams } = new URL(request.url)
     const status = searchParams.get('status')
     const queryPropertyId = searchParams.get('propertyId')
     const start = searchParams.get('start')
     const end = searchParams.get('end')
+    const roomType = searchParams.get('type')
+    const page = parseInt(searchParams.get('page') ?? '1')
+    const limit = Math.min(parseInt(searchParams.get('limit') ?? '100'), 500)
 
     const where: any = {}
+
     if (session.user.role === 'SUPER_ADMIN') {
-        if (queryPropertyId && queryPropertyId !== 'ALL') {
-            where.propertyId = queryPropertyId
-        }
+        if (queryPropertyId && queryPropertyId !== 'ALL') where.propertyId = queryPropertyId
     } else {
         const propertyId = session.user.propertyId
         if (propertyId) where.propertyId = propertyId
     }
-    if (status && status !== 'ALL') where.status = status as any
-    const roomType = searchParams.get('type')
-    if (roomType && roomType !== 'ALL') where.type = roomType as any
+
+    if (status && status !== 'ALL') where.status = status
+    if (roomType && roomType !== 'ALL') where.type = roomType
 
     try {
         const rooms = await prisma.room.findMany({
@@ -35,104 +38,70 @@ export async function GET(request: Request) {
                 bookings: {
                     where: {
                         status: { in: ['CHECKED_IN', 'RESERVED'] },
-                        // If date range provided, filter bookings within that range too
-                        ...(start && end ? {
-                            OR: [
-                                { checkIn: { lte: new Date(end) }, checkOut: { gte: new Date(start) } }
-                            ]
-                        } : {})
+                        ...(start && end
+                            ? { checkIn: { lte: new Date(end) }, checkOut: { gte: new Date(start) } }
+                            : {}),
                     },
                     select: {
                         id: true,
                         status: true,
                         checkIn: true,
                         checkOut: true,
-                        guest: { select: { name: true } }
-                    }
-                }
+                        guest: { select: { name: true, phone: true } },
+                    },
+                },
             },
-            orderBy: { roomNumber: 'asc' }
+            orderBy: { roomNumber: 'asc' },
+            skip: (page - 1) * limit,
+            take: limit,
         })
 
-        // Filter out rooms that HAVE bookings if start/end is provided (real-time availability)
-        let filteredRooms = rooms
+        // For availability queries, filter out rooms with overlapping bookings
+        let result = rooms
         if (start && end && status === 'AVAILABLE') {
-            filteredRooms = rooms.filter(room => room.bookings.length === 0)
+            result = rooms.filter((r) => r.bookings.length === 0 && r.status !== 'MAINTENANCE')
         }
 
-        // Auto-correct mis-synchronized statuses
-        const now = new Date()
-        const syncedRooms = await Promise.all(filteredRooms.map(async (room) => {
-            // Room should be OCCUPIED if it has a CHECKED_IN or a RESERVED booking for "now"
-            const hasBookingNow = room.bookings.some(b => {
-                const ci = new Date(b.checkIn).getTime()
-                const co = new Date(b.checkOut).getTime()
-                return ci <= now.getTime() && co >= now.getTime()
-            });
-
-            // If room is marked OCCUPIED but has no active booking right now, set it back to AVAILABLE
-            if (room.status === 'OCCUPIED' && !hasBookingNow) {
-                await prisma.room.update({
-                    where: { id: room.id },
-                    data: { status: 'AVAILABLE' }
-                });
-                return { ...room, status: 'AVAILABLE' };
-            }
-
-            // If room is AVAILABLE but HAS an active booking, set it to OCCUPIED
-            if (room.status === 'AVAILABLE' && hasBookingNow) {
-                await prisma.room.update({
-                    where: { id: room.id },
-                    data: { status: 'OCCUPIED' }
-                });
-                return { ...room, status: 'OCCUPIED' };
-            }
-
-            return room;
-        }));
-
-        return NextResponse.json(syncedRooms)
+        return NextResponse.json({ success: true, data: result })
     } catch (error) {
-        console.error('Room fetch error:', error);
-        return new NextResponse('Internal Server Error', { status: 500 })
+        return serverError(error, 'ROOMS_GET')
     }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions)
-    if (!session || !['SUPER_ADMIN', 'HOTEL_ADMIN', 'MANAGER', 'RECEPTIONIST'].includes(session.user.role)) {
-        return new NextResponse('Unauthorized', { status: 401 })
-    }
+    if (!session) return unauthorized()
+    if (!['SUPER_ADMIN', 'HOTEL_ADMIN', 'MANAGER'].includes(session.user.role)) return forbidden()
 
     try {
         const body = await request.json()
-        const { roomNumber, floor, category, type, basePrice, maxOccupancy, propertyId: bodyPropertyId } = body
+        const { roomNumber, floor, category, type, basePrice, maxOccupancy, propertyId: bodyPropertyId, images } = body
 
-        let propertyId = session.user.propertyId
-        if (session.user.role === 'SUPER_ADMIN' && bodyPropertyId) {
-            propertyId = bodyPropertyId
+        if (!roomNumber || !category || !type || basePrice === undefined) {
+            return badRequest('roomNumber, category, type and basePrice are required')
         }
 
-        if (!propertyId) return new NextResponse('No property associated with account or provided', { status: 400 })
+        let propertyId = session.user.propertyId
+        if (session.user.role === 'SUPER_ADMIN' && bodyPropertyId) propertyId = bodyPropertyId
+        if (!propertyId) return badRequest('No property associated with account')
 
         const room = await prisma.room.create({
             data: {
-                propertyId: propertyId,
+                propertyId,
                 roomNumber,
-                floor: parseInt(floor),
+                floor: parseInt(floor) || 1,
                 category,
                 type,
-                basePrice: parseFloat(basePrice.toString()),
-                maxOccupancy: parseInt(maxOccupancy.toString()) || 2,
+                basePrice: parseFloat(String(basePrice)),
+                maxOccupancy: parseInt(String(maxOccupancy)) || 2,
                 status: 'AVAILABLE',
-                images: body.images || []
-            }
+                images: images ?? [],
+            },
         })
 
-        return NextResponse.json(room)
+        return NextResponse.json({ success: true, data: room }, { status: 201 })
     } catch (error: any) {
-        console.error(error)
-        if (error.code === 'P2002') return new NextResponse('Room number already exists', { status: 400 })
-        return new NextResponse('Internal Server Error', { status: 500 })
+        if (error?.code === 'P2002') return conflict('Room number already exists in this property')
+        return serverError(error, 'ROOMS_POST')
     }
 }
