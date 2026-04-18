@@ -144,6 +144,7 @@ exports.Prisma.GuestScalarFieldEnum = {
   checkInStatus: 'checkInStatus',
   checkInCompletedAt: 'checkInCompletedAt',
   language: 'language',
+  createdByPropertyId: 'createdByPropertyId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -216,6 +217,16 @@ exports.Prisma.BookingScalarFieldEnum = {
   totalAmount: 'totalAmount',
   paidAmount: 'paidAmount',
   paymentStatus: 'paymentStatus',
+  baseAmount: 'baseAmount',
+  gstPercent: 'gstPercent',
+  gstAmount: 'gstAmount',
+  serviceChargePercent: 'serviceChargePercent',
+  serviceChargeAmount: 'serviceChargeAmount',
+  luxuryTaxPercent: 'luxuryTaxPercent',
+  luxuryTaxAmount: 'luxuryTaxAmount',
+  discountPercent: 'discountPercent',
+  discountAmount: 'discountAmount',
+  finalAmount: 'finalAmount',
   specialRequests: 'specialRequests',
   notes: 'notes',
   propertyId: 'propertyId',
@@ -553,9 +564,42 @@ exports.Prisma.TicketMessageScalarFieldEnum = {
 exports.Prisma.PlanDefinitionScalarFieldEnum = {
   id: 'id',
   plan: 'plan',
-  features: 'features',
-  price: 'price',
+  displayName: 'displayName',
+  tagline: 'tagline',
   description: 'description',
+  originalPrice: 'originalPrice',
+  discountedPrice: 'discountedPrice',
+  discountPercent: 'discountPercent',
+  billingCycle: 'billingCycle',
+  maxRooms: 'maxRooms',
+  maxStaff: 'maxStaff',
+  features: 'features',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.PropertySettingsScalarFieldEnum = {
+  id: 'id',
+  propertyId: 'propertyId',
+  gstPercent: 'gstPercent',
+  serviceChargePercent: 'serviceChargePercent',
+  luxuryTaxPercent: 'luxuryTaxPercent',
+  defaultDiscountPercent: 'defaultDiscountPercent',
+  discountLabel: 'discountLabel',
+  invoicePrefix: 'invoicePrefix',
+  invoiceFooter: 'invoiceFooter',
+  currency: 'currency',
+  currencySymbol: 'currencySymbol',
+  checkInTime: 'checkInTime',
+  checkOutTime: 'checkOutTime',
+  bankAccountName: 'bankAccountName',
+  bankAccountNumber: 'bankAccountNumber',
+  bankIfscCode: 'bankIfscCode',
+  bankName: 'bankName',
+  bankBranch: 'bankBranch',
+  upiId: 'upiId',
+  razorpayKeyId: 'razorpayKeyId',
+  razorpayKeySecret: 'razorpayKeySecret',
+  createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
 
@@ -592,6 +636,10 @@ exports.CheckInStatus = exports.$Enums.CheckInStatus = {
 };
 
 exports.SubscriptionPlan = exports.$Enums.SubscriptionPlan = {
+  BASE: 'BASE',
+  STARTER: 'STARTER',
+  STANDARD: 'STANDARD',
+  ENTERPRISE: 'ENTERPRISE',
   GOLD: 'GOLD',
   PLATINUM: 'PLATINUM',
   DIAMOND: 'DIAMOND'
@@ -788,7 +836,8 @@ exports.Prisma.ModelName = {
   Message: 'Message',
   SupportTicket: 'SupportTicket',
   TicketMessage: 'TicketMessage',
-  PlanDefinition: 'PlanDefinition'
+  PlanDefinition: 'PlanDefinition',
+  PropertySettings: 'PropertySettings'
 };
 
 /**

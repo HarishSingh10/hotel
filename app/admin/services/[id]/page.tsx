@@ -55,7 +55,10 @@ export default function ServiceDetailPage() {
         setLoading(true)
         try {
             const res = await fetch(`/api/admin/services/${id}`)
-            if (res.ok) setDetail(await res.json())
+            if (res.ok) {
+                const json = await res.json()
+                setDetail(json?.data ?? json)
+            }
             else {
                 toast.error('Service not found')
                 router.push('/admin/services')
@@ -66,7 +69,10 @@ export default function ServiceDetailPage() {
 
     const fetchStaff = async () => {
         const res = await fetch('/api/admin/staff?activeOnly=true')
-        if (res.ok) setStaffList(await res.json())
+        if (res.ok) {
+            const json = await res.json()
+            setStaffList(Array.isArray(json) ? json : (json?.data ?? []))
+        }
     }
 
     useEffect(() => {
@@ -287,7 +293,7 @@ export default function ServiceDetailPage() {
 
                             <div className="space-y-2">
                                 <label className="text-[10px] text-gray-500 font-black uppercase tracking-[0.2em] block">Description</label>
-                                <div className="bg-[#101922] border border-white/[0.04] rounded-xl p-5 text-gray-400 leading-relaxed text-[13px] font-medium italic shadow-inner">
+                                <div className="bg-[#101922] border border-white/[0.04] rounded-xl p-5 text-gray-400 leading-relaxed text-[13px] font-medium  shadow-inner">
                                     &quot;{detail.description || 'No description provided.'}&quot;
                                 </div>
                             </div>

@@ -1,96 +1,112 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/options'
 import { prisma } from '@/lib/db'
 import { performAutoAssignment } from '@/lib/service-utils'
+import { unauthorized, forbidden, badRequest, notFound, serverError } from '@/lib/api-response'
 
 export const dynamic = 'force-dynamic'
 
-export async function POST(request: Request) {
+const ALLOWED_ROLES = ['SUPER_ADMIN', 'HOTEL_ADMIN', 'MANAGER', 'RECEPTIONIST']
+
+export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions)
-    const allowedRoles = ['SUPER_ADMIN', 'HOTEL_ADMIN', 'MANAGER', 'RECEPTIONIST']
-    if (!session || !allowedRoles.includes(session.user.role)) {
-        return new NextResponse('Unauthorized', { status: 401 })
-    }
+    if (!session) return unauthorized()
+    if (!ALLOWED_ROLES.includes(session.user.role)) return forbidden()
 
     try {
         const body = await request.json()
-        const { bookingId, action } = body // action: 'CHECK_IN' | 'CHECK_OUT' | 'CANCEL'
+        const { bookingId, action } = body
 
-        let status = 'RESERVED'
-        let roomStatus = 'AVAILABLE'
-        const updateData: any = {}
-
-        if (action === 'CHECK_IN') {
-            status = 'CHECKED_IN'
-            roomStatus = 'OCCUPIED'
-            updateData.actualCheckIn = new Date()
-        } else if (action === 'CHECK_OUT') {
-            status = 'CHECKED_OUT'
-            roomStatus = 'CLEANING'
-            updateData.actualCheckOut = new Date()
-        } else if (action === 'CANCEL') {
-            status = 'CANCELLED'
-            roomStatus = 'AVAILABLE'
+        if (!bookingId || !action) return badRequest('bookingId and action are required')
+        if (!['CHECK_IN', 'CHECK_OUT', 'CANCEL', 'NO_SHOW'].includes(action)) {
+            return badRequest('action must be CHECK_IN, CHECK_OUT, CANCEL or NO_SHOW')
         }
-        updateData.status = status
 
-        const booking = await prisma.booking.update({
+        const existing = await prisma.booking.findUnique({
             where: { id: bookingId },
-            data: updateData,
-            include: { room: true }
+            include: { room: { select: { roomNumber: true, id: true } } },
         })
+        if (!existing) return notFound('Booking')
 
-        // Also update room status
-        await prisma.room.update({
-            where: { id: booking.roomId },
-            data: { status: roomStatus as any }
-        })
+        // Validate state transitions
+        if (action === 'CHECK_IN' && existing.status !== 'RESERVED') {
+            return badRequest('Only RESERVED bookings can be checked in')
+        }
+        if (action === 'CHECK_OUT' && existing.status !== 'CHECKED_IN') {
+            return badRequest('Only CHECKED_IN bookings can be checked out')
+        }
+        if (action === 'CANCEL' && ['CHECKED_OUT', 'CANCELLED'].includes(existing.status)) {
+            return badRequest('Booking is already completed or cancelled')
+        }
 
-        // PRODUCTION MAPPING: If Check-out, auto-create a Housekeeping task
-        if (action === 'CHECK_OUT') {
-            await prisma.serviceRequest.create({
+        const statusMap: Record<string, string> = {
+            CHECK_IN: 'CHECKED_IN',
+            CHECK_OUT: 'CHECKED_OUT',
+            CANCEL: 'CANCELLED',
+            NO_SHOW: 'NO_SHOW',
+        }
+        const roomStatusMap: Record<string, string> = {
+            CHECK_IN: 'OCCUPIED',
+            CHECK_OUT: 'CLEANING',
+            CANCEL: 'AVAILABLE',
+            NO_SHOW: 'AVAILABLE',
+        }
+
+        const updateData: any = { status: statusMap[action] }
+        if (action === 'CHECK_IN') updateData.actualCheckIn = new Date()
+        if (action === 'CHECK_OUT') updateData.actualCheckOut = new Date()
+
+        const [booking] = await prisma.$transaction([
+            prisma.booking.update({
+                where: { id: bookingId },
+                data: updateData,
+                include: { room: { select: { roomNumber: true } }, guest: { select: { name: true } } },
+            }),
+            prisma.room.update({
+                where: { id: existing.roomId },
+                data: { status: roomStatusMap[action] as any },
+            }),
+        ])
+
+        if (action === 'CHECK_OUT' && existing.propertyId) {
+            const housekeepingTask = await prisma.serviceRequest.create({
                 data: {
-                    propertyId: booking.propertyId,
-                    roomId: booking.roomId,
-                    guestId: booking.guestId,
+                    propertyId: existing.propertyId,
+                    roomId: existing.roomId,
+                    guestId: existing.guestId,
                     type: 'HOUSEKEEPING',
-                    title: `Clean Room ${booking.room.roomNumber}`,
+                    title: `Clean Room ${existing.room.roomNumber}`,
                     description: `Guest checked out at ${new Date().toLocaleTimeString()}. Standard turnover required.`,
                     priority: 'URGENT',
                     status: 'PENDING',
                     slaMinutes: 30,
-                    assignedToId: null
-                }
+                    assignedToId: null,
+                },
             })
 
-            // PROACTIVE: Notify relevant staff (Housekeeping)
-            const staffUsers = await prisma.user.findMany({
-                where: {
-                    role: 'STAFF',
-                    // ideally we filter by housekeeping department, but role is a good start
-                }
+            const hkStaff = await prisma.staff.findMany({
+                where: { propertyId: existing.propertyId, department: 'HOUSEKEEPING' },
+                select: { userId: true },
             })
 
-            if (staffUsers.length > 0) {
+            if (hkStaff.length > 0) {
                 await prisma.inAppNotification.createMany({
-                    data: staffUsers.map(u => ({
-                        userId: u.id,
-                        title: 'New Service Request',
-                        description: `Cleaning required for Room ${booking.room.roomNumber} immediately.`,
+                    data: hkStaff.map((s) => ({
+                        userId: s.userId,
+                        title: 'Housekeeping Required',
+                        description: `Room ${existing.room.roomNumber} needs cleaning after checkout.`,
                         type: 'TASK',
-                        isRead: false
-                    }))
+                        isRead: false,
+                    })),
                 })
             }
 
-            // Trigger auto-assignment immediately
-            await performAutoAssignment(booking.propertyId, 0)
+            performAutoAssignment(existing.propertyId, 0).catch(() => {})
         }
 
-        return NextResponse.json(booking)
+        return NextResponse.json({ success: true, data: booking })
     } catch (error) {
-        console.error(error)
-        return new NextResponse('Internal Error', { status: 500 })
+        return serverError(error, 'BOOKING_STATUS')
     }
 }

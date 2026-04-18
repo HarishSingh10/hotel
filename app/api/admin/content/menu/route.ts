@@ -81,6 +81,15 @@ export async function POST(req: NextRequest) {
             if (!name || !category || price === undefined) {
                 return NextResponse.json({ error: 'Missing required fields for new item' }, { status: 400 })
             }
+
+            // Prevent duplicate names in the same property
+            const existing = await prisma.menuItem.findFirst({
+                where: { propertyId: targetPropertyId, name: { equals: name, mode: 'insensitive' } }
+            })
+            if (existing) {
+                return NextResponse.json({ error: `A menu item named "${name}" already exists. Edit the existing item instead.` }, { status: 409 })
+            }
+
             menuItem = await prisma.menuItem.create({
                 data: {
                     ...data,

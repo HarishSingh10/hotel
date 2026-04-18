@@ -6,6 +6,7 @@ import { compare } from 'bcryptjs'
 export const authOptions: NextAuthOptions = {
     session: {
         strategy: 'jwt',
+        maxAge: 30 * 24 * 60 * 60, // 30 days
     },
     pages: {
         signIn: '/admin/login',
@@ -14,59 +15,43 @@ export const authOptions: NextAuthOptions = {
         CredentialsProvider({
             name: 'Credentials',
             credentials: {
-                email: { label: 'Email', type: 'email' },
+                email: { label: 'Email or Phone', type: 'text' },
                 password: { label: 'Password', type: 'password' },
             },
             async authorize(credentials) {
-                if (!credentials?.email || !credentials?.password) {
-                    console.log('[AUTH] Missing email or password')
-                    return null
-                }
+                if (!credentials?.email || !credentials?.password) return null
 
-                const identifier = credentials.email.trim()
-                console.log(`[AUTH] --- NEW LOGIN ATTEMPT ---`)
-                console.log(`[AUTH] Identifier: "${identifier}"`)
+                const identifier = credentials.email.trim().toLowerCase()
 
                 const user = await prisma.user.findFirst({
                     where: {
                         OR: [
                             { email: { equals: identifier, mode: 'insensitive' } },
-                            { phone: identifier }
-                        ]
+                            { phone: credentials.email.trim() },
+                        ],
                     },
                 })
 
-                if (!user) {
-                    console.log(`[AUTH] USER NOT FOUND in DB for: "${identifier}"`)
-                    return null
-                }
-
-                console.log(`[AUTH] Found user: ${user.email} (Role: ${user.role}, Status: ${user.status})`)
-                console.log(`[AUTH] Hash in DB: ${user.password.substring(0, 10)}...`)
+                if (!user) return null
+                if (user.status !== 'ACTIVE') return null
 
                 const isPasswordValid = await compare(credentials.password, user.password)
+                if (!isPasswordValid) return null
 
-                if (!isPasswordValid) {
-                    console.log(`[AUTH] PASSWORD MISMATCH for user: ${user.email}`)
-                    console.log(`[AUTH] Provided password: "${credentials.password}"`)
-                    return null
-                }
-
-                console.log(`[AUTH] LOGIN SUCCESS for: ${user.email}`)
-
-                // For multi-tenant: hotel-specific data scoping
-                let propertyId = (user as any).workplaceId
-
-                // If owner has no direct workplace, use their first owned property
-                if (!propertyId && (user as any).ownedPropertyIds?.[0]) {
+                // Resolve propertyId for multi-tenant context
+                let propertyId: string | null = (user as any).workplaceId ?? null
+                if (!propertyId && (user as any).ownedPropertyIds?.length > 0) {
                     propertyId = (user as any).ownedPropertyIds[0]
                 }
 
-                // Fetch department if staff
-                let department = null
-                if (user.role === 'STAFF' || user.role === 'MANAGER' || user.role === 'RECEPTIONIST') {
-                    const staff = await prisma.staff.findUnique({ where: { userId: user.id } })
-                    department = staff?.department
+                // Fetch department for staff roles
+                let department: string | null = null
+                if (['STAFF', 'MANAGER', 'RECEPTIONIST'].includes(user.role)) {
+                    const staff = await prisma.staff.findUnique({
+                        where: { userId: user.id },
+                        select: { department: true },
+                    })
+                    department = staff?.department ?? null
                 }
 
                 return {
@@ -75,29 +60,47 @@ export const authOptions: NextAuthOptions = {
                     name: user.name,
                     role: user.role,
                     propertyId,
-                    department
+                    department,
                 }
             },
         }),
     ],
     callbacks: {
-        async session({ session, token }) {
-            if (token) {
-                session.user.id = token.id as string
-                session.user.role = token.role as string
-                session.user.propertyId = token.propertyId as string
-                session.user.department = token.department as string
-            }
-            return session
-        },
         async jwt({ token, user }) {
             if (user) {
                 token.id = user.id
                 token.role = (user as any).role
-                token.propertyId = (user as any).propertyId
-                token.department = (user as any).department
+                token.propertyId = (user as any).propertyId ?? null
+                token.department = (user as any).department ?? null
+
+                // Fetch property plan for middleware feature gating
+                const pid = (user as any).propertyId
+                if (pid) {
+                    try {
+                        const prop = await prisma.property.findUnique({
+                            where: { id: pid },
+                            select: { plan: true },
+                        })
+                        token.plan = prop?.plan ?? 'BASE'
+                    } catch {
+                        token.plan = 'BASE'
+                    }
+                } else {
+                    token.plan = 'BASE'
+                }
             }
             return token
         },
+        async session({ session, token }) {
+            if (token) {
+                session.user.id = token.id as string
+                session.user.role = token.role as string
+                session.user.propertyId = (token.propertyId as string) ?? null
+                session.user.department = (token.department as string) ?? null
+                ;(session.user as any).plan = token.plan ?? 'BASE'
+            }
+            return session
+        },
     },
+    secret: process.env.NEXTAUTH_SECRET,
 }

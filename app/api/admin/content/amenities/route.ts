@@ -52,6 +52,37 @@ export async function POST(req: Request) {
     }
 }
 
+export async function PATCH(req: Request) {
+    try {
+        const session = await getServerSession(authOptions)
+        if (!session || session.user.role === 'GUEST') {
+            return new NextResponse('Unauthorized', { status: 401 })
+        }
+
+        const { searchParams } = new URL(req.url)
+        const id = searchParams.get('id')
+        if (!id) return new NextResponse('Missing id', { status: 400 })
+
+        const body = await req.json()
+        const { name, icon, description, category, isActive } = body
+
+        const updated = await prisma.amenity.update({
+            where: { id },
+            data: {
+                ...(name !== undefined && { name }),
+                ...(icon !== undefined && { icon }),
+                ...(description !== undefined && { description }),
+                ...(category !== undefined && { category }),
+                ...(isActive !== undefined && { isActive }),
+            }
+        })
+        return NextResponse.json({ success: true, data: updated })
+    } catch (error) {
+        console.error('[AMENITY_PATCH]', error)
+        return new NextResponse('Internal Error', { status: 500 })
+    }
+}
+
 export async function DELETE(req: Request) {
     try {
         const session = await getServerSession(authOptions)

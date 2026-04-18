@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
 
 /**
  * POST /api/admin/settings/property
- * Update property details
+ * Update property details — handles plan, features, and general info
  */
 export async function POST(req: NextRequest) {
     try {
@@ -45,24 +45,32 @@ export async function POST(req: NextRequest) {
         if (authResult instanceof NextResponse) return authResult
 
         const body = await req.json()
-        const { propertyId, ...updateData } = body
+        const { propertyId, plan, features, ...rest } = body
 
         if (!propertyId) {
             return NextResponse.json({ error: 'Property ID is required' }, { status: 400 })
         }
 
-        // Verify propertyId is authorized for the user
+        // Only SUPER_ADMIN can change plan or features
+        if ((plan !== undefined || features !== undefined) && authResult.user.role !== 'SUPER_ADMIN') {
+            return NextResponse.json({ error: 'Only Super Admin can change plan or features' }, { status: 403 })
+        }
+
+        // HOTEL_ADMIN can only update their own property
         if (authResult.user.role !== 'SUPER_ADMIN' && authResult.user.propertyId !== propertyId) {
             return NextResponse.json({ error: 'Unauthorized to manage this property' }, { status: 403 })
         }
 
+        const updateData: any = { ...rest }
+        if (plan !== undefined) updateData.plan = plan
+        if (features !== undefined) updateData.features = features
+
         const updated = await prisma.property.update({
             where: { id: propertyId },
-            data: updateData
+            data: updateData,
         })
 
-        return NextResponse.json({ success: true, property: updated })
-
+        return NextResponse.json({ success: true, data: updated })
     } catch (error: any) {
         console.error('[PROPERTY_UPDATE_ERROR]', error)
         return NextResponse.json({ error: 'Internal Error' }, { status: 500 })

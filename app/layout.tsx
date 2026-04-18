@@ -10,8 +10,7 @@ const outfit = Outfit({ subsets: ['latin'], variable: '--font-outfit' })
 const cormorant = Cormorant_Garamond({ 
   subsets: ['latin'], 
   weight: ['300', '400', '500', '600', '700'],
-  variable: '--font-serif',
-  style: 'italic'
+  variable: '--font-serif'
 })
 
 export const metadata: Metadata = {

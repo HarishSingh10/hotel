@@ -131,6 +131,27 @@ export async function GET(req: NextRequest) {
             })
         }
 
+        // 5. Booking Source breakdown (real data)
+        const sourceCount: Record<string, number> = {}
+        bookings.forEach(b => {
+            const src = b.source || 'DIRECT'
+            sourceCount[src] = (sourceCount[src] || 0) + 1
+        })
+        const totalBookings = bookings.length || 1
+        const bookingSources = Object.entries(sourceCount)
+            .map(([source, count]) => ({
+                label: source.replace(/_/g, ' '),
+                value: Math.round((count / totalBookings) * 100),
+                count,
+            }))
+            .sort((a, b) => b.count - a.count)
+
+        // 6. Tier distribution
+        const tierCounts = { BRONZE: 0, SILVER: 0, GOLD: 0, PLATINUM: 0 }
+        topGuests.forEach(g => {
+            tierCounts[g.tier as keyof typeof tierCounts] = (tierCounts[g.tier as keyof typeof tierCounts] || 0) + 1
+        })
+
         return NextResponse.json({
             stats: {
                 repeatRate,
@@ -141,7 +162,9 @@ export async function GET(req: NextRequest) {
                 totalGuests
             },
             topGuests,
-            chartData
+            chartData,
+            bookingSources,
+            tierCounts,
         })
 
     } catch (error: any) {

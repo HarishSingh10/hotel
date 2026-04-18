@@ -77,8 +77,8 @@ export default function NotificationsPage() {
                     <ChevronLeft className="w-5 h-5" />
                 </button>
                 <div className="flex flex-col items-center px-4">
-                    <h1 className="text-xl font-black text-white tracking-tight italic">Operations Hub</h1>
-                    <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest mt-0.5 italic underline underline-offset-4 decoration-blue-500/20">{unreadCount} Critical Alerts Pending</p>
+                    <h1 className="text-xl font-black text-white tracking-tight ">Operations Hub</h1>
+                    <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest mt-0.5  underline underline-offset-4 decoration-blue-500/20">{unreadCount} Critical Alerts Pending</p>
                 </div>
                 <button
                     onClick={markAllRead}
@@ -113,7 +113,7 @@ export default function NotificationsPage() {
                             <div className="absolute inset-0 bg-blue-500/10 blur-2xl group-hover:animate-pulse"></div>
                         </div>
                         <div className="space-y-2">
-                            <h3 className="text-sm font-black text-white uppercase tracking-widest italic">All Quiet on Operations</h3>
+                            <h3 className="text-sm font-black text-white uppercase tracking-widest ">All Quiet on Operations</h3>
                             <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest leading-loose">The operations tunnel is clear.<br/>New dispatches will arrive here in real-time.</p>
                         </div>
                     </div>
@@ -152,7 +152,7 @@ export default function NotificationsPage() {
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center justify-between mb-2">
                                         <div className="flex items-center gap-3">
-                                            <h4 className="text-[15px] font-black text-white tracking-tight italic leading-none">{note.title}</h4>
+                                            <h4 className="text-[15px] font-black text-white tracking-tight  leading-none">{note.title}</h4>
                                             {!note.isRead && (
                                                 <div className="flex h-2 w-2 relative">
                                                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
@@ -167,7 +167,7 @@ export default function NotificationsPage() {
                                             {format(new Date(note.createdAt), 'hh:mm a')}
                                         </span>
                                     </div>
-                                    <p className="text-[13px] font-medium text-gray-500 leading-relaxed group-hover:text-gray-400 transition-colors line-clamp-2 italic mb-4">{note.description}</p>
+                                    <p className="text-[13px] font-medium text-gray-500 leading-relaxed group-hover:text-gray-400 transition-colors line-clamp-2  mb-4">{note.description}</p>
                                     
                                     <div className="flex items-center gap-4">
                                         <div className="flex items-center gap-1.5 bg-white/[0.03] px-3 py-1 rounded-lg border border-white/[0.05]">
@@ -194,7 +194,7 @@ export default function NotificationsPage() {
                         <ShieldCheck className="w-7 h-7 text-blue-500 animate-pulse" />
                     </div>
                     <div>
-                        <h4 className="text-base font-black text-white italic tracking-tight italic">Protocol Multi-Channel</h4>
+                        <h4 className="text-base font-black text-white  tracking-tight ">Protocol Multi-Channel</h4>
                         <p className="text-[10px] font-bold text-gray-500 leading-[1.8] uppercase tracking-[0.2em]">Operational dispatches are mirrored across terminal, mobile app, and property-broadcast systems.</p>
                     </div>
                     <button className="h-12 px-8 bg-white/5 border border-white/10 rounded-xl text-[9px] font-black uppercase tracking-[0.3em] text-white hover:bg-white/10 transition-all active:scale-95">Verify Channel Sync</button>

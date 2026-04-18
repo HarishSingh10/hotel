@@ -15,20 +15,26 @@ export async function POST(req: Request) {
             return new NextResponse('Invalid data format', { status: 400 })
         }
 
+        const propertyId = session.user.role === 'SUPER_ADMIN'
+            ? (body.propertyId ?? session.user.propertyId)
+            : session.user.propertyId
+
         const results = await prisma.$transaction(
-            guests.map(g => 
+            guests.map((g: any) =>
                 prisma.guest.upsert({
                     where: { phone: g.phone },
                     update: {
                         name: g.name,
                         email: g.email || undefined,
-                        checkInStatus: 'PENDING'
+                        checkInStatus: 'PENDING',
+                        ...(propertyId ? { createdByPropertyId: propertyId } : {}),
                     },
                     create: {
                         name: g.name,
                         phone: g.phone,
                         email: g.email || undefined,
-                        checkInStatus: 'PENDING'
+                        checkInStatus: 'PENDING',
+                        createdByPropertyId: propertyId ?? null,
                     }
                 })
             )

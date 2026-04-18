@@ -175,13 +175,14 @@ export default function NewBookingPage() {
 
                 const rRes = await fetch(buildContextUrl(`/api/admin/rooms?${queryParams.toString()}`))
                 if (rRes.ok) {
-                    const data = await rRes.json()
-                    // Filter out duplicates if any remain in DB
-                    const uniqueRooms = data.reduce((acc: any[], current: any) => {
-                        const x = acc.find(item => item.roomNumber === current.roomNumber);
-                        if (!x) return acc.concat([current]);
-                        return acc;
-                    }, []);
+                    const json = await rRes.json()
+                    const rooms = Array.isArray(json) ? json : (json?.data ?? [])
+                    // Filter out duplicates
+                    const uniqueRooms = rooms.reduce((acc: any[], current: any) => {
+                        const x = acc.find((item: any) => item.roomNumber === current.roomNumber)
+                        if (!x) return acc.concat([current])
+                        return acc
+                    }, [])
                     setAllRooms(uniqueRooms)
                 }
             } catch (err) {
@@ -198,7 +199,10 @@ export default function NewBookingPage() {
         const loadGuests = async () => {
             try {
                 const gRes = await fetch(buildContextUrl('/api/admin/guests'))
-                if (gRes.ok) setAllGuests(await gRes.json())
+                if (gRes.ok) {
+                    const json = await gRes.json()
+                    setAllGuests(Array.isArray(json) ? json : (json?.data ?? []))
+                }
             } catch (err) {
                 toast.error("Failed to sync guest registry")
             }
@@ -216,13 +220,21 @@ export default function NewBookingPage() {
         )
     }, [allGuests, searchQuery])
 
+    // Pricing state — fetched from property financial settings
+    const [pricingSettings, setPricingSettings] = useState({
+        gstPercent: 18.0,
+        serviceChargePercent: 0.0,
+        luxuryTaxPercent: 0.0,
+        defaultDiscountPercent: 0.0,
+        discountLabel: 'Discount',
+    })
+
     const stayDuration = useMemo(() => {
-        if (!bookingDetails.checkIn || !bookingDetails.checkOut) return 4
+        if (!bookingDetails.checkIn || !bookingDetails.checkOut) return 1
         const start = new Date(bookingDetails.checkIn)
         const end = new Date(bookingDetails.checkOut)
-        const diff = end.getTime() - start.getTime()
-        const days = Math.ceil(diff / (1000 * 60 * 60 * 24))
-        return days > 0 ? days : 4
+        const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24))
+        return days > 0 ? days : 1
     }, [bookingDetails.checkIn, bookingDetails.checkOut])
 
     const subtotal = useMemo(() => {
@@ -230,9 +242,23 @@ export default function NewBookingPage() {
         return selectedRooms.reduce((acc, room) => acc + (room.basePrice * stayDuration), 0)
     }, [selectedRooms, stayDuration])
 
-    const taxAmount = Math.round(subtotal * 0.1)
-    const serviceFee = Math.round(subtotal * 0.05)
-    const grandTotal = subtotal + taxAmount + serviceFee
+    // Real tax calculation from property settings
+    const gstAmount = Math.round(subtotal * pricingSettings.gstPercent / 100 * 100) / 100
+    const serviceChargeAmount = Math.round(subtotal * pricingSettings.serviceChargePercent / 100 * 100) / 100
+    const luxuryTaxAmount = Math.round(subtotal * pricingSettings.luxuryTaxPercent / 100 * 100) / 100
+    const totalBeforeDiscount = subtotal + gstAmount + serviceChargeAmount + luxuryTaxAmount
+    const discountAmount = Math.round(totalBeforeDiscount * pricingSettings.defaultDiscountPercent / 100 * 100) / 100
+    const grandTotal = Math.round((totalBeforeDiscount - discountAmount) * 100) / 100
+
+    // Fetch pricing settings when session is ready
+    useEffect(() => {
+        const propertyId = session?.user?.propertyId
+        if (!propertyId) return
+        fetch(`/api/admin/settings/financial?propertyId=${propertyId}`)
+            .then(r => r.json())
+            .then(j => { if (j.success && j.data) setPricingSettings(j.data) })
+            .catch(() => {})
+    }, [session?.user?.propertyId])
 
     const handleCreateGuest = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -265,8 +291,7 @@ export default function NewBookingPage() {
         }
         setLoading(true)
         try {
-            // Create multiple bookings if needed
-            const results = await Promise.all(selectedRooms.map(room => 
+            const results = await Promise.all(selectedRooms.map(room =>
                 fetch(buildContextUrl('/api/admin/bookings'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -276,15 +301,15 @@ export default function NewBookingPage() {
                         checkIn: bookingDetails.checkIn,
                         checkOut: bookingDetails.checkOut,
                         numberOfGuests: bookingDetails.guests,
-                        totalAmount: (room.basePrice * stayDuration) * 1.15, // Including rough tax/fees
+                        totalAmount: room.basePrice * stayDuration, // base; API applies taxes
                         source: bookingDetails.source,
                         notes: bookingDetails.notes,
-                        specialRequests: bookingDetails.specialRequests
+                        specialRequests: bookingDetails.specialRequests,
                     })
                 })
             ))
-            
-            if (results.some(r => !r.ok)) throw new Error()
+
+            if (results.some(r => !r.ok)) throw new Error('One or more bookings failed')
             toast.success("Reservation Secured Successfully!")
             router.push('/admin/bookings')
             router.refresh()
@@ -798,18 +823,38 @@ export default function NewBookingPage() {
                         </div>
                     </div>
 
-                    <div className="pt-10 space-y-5 border-t border-white/10">
+                    <div className="pt-10 space-y-3 border-t border-white/10">
                         <div className="flex items-center justify-between text-gray-600 font-bold uppercase tracking-widest text-[10px]">
-                            <span>Subtotal</span>
-                            <span className="text-white text-sm ">₹{subtotal}.00</span>
+                            <span>Room Charges ({stayDuration} night{stayDuration > 1 ? 's' : ''})</span>
+                            <span className="text-white text-sm">₹{subtotal.toLocaleString('en-IN')}</span>
                         </div>
-                        <div className="flex items-center justify-between text-gray-600 font-bold uppercase tracking-widest text-[10px]">
-                            <span>Tax & Fees</span>
-                            <span className="text-white text-sm ">₹{taxAmount + serviceFee}.00</span>
-                        </div>
+                        {gstAmount > 0 && (
+                            <div className="flex items-center justify-between text-gray-600 font-bold uppercase tracking-widest text-[10px]">
+                                <span>GST ({pricingSettings.gstPercent}%)</span>
+                                <span className="text-white text-sm">+₹{gstAmount.toLocaleString('en-IN')}</span>
+                            </div>
+                        )}
+                        {serviceChargeAmount > 0 && (
+                            <div className="flex items-center justify-between text-gray-600 font-bold uppercase tracking-widest text-[10px]">
+                                <span>Service Charge ({pricingSettings.serviceChargePercent}%)</span>
+                                <span className="text-white text-sm">+₹{serviceChargeAmount.toLocaleString('en-IN')}</span>
+                            </div>
+                        )}
+                        {luxuryTaxAmount > 0 && (
+                            <div className="flex items-center justify-between text-gray-600 font-bold uppercase tracking-widest text-[10px]">
+                                <span>Luxury Tax ({pricingSettings.luxuryTaxPercent}%)</span>
+                                <span className="text-white text-sm">+₹{luxuryTaxAmount.toLocaleString('en-IN')}</span>
+                            </div>
+                        )}
+                        {discountAmount > 0 && (
+                            <div className="flex items-center justify-between text-gray-600 font-bold uppercase tracking-widest text-[10px]">
+                                <span>{pricingSettings.discountLabel} ({pricingSettings.defaultDiscountPercent}%)</span>
+                                <span className="text-emerald-400 text-sm">-₹{discountAmount.toLocaleString('en-IN')}</span>
+                            </div>
+                        )}
                         <div className="flex items-center justify-between pt-4 border-t border-white/10">
                             <span className="text-xl font-bold text-white tracking-tight uppercase">Total</span>
-                            <span className="text-2xl font-bold text-[#4A9EFF] tracking-tight leading-none">₹{grandTotal}.00</span>
+                            <span className="text-2xl font-bold text-[#4A9EFF] tracking-tight leading-none">₹{grandTotal.toLocaleString('en-IN')}</span>
                         </div>
                         <button
                             className="w-full h-14 bg-[#4A9EFF] hover:bg-[#3A8EEF] rounded-xl text-white font-bold text-base flex items-center justify-center gap-3 transition-all shadow-xl shadow-[#4A9EFF]/20 mt-6 active:scale-95"

@@ -1,29 +1,52 @@
-export const getAdminContext = () => {
+/**
+ * Admin property context helpers.
+ * Reads from localStorage (set by PropertySwitcher component).
+ * Key: 'super_admin_property_context'
+ */
+
+const STORAGE_KEY = 'super_admin_property_context'
+
+export const getAdminContext = (): { propertyId: string } => {
     if (typeof window === 'undefined') return { propertyId: 'ALL' }
-    const propertyId = localStorage.getItem('super_admin_property_context') || 'ALL'
+    const propertyId = localStorage.getItem(STORAGE_KEY) || 'ALL'
     return { propertyId }
 }
 
 /** Returns true when the admin is in Global Overview (no hotel selected) */
 export const isGlobalContext = (): boolean => {
     if (typeof window === 'undefined') return true
-    const propertyId = localStorage.getItem('super_admin_property_context') || 'ALL'
-    return propertyId === 'ALL'
+    return (localStorage.getItem(STORAGE_KEY) || 'ALL') === 'ALL'
 }
 
-export const buildContextUrl = (baseUrl: string, params: Record<string, string | null | undefined> = {}) => {
-    if (typeof window === 'undefined') return baseUrl // Static generation safety
+export const setAdminContext = (propertyId: string): void => {
+    if (typeof window === 'undefined') return
+    localStorage.setItem(STORAGE_KEY, propertyId)
+}
+
+export const clearAdminContext = (): void => {
+    if (typeof window === 'undefined') return
+    localStorage.removeItem(STORAGE_KEY)
+}
+
+/**
+ * Build a URL with the current property context appended as a query param.
+ */
+export const buildContextUrl = (
+    baseUrl: string,
+    params: Record<string, string | number | null | undefined> = {}
+): string => {
+    if (typeof window === 'undefined') return baseUrl
     const { propertyId } = getAdminContext()
     const url = new URL(baseUrl, window.location.origin)
 
-    // Add base params
     Object.entries(params).forEach(([key, value]) => {
-        if (value) url.searchParams.append(key, value)
+        if (value !== null && value !== undefined) {
+            url.searchParams.set(key, String(value))
+        }
     })
 
-    // Add property context if not already present
     if (!url.searchParams.has('propertyId')) {
-        url.searchParams.append('propertyId', propertyId)
+        url.searchParams.set('propertyId', propertyId)
     }
 
     return url.toString()

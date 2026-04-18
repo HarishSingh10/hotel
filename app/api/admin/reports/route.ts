@@ -27,10 +27,42 @@ export async function GET(req: NextRequest) {
         }
 
         const now = new Date()
-        const thisMonthStart = startOfMonth(now)
-        const thisMonthEnd = endOfMonth(now)
-        const lastMonthStart = startOfMonth(subMonths(now, 1))
-        const lastMonthEnd = endOfMonth(subMonths(now, 1))
+        const rangeParam = searchParams.get('range') || 'this_month'
+
+        // Compute date range based on parameter
+        let thisMonthStart: Date
+        let thisMonthEnd: Date
+        let lastMonthStart: Date
+        let lastMonthEnd: Date
+        let daysToShow: number
+
+        if (rangeParam === 'last_month') {
+            const last = subMonths(now, 1)
+            thisMonthStart = startOfMonth(last)
+            thisMonthEnd = endOfMonth(last)
+            lastMonthStart = startOfMonth(subMonths(now, 2))
+            lastMonthEnd = endOfMonth(subMonths(now, 2))
+            daysToShow = 31
+        } else if (rangeParam === 'last_3_months') {
+            thisMonthStart = startOfMonth(subMonths(now, 2))
+            thisMonthEnd = endOfMonth(now)
+            lastMonthStart = startOfMonth(subMonths(now, 5))
+            lastMonthEnd = endOfMonth(subMonths(now, 3))
+            daysToShow = 90
+        } else if (rangeParam === 'this_year') {
+            thisMonthStart = new Date(now.getFullYear(), 0, 1)
+            thisMonthEnd = endOfMonth(now)
+            lastMonthStart = new Date(now.getFullYear() - 1, 0, 1)
+            lastMonthEnd = new Date(now.getFullYear() - 1, 11, 31)
+            daysToShow = 365
+        } else {
+            // this_month (default)
+            thisMonthStart = startOfMonth(now)
+            thisMonthEnd = endOfMonth(now)
+            lastMonthStart = startOfMonth(subMonths(now, 1))
+            lastMonthEnd = endOfMonth(subMonths(now, 1))
+            daysToShow = 31
+        }
 
         // ===== 1. REVENUE =====
         const thisMonthRevenue = await prisma.booking.aggregate({
@@ -125,8 +157,7 @@ export async function GET(req: NextRequest) {
 
         const slaTrend = lastMonthBreaches - actualBreaches // positive means improvement
 
-        // ===== 5. DAILY REVENUE & OCCUPANCY TRENDS (last 31 days) =====
-        const daysToShow = 31
+        // ===== 5. DAILY REVENUE & OCCUPANCY TRENDS =====
         const windowStart = startOfDay(subDays(now, daysToShow - 1))
         const windowEnd = endOfDay(now)
 
@@ -239,6 +270,8 @@ export async function GET(req: NextRequest) {
         }))
 
         return NextResponse.json({
+            success: true,
+            data: {
             // KPI Cards
             totalRevenue: currentRev,
             revenueTrend: revTrend,
@@ -259,6 +292,7 @@ export async function GET(req: NextRequest) {
             // Meta
             periodStart: thisMonthStart.toISOString(),
             periodEnd: thisMonthEnd.toISOString()
+            }
         })
 
     } catch (error: any) {

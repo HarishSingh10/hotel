@@ -5,136 +5,143 @@ import { prisma } from '@/lib/db'
 
 export const dynamic = 'force-dynamic'
 
-// GET: Today's arrivals with guest verification details
+/**
+ * GET /api/admin/checkin
+ *
+ * Shows ALL guests belonging to this hotel:
+ *   - Guests with any booking at this property (any status)
+ *   - Guests created by this property (createdByPropertyId)
+ *
+ * filter=all       → everyone
+ * filter=pending   → RESERVED (not yet checked in)
+ * filter=completed → CHECKED_IN (currently in-house)
+ */
 export async function GET(request: Request) {
     const session = await getServerSession(authOptions)
     if (!session) return new NextResponse('Unauthorized', { status: 401 })
 
     const { searchParams } = new URL(request.url)
-    const filter = searchParams.get('filter') || 'all'  // all | pending | completed
+    const filter = searchParams.get('filter') || 'all'
     const queryPropertyId = searchParams.get('propertyId')
 
-    // Build property filter
-    const whereClause: any = {}
-    if (session.user.role === 'SUPER_ADMIN') {
-        if (queryPropertyId && queryPropertyId !== 'ALL') {
-            whereClause.propertyId = queryPropertyId
-        }
-    } else {
-        const propertyId = session.user.propertyId
-        if (propertyId) whereClause.propertyId = propertyId
+    const propertyId = session.user.role === 'SUPER_ADMIN'
+        ? (queryPropertyId && queryPropertyId !== 'ALL' ? queryPropertyId : null)
+        : session.user.propertyId
+
+    if (!propertyId) {
+        return NextResponse.json({
+            stats: { expected: 0, completed: 0, pending: 0, verificationPending: 0 },
+            monthlyAverage: 0, monthlyChange: 0, bookings: []
+        })
     }
 
-    // Today's date range
     const today = new Date()
-    const startOfDay = new Date(today)
-    startOfDay.setHours(0, 0, 0, 0)
-    const endOfDay = new Date(today)
-    endOfDay.setHours(23, 59, 59, 999)
-
-    // Filter: today + tomorrow arrivals for check-in manager
-    const tomorrow = new Date(today)
-    tomorrow.setDate(tomorrow.getDate() + 1)
-    const endOfTomorrow = new Date(tomorrow)
-    endOfTomorrow.setHours(23, 59, 59, 999)
-
-    whereClause.checkIn = { gte: startOfDay, lte: endOfTomorrow }
-    whereClause.status = { in: ['RESERVED', 'CHECKED_IN'] }
-
-    // Status filter
-    if (filter === 'pending') {
-        whereClause.status = 'RESERVED'
-    } else if (filter === 'completed') {
-        whereClause.status = 'CHECKED_IN'
-    }
+    const startOfDay = new Date(today); startOfDay.setHours(0, 0, 0, 0)
+    const endOfDay   = new Date(today); endOfDay.setHours(23, 59, 59, 999)
 
     try {
-        const bookings = await prisma.booking.findMany({
-            where: whereClause,
+        // ── 1. Get all guests of this hotel ──────────────────────────────────
+        // A guest belongs to this hotel if:
+        //   a) They were created by this property
+        //   b) They have at least one booking at this property
+        const allGuests = await prisma.guest.findMany({
+            where: {
+                OR: [
+                    { createdByPropertyId: propertyId },
+                    { bookings: { some: { propertyId } } },
+                ],
+            },
             include: {
-                guest: {
-                    select: {
-                        id: true,
-                        name: true,
-                        email: true,
-                        phone: true,
-                        idType: true,
-                        idNumber: true,
-                        idDocumentFront: true,
-                        idDocumentBack: true,
-                        checkInStatus: true,
-                        checkInCompletedAt: true,
-                    }
+                bookings: {
+                    where: { propertyId },
+                    include: {
+                        room: { select: { roomNumber: true, type: true, category: true } },
+                    },
+                    orderBy: { checkIn: 'desc' },
+                    take: 5,
                 },
-                room: {
-                    select: {
-                        roomNumber: true,
-                        type: true,
-                        category: true,
-                    }
+            },
+            orderBy: { createdAt: 'desc' },
+        })
+
+        // ── 2. Build a flat list of "guest + their latest booking" ───────────
+        const rows: any[] = []
+
+        for (const guest of allGuests) {
+            // Pick the most relevant booking
+            const activeBooking =
+                guest.bookings.find(b => b.status === 'CHECKED_IN') ??
+                guest.bookings.find(b => b.status === 'RESERVED') ??
+                guest.bookings[0] ??
+                null
+
+            // Apply tab filter
+            if (filter === 'pending' && activeBooking?.status !== 'RESERVED') continue
+            if (filter === 'completed' && activeBooking?.status !== 'CHECKED_IN') continue
+
+            rows.push({
+                // Use booking id if available, else guest id as key
+                id: activeBooking?.id ?? guest.id,
+                guestId: guest.id,
+                guestName: guest.name,
+                guestPhone: guest.phone,
+                guestEmail: guest.email,
+                resId: activeBooking
+                    ? `#RES-${activeBooking.id.slice(-4).toUpperCase()}`
+                    : '#WALK-IN',
+                roomNumber: activeBooking?.room?.roomNumber ?? '—',
+                roomType: activeBooking?.room?.type ?? '—',
+                checkIn: activeBooking?.checkIn ?? null,
+                checkOut: activeBooking?.checkOut ?? null,
+                status: activeBooking?.status ?? 'NO_BOOKING',
+                source: activeBooking?.source ?? 'DIRECT',
+                idType: guest.idType,
+                idNumber: guest.idNumber,
+                idDocumentFront: guest.idDocumentFront,
+                idDocumentBack: guest.idDocumentBack,
+                checkInStatus: guest.checkInStatus,
+                checkInCompletedAt: guest.checkInCompletedAt,
+            })
+        }
+
+        // ── 3. Stats ─────────────────────────────────────────────────────────
+        const [todayArrivals, currentlyCheckedIn, lastMonthCount] = await Promise.all([
+            prisma.booking.count({
+                where: { propertyId, status: 'RESERVED', checkIn: { gte: startOfDay, lte: endOfDay } }
+            }),
+            prisma.booking.count({
+                where: { propertyId, status: 'CHECKED_IN' }
+            }),
+            prisma.booking.count({
+                where: {
+                    propertyId,
+                    status: { in: ['RESERVED', 'CHECKED_IN'] },
+                    checkIn: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), lte: endOfDay }
                 }
-            },
-            orderBy: { checkIn: 'asc' }
-        })
+            }),
+        ])
 
-        // Get summary stats
-        const allTodayBookings = await prisma.booking.findMany({
-            where: {
-                ...whereClause,
-                checkIn: { gte: startOfDay, lte: endOfDay },
-                status: { in: ['RESERVED', 'CHECKED_IN'] },
-            },
-        })
+        const monthlyAverage = lastMonthCount / 30
+        const monthlyChange = monthlyAverage > 0
+            ? ((currentlyCheckedIn / monthlyAverage) - 1) * 100
+            : 0
 
-        const expected = allTodayBookings.length
-        const completed = allTodayBookings.filter(b => b.status === 'CHECKED_IN').length
-        const pending = allTodayBookings.filter(b => b.status === 'RESERVED').length
-
-        // Monthly comparison logic
-        const thirtyDaysAgo = new Date(today)
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
-        
-        const lastMonthBookingsCount = await prisma.booking.count({
-            where: {
-                ...whereClause,
-                checkIn: { gte: thirtyDaysAgo, lte: endOfDay },
-                status: { in: ['RESERVED', 'CHECKED_IN'] },
-            }
-        })
-        
-        const monthlyAverage = lastMonthBookingsCount / 30
-        const monthlyChange = monthlyAverage > 0 ? ((completed / monthlyAverage) - 1) * 100 : 0
-
-        // Count guests with pending ID verification
-        const verificationPending = bookings.filter(b =>
-            b.guest.checkInStatus !== 'VERIFIED' && b.guest.checkInStatus !== 'COMPLETED'
+        const verificationPending = rows.filter(r =>
+            r.checkInStatus !== 'VERIFIED' && r.checkInStatus !== 'COMPLETED'
         ).length
 
         return NextResponse.json({
-            stats: { expected, completed, pending, verificationPending },
+            stats: {
+                expected: todayArrivals,
+                completed: currentlyCheckedIn,
+                pending: rows.filter(r => r.status === 'RESERVED').length,
+                verificationPending,
+            },
             monthlyAverage,
             monthlyChange,
-            bookings: bookings.map(b => ({
-                id: b.id,
-                guestId: b.guest.id,
-                guestName: b.guest.name,
-                guestPhone: b.guest.phone,
-                guestEmail: b.guest.email,
-                resId: `#RES-${b.id.slice(-4).toUpperCase()}`,
-                roomNumber: b.room.roomNumber,
-                roomType: b.room.type,
-                checkIn: b.checkIn,
-                checkOut: b.checkOut,
-                status: b.status,
-                source: b.source,
-                idType: b.guest.idType,
-                idNumber: b.guest.idNumber,
-                idDocumentFront: b.guest.idDocumentFront,
-                idDocumentBack: b.guest.idDocumentBack,
-                checkInStatus: b.guest.checkInStatus,
-                checkInCompletedAt: b.guest.checkInCompletedAt,
-            }))
+            bookings: rows,
         })
+
     } catch (error) {
         console.error('[CHECKIN_GET]', error)
         return new NextResponse('Internal Server Error', { status: 500 })

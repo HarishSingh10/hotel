@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { signIn } from 'next-auth/react'
 import Link from 'next/link'
-import { Building2, Eye, EyeOff, CheckCircle2, Crown, Sparkles, Gem } from 'lucide-react'
+import { Building2, Eye, EyeOff, CheckCircle2, Crown, Zap, Star } from 'lucide-react'
 import Button from '@/components/ui/Button'
 import { hash } from 'bcryptjs'
 import Input from '@/components/ui/Input'
@@ -29,40 +29,50 @@ export default function AdminRegisterPage() {
         hotelAddress: '',
         latitude: null as number | null,
         longitude: null as number | null,
-        plan: 'GOLD' as 'GOLD' | 'PLATINUM' | 'DIAMOND'
+        plan: 'BASE' as 'BASE' | 'STARTER' | 'STANDARD' | 'ENTERPRISE'
     })
 
     const plans = [
         {
-            id: 'GOLD',
-            name: 'Gold',
-            price: '₹7,999',
-            icon: Sparkles,
-            color: 'text-amber-500',
+            id: 'BASE',
+            name: 'Base',
+            price: '₹9,999',
+            icon: Building2,
+            color: 'text-slate-400',
+            bg: 'bg-slate-500/10',
+            border: 'border-slate-500/20',
+            features: ['Core PMS & Reservations', 'Digital Check-in', 'Up to 30 rooms']
+        },
+        {
+            id: 'STARTER',
+            name: 'Starter',
+            price: '₹15,999',
+            icon: Zap,
+            color: 'text-blue-400',
+            bg: 'bg-blue-500/10',
+            border: 'border-blue-500/20',
+            features: ['Everything in Base', 'Staff App & Management', 'Marketing Tools', 'Up to 75 rooms']
+        },
+        {
+            id: 'STANDARD',
+            name: 'Standard',
+            price: '₹29,999',
+            icon: Star,
+            color: 'text-amber-400',
             bg: 'bg-amber-500/10',
             border: 'border-amber-500/20',
-            features: ['Basic Operations', 'Staff Management', 'Guest Portal']
+            features: ['Everything in Starter', 'Advanced Analytics', 'F&B & Spa Integration', 'Up to 150 rooms']
         },
         {
-            id: 'PLATINUM',
-            name: 'Platinum',
-            price: '₹15,999',
+            id: 'ENTERPRISE',
+            name: 'Enterprise',
+            price: 'Custom',
             icon: Crown,
-            color: 'text-blue-400',
-            bg: 'bg-blue-400/10',
-            border: 'border-blue-400/20',
-            features: ['Advanced Analytics', 'Housekeeping Ops', 'Financial Tools']
+            color: 'text-purple-400',
+            bg: 'bg-purple-500/10',
+            border: 'border-purple-500/20',
+            features: ['Everything in Standard', 'Multi-property Admin', 'Unlimited rooms', 'Dedicated Support']
         },
-        {
-            id: 'DIAMOND',
-            name: 'Diamond',
-            price: '₹31,999',
-            icon: Gem,
-            color: 'text-blue-400',
-            bg: 'bg-blue-400/10',
-            border: 'border-blue-400/20',
-            features: ['AI Insights', 'Marketing Engine', 'Priority 24/7 Support']
-        }
     ]
 
     const handleChange = (field: string, value: string) => {
@@ -92,31 +102,27 @@ export default function AdminRegisterPage() {
                 return
             }
 
-            // 2. If Premium Plan, Handle Razorpay Payment Before final login
-            if (formData.plan !== 'GOLD') {
+            // 2. If paid plan, handle Razorpay payment
+            if (formData.plan !== 'BASE') {
                 try {
                     toast.loading(`Initializing payment for ${formData.plan} plan...`)
-                    
-                    // a) Create Razorpay Order
                     const orderRes = await fetch('/api/subscription/razorpay', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ plan: formData.plan, propertyId: data.propertyId })
                     })
-                    
                     const order = await orderRes.json()
                     toast.dismiss()
-                    
+
                     if (!order.success) {
-                        toast.error('Payment failed to initialize. Your account will be created as GOLD.', { duration: 5000 })
+                        toast.error('Payment failed to initialize. Your account is on the Base plan.', { duration: 5000 })
                     } else {
-                        // b) Open Razorpay UI
-                        const rzpPromise = new Promise((resolve, reject) => {
+                        const rzpPromise = new Promise((resolve) => {
                             const options = {
                                 key: order.key,
                                 amount: order.amount,
                                 currency: order.currency,
-                                name: 'Zenbourg Group',
+                                name: 'Zenbourg',
                                 description: `Registration: ${formData.plan} Plan`,
                                 order_id: order.orderId,
                                 handler: async (response: any) => {
@@ -127,21 +133,20 @@ export default function AdminRegisterPage() {
                                     })
                                     const verifyData = await verifyRes.json()
                                     if (verifyData.success) resolve(true)
-                                    else reject(new Error(verifyData.error || 'Verification failed'))
+                                    else resolve(false)
                                 },
                                 modal: { ondismiss: () => resolve(false) }
                             }
-                            const rzp = new (window as any).Razorpay(options)
-                            rzp.open()
+                            new (window as any).Razorpay(options).open()
                         })
 
                         const paid = await rzpPromise
-                        if (paid) toast.success(`Payment verified! ${formData.plan} activated.`)
-                        else toast.info('Payment skipped. Your account is currently on the basic GOLD plan.')
+                        if (paid) toast.success(`Payment verified! ${formData.plan} plan activated.`)
+                        else toast.info('Payment skipped. Your account is on the Base plan.')
                     }
                 } catch (payErr) {
                     console.error('Payment Flow Error:', payErr)
-                    toast.error('Payment failed. Defaulting to GOLD tier.')
+                    toast.error('Payment failed. Defaulting to Base plan.')
                 }
             }
 

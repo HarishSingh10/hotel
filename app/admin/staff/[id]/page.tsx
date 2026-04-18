@@ -28,7 +28,10 @@ import {
     Save,
     Loader2,
     X,
-    ChevronDown
+    ChevronDown,
+    Building2,
+    Banknote,
+    Send
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
@@ -36,7 +39,7 @@ import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
 import Badge from '@/components/ui/Badge'
 
-type TabType = 'PERSONAL' | 'PAYROLL' | 'PERFORMANCE' | 'LEAVE'
+type TabType = 'PERSONAL' | 'PAYROLL' | 'PERFORMANCE' | 'LEAVE' | 'BANK'
 
 export default function StaffDetailPage() {
     const params = useParams()
@@ -47,6 +50,9 @@ export default function StaffDetailPage() {
     const [showSalary, setShowSalary] = useState(false)
     const [isEditModalOpen, setEditModalOpen] = useState(false)
     const [isUpdating, setIsUpdating] = useState(false)
+    const [editingAttendance, setEditingAttendance] = useState<any>(null)
+    const [attForm, setAttForm] = useState({ punchIn: '', punchOut: '', status: 'PRESENT', notes: '' })
+    const [savingAtt, setSavingAtt] = useState(false)
     
     const [editForm, setEditForm] = useState({
         name: '', email: '', phone: '',
@@ -99,6 +105,74 @@ export default function StaffDetailPage() {
         ? Math.max(1, Math.ceil((new Date(leaveForm.endDate).getTime() - new Date(leaveForm.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1)
         : 0
 
+    const openAttEdit = (att: any) => {
+        setEditingAttendance(att)
+        // Convert stored UTC datetime to local time string for input[type=time]
+        const toTimeStr = (dt: string | null) => {
+            if (!dt) return ''
+            const d = new Date(dt)
+            return d.toTimeString().slice(0, 5) // HH:MM
+        }
+        setAttForm({
+            punchIn: toTimeStr(att.punchIn),
+            punchOut: toTimeStr(att.punchOut),
+            status: att.status || 'PRESENT',
+            notes: att.notes || '',
+        })
+    }
+
+    const handleAttSave = async () => {
+        if (!editingAttendance) return
+        setSavingAtt(true)
+        try {
+            // Build full datetime from date + time input
+            const buildDT = (dateStr: string, timeStr: string) => {
+                if (!timeStr) return null
+                const [h, m] = timeStr.split(':').map(Number)
+                const d = new Date(dateStr)
+                d.setHours(h, m, 0, 0)
+                return d.toISOString()
+            }
+            const dateStr = editingAttendance.date
+
+            const punchIn  = buildDT(dateStr, attForm.punchIn)
+            const punchOut = buildDT(dateStr, attForm.punchOut)
+
+            // Calculate hours worked
+            let hoursWorked = 0
+            if (punchIn && punchOut) {
+                hoursWorked = Math.round(((new Date(punchOut).getTime() - new Date(punchIn).getTime()) / 3600000) * 100) / 100
+            }
+
+            const res = await fetch(`/api/admin/staff/${params.id}/attendance`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    attendanceId: editingAttendance.id,
+                    punchIn,
+                    punchOut,
+                    hoursWorked,
+                    status: attForm.status,
+                    notes: attForm.notes,
+                }),
+            })
+
+            if (res.ok) {
+                toast.success('Attendance record updated')
+                setEditingAttendance(null)
+                // Refresh staff data
+                const updated = await fetch(`/api/admin/staff/${params.id}`)
+                if (updated.ok) {
+                    const json = await updated.json()
+                    setStaff(json?.data ?? json)
+                }
+            } else {
+                const err = await res.json().catch(() => ({}))
+                toast.error(err?.error ?? 'Failed to update')
+            }
+        } catch { toast.error('Connection error') } finally { setSavingAtt(false) }
+    }
+
     const handleLeaveSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         if (!leaveForm.startDate || !leaveForm.endDate || !leaveForm.reason) {
@@ -139,7 +213,8 @@ export default function StaffDetailPage() {
             try {
                 const res = await fetch(`/api/admin/staff/${params.id}`)
                 if (res.ok) {
-                    const data = await res.json()
+                    const json = await res.json()
+                    const data = json?.data ?? json
                     setStaff(data)
                     // Prefill edit form
                     setEditForm({
@@ -295,10 +370,11 @@ export default function StaffDetailPage() {
     if (!staff) return null
 
     const tabs = [
-        { id: 'PERSONAL', label: 'Personal & Employment', icon: User },
-        { id: 'PAYROLL', label: 'Payroll & Compensation', icon: CreditCard },
-        { id: 'PERFORMANCE', label: 'Performance', icon: TrendingUp },
-        { id: 'LEAVE', label: 'Leave & Attendance', icon: CalendarDays },
+        { id: 'PERSONAL',    label: 'Personal & Employment',  icon: User },
+        { id: 'PAYROLL',     label: 'Payroll & Compensation', icon: CreditCard },
+        { id: 'PERFORMANCE', label: 'Performance',            icon: TrendingUp },
+        { id: 'LEAVE',       label: 'Leave & Attendance',     icon: CalendarDays },
+        { id: 'BANK',        label: 'Bank Details',           icon: Building2 },
     ]
 
     return (
@@ -595,7 +671,7 @@ export default function StaffDetailPage() {
                                                 ))}
                                             </div>
                                         ) : (
-                                            <p className="text-sm text-gray-600 italic py-4">No leave requests found.</p>
+                                            <p className="text-sm text-gray-600  py-4">No leave requests found.</p>
                                         )}
                                     </Card>
                                 </div>
@@ -645,7 +721,7 @@ export default function StaffDetailPage() {
                                                 ))}
                                                 {(!staff.payrolls || staff.payrolls.length === 0) && (
                                                     <tr>
-                                                        <td colSpan={5} className="py-12 text-center text-gray-600 italic">No disbursement history found for this employee yet.</td>
+                                                        <td colSpan={5} className="py-12 text-center text-gray-600 ">No disbursement history found for this employee yet.</td>
                                                     </tr>
                                                 )}
                                             </tbody>
@@ -667,19 +743,20 @@ export default function StaffDetailPage() {
 
                         {activeTab === 'LEAVE' && (
                             <div className="space-y-8 animate-in fade-in slide-in-from-right-4">
+
+                                {/* ── Leave Balance Management ── */}
+                                <LeaveBalanceCard staff={staff} staffId={params.id as string} onUpdate={(updated) => setStaff((prev: any) => ({ ...prev, ...updated }))} />
+
                                 <Card className="bg-[#233648]/50 border-white/5 rounded-[2.5rem] p-10 space-y-8">
                                     <div className="flex items-center justify-between">
                                         <h2 className="text-2xl font-bold text-white tracking-tight">Attendance History</h2>
-                                        <div className="flex items-center gap-3">
-                                            <Button 
-                                                onClick={exportToPDF}
-                                                variant="secondary" size="sm" leftIcon={<FileText className="w-4 h-4" />}
-                                                className="bg-white/5 border-white/5 hover:bg-white/10"
-                                            >
-                                                Export History (PDF)
-                                            </Button>
-                                            <Button variant="primary" size="sm" leftIcon={<Plus className="w-4 h-4" />}>Correction Request</Button>
-                                        </div>
+                                        <Button 
+                                            onClick={exportToPDF}
+                                            variant="secondary" size="sm" leftIcon={<FileText className="w-4 h-4" />}
+                                            className="bg-white/5 border-white/5 hover:bg-white/10"
+                                        >
+                                            Export History (PDF)
+                                        </Button>
                                     </div>
 
                                     <div className="overflow-x-auto">
@@ -689,34 +766,120 @@ export default function StaffDetailPage() {
                                                     <th className="pb-4 text-[10px] font-bold text-gray-600 uppercase tracking-widest pl-4">Date</th>
                                                     <th className="pb-4 text-[10px] font-bold text-gray-600 uppercase tracking-widest">Punch In</th>
                                                     <th className="pb-4 text-[10px] font-bold text-gray-600 uppercase tracking-widest">Punch Out</th>
-                                                    <th className="pb-4 text-[10px] font-bold text-gray-600 uppercase tracking-widest">Worked Hours</th>
+                                                    <th className="pb-4 text-[10px] font-bold text-gray-600 uppercase tracking-widest">Hours</th>
                                                     <th className="pb-4 text-[10px] font-bold text-gray-600 uppercase tracking-widest">Status</th>
+                                                    <th className="pb-4 text-[10px] font-bold text-gray-600 uppercase tracking-widest w-24">Action</th>
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-white/[0.02]">
-                                                {staff.attendances?.length > 0 ? staff.attendances.map((att: any) => (
-                                                    <tr key={att.id} className="group hover:bg-white/[0.01] transition-colors">
-                                                        <td className="py-5 pl-4">
-                                                            <p className="text-sm font-bold text-white">{new Date(att.date).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
-                                                        </td>
-                                                        <td className="py-5">
-                                                            <p className="text-sm font-bold text-gray-400">{att.punchIn ? new Date(att.punchIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'}</p>
-                                                        </td>
-                                                        <td className="py-5">
-                                                            <p className="text-sm font-bold text-gray-400">{att.punchOut ? new Date(att.punchOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'}</p>
-                                                        </td>
-                                                        <td className="py-5">
-                                                            <p className="text-sm font-bold text-white">{att.hoursWorked || '0.0'} hrs</p>
-                                                        </td>
-                                                        <td className="py-5">
-                                                            <Badge variant={att.status === 'PRESENT' ? 'success' : 'danger'} className="text-[10px] font-bold">
-                                                                {att.status}
-                                                            </Badge>
-                                                        </td>
-                                                    </tr>
-                                                )) : (
+                                                {staff.attendances?.length > 0 ? staff.attendances.map((att: any) => {
+                                                    const isEditing = editingAttendance?.id === att.id
+
+                                                    // Calculate preview hours while editing
+                                                    let previewHours = att.hoursWorked || '0.0'
+                                                    if (isEditing && attForm.punchIn && attForm.punchOut) {
+                                                        const [ih, im] = attForm.punchIn.split(':').map(Number)
+                                                        const [oh, om] = attForm.punchOut.split(':').map(Number)
+                                                        const mins = (oh * 60 + om) - (ih * 60 + im)
+                                                        if (mins > 0) previewHours = (mins / 60).toFixed(2)
+                                                    }
+
+                                                    return (
+                                                        <tr key={att.id} className={`transition-colors ${isEditing ? 'bg-primary/5 border-l-2 border-l-primary' : 'hover:bg-white/[0.01]'}`}>
+                                                            {/* Date — never editable */}
+                                                            <td className="py-3 pl-4">
+                                                                <p className="text-sm font-bold text-white">{new Date(att.date).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                                                            </td>
+
+                                                            {/* Punch In */}
+                                                            <td className="py-3">
+                                                                {isEditing ? (
+                                                                    <input
+                                                                        type="time"
+                                                                        value={attForm.punchIn}
+                                                                        onChange={e => setAttForm(p => ({ ...p, punchIn: e.target.value }))}
+                                                                        className="bg-black/40 border border-primary/40 rounded-lg px-2 py-1.5 text-sm text-white font-bold outline-none focus:border-primary w-28 [color-scheme:dark]"
+                                                                    />
+                                                                ) : (
+                                                                    <p className="text-sm font-bold text-gray-400">{att.punchIn ? new Date(att.punchIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'}</p>
+                                                                )}
+                                                            </td>
+
+                                                            {/* Punch Out */}
+                                                            <td className="py-3">
+                                                                {isEditing ? (
+                                                                    <input
+                                                                        type="time"
+                                                                        value={attForm.punchOut}
+                                                                        onChange={e => setAttForm(p => ({ ...p, punchOut: e.target.value }))}
+                                                                        className="bg-black/40 border border-primary/40 rounded-lg px-2 py-1.5 text-sm text-white font-bold outline-none focus:border-primary w-28 [color-scheme:dark]"
+                                                                    />
+                                                                ) : (
+                                                                    <p className={`text-sm font-bold ${!att.punchOut ? 'text-amber-400' : 'text-gray-400'}`}>
+                                                                        {att.punchOut ? new Date(att.punchOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'}
+                                                                    </p>
+                                                                )}
+                                                            </td>
+
+                                                            {/* Hours */}
+                                                            <td className="py-3">
+                                                                <p className={`text-sm font-bold ${isEditing ? 'text-primary' : 'text-white'}`}>{previewHours} hrs</p>
+                                                            </td>
+
+                                                            {/* Status */}
+                                                            <td className="py-3">
+                                                                {isEditing ? (
+                                                                    <select
+                                                                        value={attForm.status}
+                                                                        onChange={e => setAttForm(p => ({ ...p, status: e.target.value }))}
+                                                                        className="bg-black/40 border border-primary/40 rounded-lg px-2 py-1.5 text-xs text-white font-bold outline-none focus:border-primary appearance-none cursor-pointer [color-scheme:dark]"
+                                                                    >
+                                                                        <option value="PRESENT">Present</option>
+                                                                        <option value="ABSENT">Absent</option>
+                                                                        <option value="LATE">Late</option>
+                                                                        <option value="HALF_DAY">Half Day</option>
+                                                                        <option value="ON_LEAVE">On Leave</option>
+                                                                    </select>
+                                                                ) : (
+                                                                    <Badge variant={att.status === 'PRESENT' ? 'success' : att.status === 'LATE' ? 'warning' : 'danger'} className="text-[10px] font-bold">
+                                                                        {att.status}
+                                                                    </Badge>
+                                                                )}
+                                                            </td>
+
+                                                            {/* Action */}
+                                                            <td className="py-3">
+                                                                {isEditing ? (
+                                                                    <div className="flex items-center gap-1.5">
+                                                                        <button
+                                                                            onClick={handleAttSave}
+                                                                            disabled={savingAtt}
+                                                                            className="flex items-center gap-1 px-2.5 py-1.5 bg-primary text-white text-[11px] font-bold rounded-lg hover:bg-primary/90 transition-all disabled:opacity-50"
+                                                                        >
+                                                                            {savingAtt ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
+                                                                            Save
+                                                                        </button>
+                                                                        <button
+                                                                            onClick={() => setEditingAttendance(null)}
+                                                                            className="p-1.5 bg-white/5 hover:bg-white/10 rounded-lg transition-all"
+                                                                        >
+                                                                            <X className="w-3.5 h-3.5 text-gray-400" />
+                                                                        </button>
+                                                                    </div>
+                                                                ) : (
+                                                                    <button
+                                                                        onClick={() => openAttEdit(att)}
+                                                                        className="flex items-center gap-1 px-2.5 py-1.5 bg-white/5 hover:bg-primary/20 hover:text-primary border border-white/5 hover:border-primary/30 rounded-lg text-[11px] font-bold text-gray-500 transition-all"
+                                                                    >
+                                                                        <Edit2 className="w-3 h-3" /> Edit
+                                                                    </button>
+                                                                )}
+                                                            </td>
+                                                        </tr>
+                                                    )
+                                                }) : (
                                                     <tr>
-                                                        <td colSpan={5} className="py-12 text-center text-gray-600 italic">No attendance records found.</td>
+                                                        <td colSpan={6} className="py-12 text-center text-gray-600">No attendance records found.</td>
                                                     </tr>
                                                 )}
                                             </tbody>
@@ -788,6 +951,14 @@ export default function StaffDetailPage() {
                             </div>
                         )}
 
+                        {activeTab === 'BANK' && (
+                            <BankDetailsTab
+                                staff={staff}
+                                staffId={params.id as string}
+                                onUpdate={(updated: any) => setStaff((prev: any) => ({ ...prev, ...updated }))}
+                            />
+                        )}
+
                         {activeTab === 'PAYROLL' && (
                             <div className="space-y-8 animate-in fade-in slide-in-from-right-4">
                                 <Card className="bg-[#233648]/50 border-white/5 rounded-[2.5rem] p-10 space-y-8">
@@ -802,6 +973,20 @@ export default function StaffDetailPage() {
                                             <FileText className="w-5 h-5 text-gray-600 group-hover:text-primary transition-colors" />
                                         </button>
                                     </div>
+
+                                    {/* Bank details warning if missing */}
+                                    {(!staff.bankName || !staff.accountNumber || !staff.ifscCode) && (
+                                        <div className="flex items-start gap-3 p-4 bg-amber-500/5 border border-amber-500/20 rounded-2xl">
+                                            <Building2 className="w-4 h-4 text-amber-400 mt-0.5 shrink-0" />
+                                            <div>
+                                                <p className="text-xs font-bold text-amber-400">Bank details missing</p>
+                                                <p className="text-[11px] text-gray-500 mt-0.5">
+                                                    Add bank account details in the <button onClick={() => setActiveTab('BANK')} className="text-primary underline">Bank Details</button> tab before processing payouts.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    )}
+
                                     <div className="overflow-x-auto">
                                         <table className="w-full text-left">
                                             <thead>
@@ -811,6 +996,7 @@ export default function StaffDetailPage() {
                                                     <th className="pb-4 text-[10px] font-bold text-gray-600 uppercase tracking-widest">Incentives</th>
                                                     <th className="pb-4 text-[10px] font-bold text-gray-600 uppercase tracking-widest">Net Salary</th>
                                                     <th className="pb-4 text-[10px] font-bold text-gray-600 uppercase tracking-widest">Status</th>
+                                                    <th className="pb-4 text-[10px] font-bold text-gray-600 uppercase tracking-widest">Action</th>
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-white/[0.02]">
@@ -831,10 +1017,28 @@ export default function StaffDetailPage() {
                                                         <td className="py-5">
                                                             <Badge variant={payroll.status === 'PAID' ? 'success' : 'warning'}>{payroll.status}</Badge>
                                                         </td>
+                                                        <td className="py-5">
+                                                            {payroll.status !== 'PAID' ? (
+                                                                <PayButton
+                                                                    payroll={payroll}
+                                                                    staff={staff}
+                                                                    onPaid={() => {
+                                                                        // Refresh staff data
+                                                                        fetch(`/api/admin/staff/${params.id}`)
+                                                                            .then(r => r.json())
+                                                                            .then(j => setStaff(j?.data ?? j))
+                                                                    }}
+                                                                />
+                                                            ) : (
+                                                                <span className="text-[10px] text-gray-600 font-medium">
+                                                                    {payroll.paidAt ? new Date(payroll.paidAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : 'Paid'}
+                                                                </span>
+                                                            )}
+                                                        </td>
                                                     </tr>
                                                 )) : (
                                                     <tr>
-                                                        <td colSpan={5} className="py-12 text-center text-gray-600 italic">No payroll records found.</td>
+                                                        <td colSpan={6} className="py-12 text-center text-gray-600">No payroll records found.</td>
                                                     </tr>
                                                 )}
                                             </tbody>
@@ -1115,5 +1319,480 @@ export default function StaffDetailPage() {
                 </div>
             )}
         </div>
+    )
+}
+
+// ─── Leave Balance Management Card ──────────────────────────────────────────
+function LeaveBalanceCard({
+    staff,
+    staffId,
+    onUpdate,
+}: {
+    staff: any
+    staffId: string
+    onUpdate: (updated: any) => void
+}) {
+    const [editing, setEditing] = useState(false)
+    const [saving, setSaving] = useState(false)
+    const [balances, setBalances] = useState({
+        annualLeaveBalance: staff.annualLeaveBalance ?? 15,
+        sickLeaveBalance: staff.sickLeaveBalance ?? 10,
+        casualLeaveBalance: staff.casualLeaveBalance ?? 7,
+    })
+
+    // Compute used days from approved leave requests
+    const usedByType = (type: string) =>
+        (staff.leaveRequests ?? [])
+            .filter((l: any) => l.leaveType === type && l.status === 'APPROVED')
+            .reduce((sum: number, l: any) => sum + (l.totalDays || 0), 0)
+
+    const usedAnnual  = usedByType('EARNED')
+    const usedSick    = usedByType('SICK')
+    const usedCasual  = usedByType('CASUAL')
+
+    const categories = [
+        {
+            key: 'annualLeaveBalance' as const,
+            label: 'Annual / Earned Leave',
+            color: 'bg-blue-500',
+            trackColor: 'bg-blue-500/20',
+            textColor: 'text-blue-400',
+            used: usedAnnual,
+            total: balances.annualLeaveBalance,
+            icon: '🏖️',
+        },
+        {
+            key: 'sickLeaveBalance' as const,
+            label: 'Sick Leave',
+            color: 'bg-amber-500',
+            trackColor: 'bg-amber-500/20',
+            textColor: 'text-amber-400',
+            used: usedSick,
+            total: balances.sickLeaveBalance,
+            icon: '🏥',
+        },
+        {
+            key: 'casualLeaveBalance' as const,
+            label: 'Casual Leave',
+            color: 'bg-emerald-500',
+            trackColor: 'bg-emerald-500/20',
+            textColor: 'text-emerald-400',
+            used: usedCasual,
+            total: balances.casualLeaveBalance,
+            icon: '☀️',
+        },
+    ]
+
+    const handleSave = async () => {
+        setSaving(true)
+        try {
+            const res = await fetch(`/api/admin/staff/${staffId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(balances),
+            })
+            if (res.ok) {
+                toast.success('Leave balances updated')
+                onUpdate(balances)
+                setEditing(false)
+            } else {
+                toast.error('Failed to update balances')
+            }
+        } catch {
+            toast.error('Connection error')
+        } finally {
+            setSaving(false)
+        }
+    }
+
+    return (
+        <Card className="bg-[#233648]/50 border-white/5 rounded-[2.5rem] p-10 space-y-8">
+            <div className="flex items-center justify-between">
+                <div>
+                    <h2 className="text-2xl font-bold text-white tracking-tight">Leave Balances</h2>
+                    <p className="text-xs text-gray-500 mt-1">Allocated days per category for this staff member</p>
+                </div>
+                {editing ? (
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => {
+                                setBalances({
+                                    annualLeaveBalance: staff.annualLeaveBalance ?? 15,
+                                    sickLeaveBalance: staff.sickLeaveBalance ?? 10,
+                                    casualLeaveBalance: staff.casualLeaveBalance ?? 7,
+                                })
+                                setEditing(false)
+                            }}
+                            className="px-4 py-2 text-xs font-bold text-gray-400 hover:text-white bg-white/5 rounded-xl transition-all"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            onClick={handleSave}
+                            disabled={saving}
+                            className="flex items-center gap-2 px-5 py-2 bg-primary text-white text-xs font-bold rounded-xl hover:bg-primary/90 transition-all disabled:opacity-50"
+                        >
+                            {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                            Save Changes
+                        </button>
+                    </div>
+                ) : (
+                    <button
+                        onClick={() => setEditing(true)}
+                        className="flex items-center gap-2 px-5 py-2 bg-white/5 border border-white/10 text-xs font-bold text-gray-300 rounded-xl hover:bg-white/10 transition-all"
+                    >
+                        <Edit2 className="w-3.5 h-3.5" /> Edit Balances
+                    </button>
+                )}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {categories.map((cat) => {
+                    const remaining = Math.max(0, cat.total - cat.used)
+                    const pct = cat.total > 0 ? Math.min(100, Math.round((cat.used / cat.total) * 100)) : 0
+
+                    return (
+                        <div
+                            key={cat.key}
+                            className="bg-black/20 border border-white/[0.05] rounded-3xl p-6 space-y-5"
+                        >
+                            {/* Header */}
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <span className="text-2xl">{cat.icon}</span>
+                                    <div>
+                                        <p className="text-xs font-bold text-white">{cat.label}</p>
+                                        <p className={`text-[10px] font-bold uppercase tracking-widest mt-0.5 ${cat.textColor}`}>
+                                            {remaining} days left
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Allocated days — editable */}
+                            <div className="space-y-1.5">
+                                <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">Total Allocated</p>
+                                {editing ? (
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={() => setBalances(b => ({ ...b, [cat.key]: Math.max(0, b[cat.key] - 1) }))}
+                                            className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 text-white font-bold hover:bg-white/10 transition-all flex items-center justify-center text-lg leading-none"
+                                        >−</button>
+                                        <input
+                                            type="number"
+                                            min={0}
+                                            max={365}
+                                            value={balances[cat.key]}
+                                            onChange={e => setBalances(b => ({ ...b, [cat.key]: Math.max(0, parseInt(e.target.value) || 0) }))}
+                                            className="w-16 text-center bg-black/40 border border-primary/40 rounded-xl py-1.5 text-sm font-black text-white outline-none focus:border-primary [color-scheme:dark]"
+                                        />
+                                        <button
+                                            onClick={() => setBalances(b => ({ ...b, [cat.key]: b[cat.key] + 1 }))}
+                                            className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 text-white font-bold hover:bg-white/10 transition-all flex items-center justify-center text-lg leading-none"
+                                        >+</button>
+                                        <span className="text-xs text-gray-500 font-medium">days</span>
+                                    </div>
+                                ) : (
+                                    <p className="text-2xl font-black text-white">{cat.total} <span className="text-sm font-bold text-gray-500">days</span></p>
+                                )}
+                            </div>
+
+                            {/* Used / Remaining breakdown */}
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="bg-white/[0.03] rounded-2xl p-3 text-center">
+                                    <p className="text-[9px] font-bold text-gray-600 uppercase tracking-widest mb-1">Used</p>
+                                    <p className="text-lg font-black text-rose-400">{cat.used}</p>
+                                </div>
+                                <div className="bg-white/[0.03] rounded-2xl p-3 text-center">
+                                    <p className="text-[9px] font-bold text-gray-600 uppercase tracking-widest mb-1">Remaining</p>
+                                    <p className={`text-lg font-black ${remaining === 0 ? 'text-rose-400' : cat.textColor}`}>{remaining}</p>
+                                </div>
+                            </div>
+
+                            {/* Progress bar */}
+                            <div className="space-y-1.5">
+                                <div className={`h-2 w-full rounded-full ${cat.trackColor}`}>
+                                    <div
+                                        className={`h-full rounded-full transition-all duration-500 ${cat.color}`}
+                                        style={{ width: `${pct}%` }}
+                                    />
+                                </div>
+                                <p className="text-[9px] text-gray-600 font-bold">{pct}% used</p>
+                            </div>
+                        </div>
+                    )
+                })}
+            </div>
+
+            {/* Leave history summary */}
+            {(staff.leaveRequests ?? []).length > 0 && (
+                <div className="border-t border-white/[0.04] pt-6">
+                    <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-4">Recent Leave Requests</p>
+                    <div className="space-y-2">
+                        {(staff.leaveRequests ?? []).slice(0, 5).map((req: any) => (
+                            <div key={req.id} className="flex items-center justify-between py-2.5 px-4 bg-black/20 rounded-2xl">
+                                <div className="flex items-center gap-3">
+                                    <span className={`text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg ${
+                                        req.leaveType === 'SICK'   ? 'bg-amber-500/10 text-amber-400' :
+                                        req.leaveType === 'CASUAL' ? 'bg-emerald-500/10 text-emerald-400' :
+                                        'bg-blue-500/10 text-blue-400'
+                                    }`}>{req.leaveType}</span>
+                                    <p className="text-xs text-gray-400 font-medium">
+                                        {new Date(req.startDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                                        {' – '}
+                                        {new Date(req.endDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                    </p>
+                                    <p className="text-[10px] text-gray-600">{req.totalDays}d</p>
+                                </div>
+                                <span className={`text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg ${
+                                    req.status === 'APPROVED' ? 'bg-emerald-500/10 text-emerald-400' :
+                                    req.status === 'REJECTED' ? 'bg-rose-500/10 text-rose-400' :
+                                    'bg-amber-500/10 text-amber-400'
+                                }`}>{req.status}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+        </Card>
+    )
+}
+
+// ─── Bank Details Tab ────────────────────────────────────────────────────────
+function BankDetailsTab({
+    staff,
+    staffId,
+    onUpdate,
+}: {
+    staff: any
+    staffId: string
+    onUpdate: (updated: any) => void
+}) {
+    const [editing, setEditing] = useState(false)
+    const [saving, setSaving] = useState(false)
+    const [showAccount, setShowAccount] = useState(false)
+    const [form, setForm] = useState({
+        bankName:      staff.bankName      || '',
+        accountNumber: staff.accountNumber || '',
+        ifscCode:      staff.ifscCode      || '',
+    })
+
+    const hasBankDetails = !!(staff.bankName && staff.accountNumber && staff.ifscCode)
+
+    const handleSave = async () => {
+        setSaving(true)
+        try {
+            const res = await fetch(`/api/admin/staff/${staffId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(form),
+            })
+            if (res.ok) {
+                toast.success('Bank details saved')
+                onUpdate(form)
+                setEditing(false)
+            } else {
+                toast.error('Failed to save bank details')
+            }
+        } catch {
+            toast.error('Connection error')
+        } finally {
+            setSaving(false)
+        }
+    }
+
+    const ic = 'w-full bg-black/30 border border-white/10 rounded-2xl py-3.5 px-5 text-sm text-white font-medium outline-none focus:border-primary transition-all'
+
+    return (
+        <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
+            <Card className="bg-[#233648]/50 border-white/5 rounded-[2.5rem] p-10 space-y-8">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h2 className="text-2xl font-bold text-white tracking-tight">Bank Account Details</h2>
+                        <p className="text-xs text-gray-500 mt-1">Used for salary payouts via Razorpay</p>
+                    </div>
+                    {editing ? (
+                        <div className="flex items-center gap-3">
+                            <button
+                                onClick={() => { setForm({ bankName: staff.bankName || '', accountNumber: staff.accountNumber || '', ifscCode: staff.ifscCode || '' }); setEditing(false) }}
+                                className="px-4 py-2 text-xs font-bold text-gray-400 hover:text-white bg-white/5 rounded-xl transition-all"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleSave}
+                                disabled={saving}
+                                className="flex items-center gap-2 px-5 py-2 bg-primary text-white text-xs font-bold rounded-xl hover:bg-primary/90 transition-all disabled:opacity-50"
+                            >
+                                {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                                Save
+                            </button>
+                        </div>
+                    ) : (
+                        <button
+                            onClick={() => setEditing(true)}
+                            className="flex items-center gap-2 px-5 py-2 bg-white/5 border border-white/10 text-xs font-bold text-gray-300 rounded-xl hover:bg-white/10 transition-all"
+                        >
+                            <Edit2 className="w-3.5 h-3.5" /> {hasBankDetails ? 'Edit' : 'Add Details'}
+                        </button>
+                    )}
+                </div>
+
+                {!hasBankDetails && !editing && (
+                    <div className="flex items-start gap-3 p-5 bg-amber-500/5 border border-amber-500/20 rounded-2xl">
+                        <Building2 className="w-5 h-5 text-amber-400 mt-0.5 shrink-0" />
+                        <div>
+                            <p className="text-sm font-bold text-amber-400">No bank details added</p>
+                            <p className="text-xs text-gray-500 mt-1">
+                                Add bank account details to enable direct salary payouts via Razorpay.
+                            </p>
+                        </div>
+                    </div>
+                )}
+
+                {editing ? (
+                    <div className="grid grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest block">Bank Name</label>
+                            <input
+                                value={form.bankName}
+                                onChange={e => setForm(f => ({ ...f, bankName: e.target.value }))}
+                                className={ic}
+                                placeholder="e.g. HDFC Bank, SBI"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest block">IFSC Code</label>
+                            <input
+                                value={form.ifscCode}
+                                onChange={e => setForm(f => ({ ...f, ifscCode: e.target.value.toUpperCase() }))}
+                                className={ic}
+                                placeholder="e.g. HDFC0001234"
+                            />
+                        </div>
+                        <div className="col-span-2 space-y-2">
+                            <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest block">Account Number</label>
+                            <input
+                                value={form.accountNumber}
+                                onChange={e => setForm(f => ({ ...f, accountNumber: e.target.value }))}
+                                className={ic}
+                                placeholder="Enter account number"
+                                type="text"
+                            />
+                        </div>
+                    </div>
+                ) : hasBankDetails ? (
+                    <div className="grid grid-cols-2 gap-6">
+                        {[
+                            { label: 'Bank Name',       value: staff.bankName },
+                            { label: 'IFSC Code',       value: staff.ifscCode },
+                            {
+                                label: 'Account Number',
+                                value: showAccount
+                                    ? staff.accountNumber
+                                    : '••••••' + (staff.accountNumber?.slice(-4) ?? ''),
+                                action: (
+                                    <button
+                                        onClick={() => setShowAccount(v => !v)}
+                                        className="ml-2 text-gray-500 hover:text-white transition-colors"
+                                    >
+                                        {showAccount ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                                    </button>
+                                ),
+                                colSpan: true,
+                            },
+                        ].map((item: any) => (
+                            <div key={item.label} className={`space-y-2 ${item.colSpan ? 'col-span-2' : ''}`}>
+                                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{item.label}</p>
+                                <div className="flex items-center gap-1 p-4 bg-black/20 border border-white/5 rounded-2xl">
+                                    <p className="text-sm font-bold text-white font-mono">{item.value}</p>
+                                    {item.action}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : null}
+
+                {/* Razorpay payout info */}
+                {hasBankDetails && !editing && (
+                    <div className="flex items-start gap-3 p-5 bg-emerald-500/5 border border-emerald-500/20 rounded-2xl">
+                        <CheckCircle2 className="w-5 h-5 text-emerald-400 mt-0.5 shrink-0" />
+                        <div>
+                            <p className="text-sm font-bold text-emerald-400">Ready for payouts</p>
+                            <p className="text-xs text-gray-500 mt-1">
+                                Bank details are saved. Go to the <button onClick={() => {}} className="text-primary underline">Payroll tab</button> to process salary payments via Razorpay.
+                            </p>
+                        </div>
+                    </div>
+                )}
+            </Card>
+        </div>
+    )
+}
+
+// ─── Pay Button (Razorpay Payout) ────────────────────────────────────────────
+function PayButton({
+    payroll,
+    staff,
+    onPaid,
+}: {
+    payroll: any
+    staff: any
+    onPaid: () => void
+}) {
+    const [paying, setPaying] = useState(false)
+    const hasBankDetails = !!(staff.bankName && staff.accountNumber && staff.ifscCode)
+
+    const handlePay = async () => {
+        if (!hasBankDetails) {
+            toast.error('Add bank details in the Bank Details tab first')
+            return
+        }
+
+        setPaying(true)
+        try {
+            const res = await fetch(`/api/admin/payroll/${payroll.id}/pay`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    staffId:       staff.id,
+                    amount:        payroll.netSalary,
+                    accountNumber: staff.accountNumber,
+                    ifscCode:      staff.ifscCode,
+                    bankName:      staff.bankName,
+                    staffName:     staff.user?.name || 'Staff',
+                    month:         payroll.month,
+                    year:          payroll.year,
+                }),
+            })
+
+            const data = await res.json()
+
+            if (res.ok && data.success) {
+                toast.success(`₹${payroll.netSalary.toLocaleString()} paid to ${staff.user?.name}`)
+                onPaid()
+            } else {
+                toast.error(data.error || 'Payment failed')
+            }
+        } catch {
+            toast.error('Connection error')
+        } finally {
+            setPaying(false)
+        }
+    }
+
+    return (
+        <button
+            onClick={handlePay}
+            disabled={paying || !hasBankDetails}
+            title={!hasBankDetails ? 'Add bank details first' : `Pay ₹${payroll.netSalary.toLocaleString()}`}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500 border border-emerald-500/20 hover:border-emerald-500 text-emerald-400 hover:text-white text-[11px] font-bold rounded-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+            {paying
+                ? <Loader2 className="w-3 h-3 animate-spin" />
+                : <Banknote className="w-3 h-3" />
+            }
+            {paying ? 'Processing...' : 'Pay Now'}
+        </button>
     )
 }

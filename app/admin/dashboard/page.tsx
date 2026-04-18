@@ -42,21 +42,23 @@ export default function AdminDashboard() {
   const { data: stats, isLoading: loading, mutate: fetchStats } = useSWR(
     session ? bcu('/api/admin/dashboard') : null,
     (url: string) => fetch(url).then(res => res.json()),
-    { refreshInterval: 60000 } // Auto-refresh every minute
+    { refreshInterval: 60000 }
   )
 
-  const { data: rooms = [] } = useSWR(
+  const { data: roomsRaw = [] } = useSWR(
     session ? bcu('/api/admin/rooms', { status: 'ALL' }) : null,
-    (url: string) => fetch(url).then(res => res.json())
+    (url: string) => fetch(url).then(res => res.json()).then(r => Array.isArray(r) ? r : (r?.data ?? []))
   )
+  const rooms = roomsRaw
 
-  const { data: reservations = [] } = useSWR(
+  const { data: reservationsRaw } = useSWR(
     session ? bcu('/api/admin/bookings', { 
         start: new Date(new Date().setHours(0, 0, 0, 0)).toISOString(), 
         end: new Date(new Date().setHours(23, 59, 59, 999)).toISOString() 
     }) : null,
-    (url: string) => fetch(url).then(res => res.json())
+    (url: string) => fetch(url).then(res => res.json()).then(r => Array.isArray(r) ? r : (r?.data ?? []))
   )
+  const reservations = Array.isArray(reservationsRaw) ? reservationsRaw : (reservationsRaw ?? [])
 
   const todayReservations = reservations.filter((b: any) => b.status === 'RESERVED')
 
@@ -488,7 +490,7 @@ export default function AdminDashboard() {
             <input type="text" placeholder="Search guest name..." className="w-full pl-10 pr-4 py-2 bg-[#182433] border border-white/[0.1] rounded-lg text-sm text-white placeholder:text-gray-600 outline-none focus:border-[#4A9EFF]/50 transition-colors" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
           </div>
           <div className="max-h-72 overflow-y-auto space-y-2">
-            {todayReservations.filter(b => b.guest?.name?.toLowerCase().includes(searchQuery.toLowerCase())).map(booking => (
+            {todayReservations.filter((b: any) => b.guest?.name?.toLowerCase().includes(searchQuery.toLowerCase())).map((booking: any) => (
               <div key={booking.id} className="p-4 bg-[#182433] rounded-xl border border-white/[0.06] flex items-center justify-between group hover:border-[#4A9EFF]/30 transition-all">
                 <div>
                   <p className="text-sm font-semibold text-white">{booking.guest.name}</p>
@@ -507,7 +509,7 @@ export default function AdminDashboard() {
       <Modal isOpen={showServiceModal} onClose={() => setShowServiceModal(false)} title="Raise Service Ticket" description="Create a new housekeeping or maintenance request">
         <form onSubmit={handleRaiseService} className="space-y-4 pt-4">
           <div className="grid grid-cols-2 gap-4">
-            <Select label="Target Room" value={serviceForm.roomId} onChange={(e) => setServiceForm({ ...serviceForm, roomId: e.target.value })} options={[{ value: '', label: 'Select Room' }, ...rooms.map(r => ({ value: r.id, label: `Room ${r.roomNumber}` }))]} required />
+            <Select label="Target Room" value={serviceForm.roomId} onChange={(e) => setServiceForm({ ...serviceForm, roomId: e.target.value })} options={[{ value: '', label: 'Select Room' }, ...(rooms as any[]).map((r: any) => ({ value: r.id, label: `Room ${r.roomNumber}` }))]} required />
             <Select label="Ticket Type" value={serviceForm.type} onChange={(e) => setServiceForm({ ...serviceForm, type: e.target.value })} options={[
               { value: 'HOUSEKEEPING', label: 'Housekeeping' }, { value: 'MAINTENANCE', label: 'Maintenance' },
               { value: 'ROOM_SERVICE', label: 'Room Service' }, { value: 'FOOD_ORDER', label: 'Food & Beverage' },

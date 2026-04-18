@@ -90,7 +90,7 @@ export default function GuestPWAInstall() {
                     </div>
 
                     <div className="space-y-2 mb-8">
-                        <h3 className="text-xl font-black text-white italic tracking-tighter uppercase leading-none">Guest Terminal</h3>
+                        <h3 className="text-xl font-black text-white  tracking-tighter uppercase leading-none">Guest Terminal</h3>
                         <p className="text-[12px] text-gray-500 font-bold uppercase tracking-widest leading-relaxed">
                             Install the guest concierge for faster access to room service and property amenities.
                         </p>
@@ -104,7 +104,7 @@ export default function GuestPWAInstall() {
                         Install Guest App
                     </button>
                     
-                    <div className="mt-6 flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.3em] text-gray-700 italic">
+                    <div className="mt-6 flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.3em] text-gray-700 ">
                         <CheckCircle2 size={12} className="text-emerald-500/40" />
                         One-click Direct Access Protocols Ready
                     </div>

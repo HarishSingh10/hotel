@@ -131,7 +131,7 @@ export default function TaskDetailsPage() {
                     <ChevronLeft className="w-5 h-5" />
                 </button>
                 <div className="flex flex-col items-center">
-                    <h1 className="text-xl font-black text-white tracking-tight italic">Mission Context</h1>
+                    <h1 className="text-xl font-black text-white tracking-tight ">Mission Context</h1>
                     <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest mt-0.5">DISPATCH-ID: {task.id.slice(-6).toUpperCase()}</span>
                 </div>
                 <div className="w-10 h-10 rounded-xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-500 relative">
@@ -163,10 +163,10 @@ export default function TaskDetailsPage() {
                     </div>
                     <div className="flex items-end justify-between">
                         <div>
-                            <h2 className="text-3xl font-black text-white italic tracking-tighter mb-1">Sector {task.room?.roomNumber || 'Gen-Ops'}</h2>
+                            <h2 className="text-3xl font-black text-white  tracking-tighter mb-1">Sector {task.room?.roomNumber || 'Gen-Ops'}</h2>
                             <div className="flex items-center gap-2 text-gray-400">
                               <MapPin className="w-3.5 h-3.5 text-blue-500" />
-                              <span className="text-[10px] font-bold uppercase tracking-[0.2em] italic">Station: Grand Zenbourg HQ</span>
+                              <span className="text-[10px] font-bold uppercase tracking-[0.2em] ">Station: Grand Zenbourg HQ</span>
                             </div>
                         </div>
                         <div className="w-16 h-16 bg-white rounded-3xl flex items-center justify-center shadow-2xl shadow-blue-500/40 rotate-12 group-hover:rotate-0 transition-all duration-500">
@@ -183,17 +183,17 @@ export default function TaskDetailsPage() {
                         <Info className="w-6 h-6 text-blue-500" />
                     </div>
                     <div>
-                        <h3 className="text-base font-black text-white italic tracking-tight">Deployment Directives</h3>
-                        <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest italic">{formatDistanceToNow(new Date(task.createdAt))} since activation</p>
+                        <h3 className="text-base font-black text-white  tracking-tight">Deployment Directives</h3>
+                        <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest ">{formatDistanceToNow(new Date(task.createdAt))} since activation</p>
                     </div>
                 </div>
 
                 <div className="space-y-4">
                     <div className="flex items-center gap-2 text-blue-500">
                         <Zap className="w-4 h-4 fill-blue-500/20" />
-                        <h4 className="text-lg font-black text-white tracking-tight italic">{task.title}</h4>
+                        <h4 className="text-lg font-black text-white tracking-tight ">{task.title}</h4>
                     </div>
-                    <p className="text-[13px] font-medium text-gray-500 leading-relaxed bg-black/40 p-6 rounded-[28px] border border-white/[0.03] italic shadow-inner">
+                    <p className="text-[13px] font-medium text-gray-500 leading-relaxed bg-black/40 p-6 rounded-[28px] border border-white/[0.03]  shadow-inner">
                         {task.description || "Establish standard operational parameters. Maintenance of premium hospitality vectors is mandatory. Refer to tactical baseline for unit setup."}
                     </p>
                 </div>
@@ -201,7 +201,7 @@ export default function TaskDetailsPage() {
                 {/* Evidence Logging Section */}
                 <div className="space-y-4 pt-4 border-t border-white/[0.03]">
                     <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest italic">Digital Evidence Log</span>
+                        <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest ">Digital Evidence Log</span>
                         <span className="text-[9px] font-bold text-blue-500/60 uppercase">{attachments.length} files captured</span>
                     </div>
                     <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
@@ -239,7 +239,7 @@ export default function TaskDetailsPage() {
                             <div className="w-10 h-10 rounded-xl bg-blue-600 shadow-xl shadow-blue-500/20 flex items-center justify-center border border-blue-400/20">
                                 <MessageSquare className="w-5 h-5 text-white" />
                             </div>
-                            <span className="text-xs font-black text-white uppercase tracking-[0.2em] italic">Comm Terminal</span>
+                            <span className="text-xs font-black text-white uppercase tracking-[0.2em] ">Comm Terminal</span>
                         </div>
                         <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
                     </div>
@@ -301,7 +301,7 @@ export default function TaskDetailsPage() {
                         value={completionNotes}
                         onChange={(e) => setCompletionNotes(e.target.value)}
                         placeholder="Log detailed completion summary here..."
-                        className="w-full bg-black/40 border border-white/[0.05] rounded-[28px] p-6 text-[13px] text-white outline-none focus:border-blue-500/30 transition-all font-medium italic min-h-[120px] shadow-inner"
+                        className="w-full bg-black/40 border border-white/[0.05] rounded-[28px] p-6 text-[13px] text-white outline-none focus:border-blue-500/30 transition-all font-medium  min-h-[120px] shadow-inner"
                     />
                 </div>
             </div>
@@ -323,7 +323,7 @@ export default function TaskDetailsPage() {
                     <>
                         <div className="absolute inset-0 bg-blue-600 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
                         <CheckCircle2 className="w-6 h-6 relative z-10 group-hover:text-white transition-colors" />
-                        <span className="text-[11px] font-black uppercase tracking-[0.4em] relative z-10 group-hover:text-white transition-colors italic">Finalize Mission</span>
+                        <span className="text-[11px] font-black uppercase tracking-[0.4em] relative z-10 group-hover:text-white transition-colors ">Finalize Mission</span>
                         <div className="absolute top-0 right-10 bottom-0 flex items-center opacity-10 group-hover:opacity-30 group-hover:translate-x-2 transition-all">
                             <Sparkles className="w-10 h-10 group-hover:text-white" />
                         </div>

@@ -49,8 +49,8 @@ export default function OperationalSOPPage() {
                     <ChevronLeft className="w-6 h-6" />
                 </button>
                 <div className="flex flex-col items-center">
-                    <h1 className="text-2xl font-black text-white tracking-tighter italic uppercase underline underline-offset-8 decoration-purple-500/20 leading-none mb-2">Internal SOP</h1>
-                    <p className="text-[10px] font-black text-gray-600 uppercase tracking-[0.4em] italic">Standard Operating Procedures</p>
+                    <h1 className="text-2xl font-black text-white tracking-tighter  uppercase underline underline-offset-8 decoration-purple-500/20 leading-none mb-2">Internal SOP</h1>
+                    <p className="text-[10px] font-black text-gray-600 uppercase tracking-[0.4em] ">Standard Operating Procedures</p>
                 </div>
                 <div className="w-12 h-12 rounded-[22px] bg-purple-600/10 border border-purple-500/20 flex items-center justify-center text-purple-500">
                     <BookOpen className="w-6 h-6" />
@@ -65,8 +65,8 @@ export default function OperationalSOPPage() {
                         <Sparkles className="w-7 h-7 text-purple-500" />
                     </div>
                     <div>
-                        <h4 className="text-lg font-black text-white italic tracking-tight mb-2">Protocol Intelligence</h4>
-                        <p className="text-[10px] font-bold text-gray-500 leading-relaxed uppercase tracking-widest italic">These procedures are cryptographically verified for Zenbourg Operations. Compliance directly impacts your Performance Matrix score.</p>
+                        <h4 className="text-lg font-black text-white  tracking-tight mb-2">Protocol Intelligence</h4>
+                        <p className="text-[10px] font-bold text-gray-500 leading-relaxed uppercase tracking-widest ">These procedures are cryptographically verified for Zenbourg Operations. Compliance directly impacts your Performance Matrix score.</p>
                     </div>
                 </div>
             </div>
@@ -81,7 +81,7 @@ export default function OperationalSOPPage() {
                             </div>
                             <div className="flex-1 space-y-3">
                                 <div className="flex items-center justify-between">
-                                    <h3 className="text-sm font-black text-white italic tracking-tight uppercase">{sop.title}</h3>
+                                    <h3 className="text-sm font-black text-white  tracking-tight uppercase">{sop.title}</h3>
                                     <span className={cn(
                                         "text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border",
                                         sop.priority === 'CRITICAL' ? 'bg-rose-500/10 border-rose-500/20 text-rose-500' :
@@ -91,7 +91,7 @@ export default function OperationalSOPPage() {
                                         {sop.priority}
                                     </span>
                                 </div>
-                                <p className="text-[12px] font-medium text-gray-500 leading-relaxed italic">{sop.content}</p>
+                                <p className="text-[12px] font-medium text-gray-500 leading-relaxed ">{sop.content}</p>
                             </div>
                         </div>
                     </div>
@@ -104,7 +104,7 @@ export default function OperationalSOPPage() {
                     <CheckCircle2 className="w-8 h-8" />
                 </div>
                 <div>
-                    <h3 className="text-sm font-black text-white italic tracking-tighter uppercase mb-2">Protocol Sync Active</h3>
+                    <h3 className="text-sm font-black text-white  tracking-tighter uppercase mb-2">Protocol Sync Active</h3>
                     <p className="text-[9px] font-bold text-gray-600 uppercase tracking-[0.3em]">Your account has been verified for SOP Rev 4.2</p>
                 </div>
             </div>

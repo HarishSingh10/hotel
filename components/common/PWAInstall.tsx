@@ -1,54 +1,42 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { X, Smartphone, Download, Zap, CheckCircle2 } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { X, Smartphone, Download } from 'lucide-react'
 import { toast } from 'sonner'
-import { cn } from '@/lib/utils'
 
 export default function PWAInstall() {
     const [mounted, setMounted] = useState(false)
     const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
     const [isVisible, setIsVisible] = useState(false)
-    const [isStandalone, setIsStandalone] = useState(false)
+    const [isInstalled, setIsInstalled] = useState(false)
 
     useEffect(() => {
         setMounted(true)
-        const isStandaloneMatch = window.matchMedia('(display-mode: standalone)').matches
-            || (window.navigator as any).standalone
-            || document.referrer.includes('android-app://')
 
-        setIsStandalone(isStandaloneMatch)
-        if (isStandaloneMatch) return
+        // Already running as installed PWA
+        const standalone =
+            window.matchMedia('(display-mode: standalone)').matches ||
+            (window.navigator as any).standalone === true
+        if (standalone) { setIsInstalled(true); return }
 
-        let isRecentlyDismissed = false
+        // Don't show if dismissed in last 7 days
         try {
-            const dismissedAt = localStorage.getItem('staff-pwa-dismissed-at')
-            if (dismissedAt) {
-                const time = parseInt(dismissedAt)
-                isRecentlyDismissed = !isNaN(time) && (Date.now() - time < 1000 * 60 * 60 * 24 * 3)
-            }
-        } catch (e) {
-            console.error("Storage access failed", e)
-        }
+            const dismissedAt = localStorage.getItem('pwa-dismissed-at')
+            if (dismissedAt && Date.now() - parseInt(dismissedAt) < 7 * 24 * 60 * 60 * 1000) return
+        } catch { /* ignore */ }
 
         const handler = (e: any) => {
             e.preventDefault()
             setDeferredPrompt(e)
-            if (!isRecentlyDismissed) {
-                setTimeout(() => setIsVisible(true), 5000)
-            }
+            // Show banner after 3 seconds
+            setTimeout(() => setIsVisible(true), 3000)
         }
 
         window.addEventListener('beforeinstallprompt', handler)
-
         window.addEventListener('appinstalled', () => {
-            setIsStandalone(true)
+            setIsInstalled(true)
             setIsVisible(false)
-            setDeferredPrompt(null)
-            toast.success("Terminal Deployed", {
-                description: "Staff Operational Terminal is now native."
-            })
+            toast.success('App installed! Open it from your home screen.')
         })
 
         return () => window.removeEventListener('beforeinstallprompt', handler)
@@ -57,63 +45,43 @@ export default function PWAInstall() {
     const handleInstall = async () => {
         if (!deferredPrompt) return
         setIsVisible(false)
-        try {
-            deferredPrompt.prompt()
-            const { outcome } = await deferredPrompt.userChoice
-            if (outcome === 'accepted') setDeferredPrompt(null)
-        } catch (err) {
-            console.error("Installation sequence failed", err)
-        }
+        deferredPrompt.prompt()
+        const { outcome } = await deferredPrompt.userChoice
+        if (outcome === 'accepted') setDeferredPrompt(null)
     }
 
     const handleDismiss = () => {
         setIsVisible(false)
-        try {
-            localStorage.setItem('staff-pwa-dismissed-at', Date.now().toString())
-        } catch (e) {}
+        try { localStorage.setItem('pwa-dismissed-at', Date.now().toString()) } catch { /* ignore */ }
     }
 
-    if (!mounted || isStandalone || !isVisible || !deferredPrompt) return null
+    if (!mounted || isInstalled || !isVisible || !deferredPrompt) return null
 
     return (
-        <AnimatePresence>
-            <motion.div 
-                initial={{ y: 150, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: 150, opacity: 0 }}
-                className="fixed bottom-6 left-4 right-4 md:left-auto md:right-10 md:w-[400px] z-[300]"
-            >
-                <div className="relative overflow-hidden bg-[#0d1117] border border-blue-500/20 rounded-[32px] p-6 shadow-3xl backdrop-blur-xl">
-                    <div className="flex justify-between items-start mb-6">
-                        <div className="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-600/20">
-                            <Smartphone className="w-8 h-8 text-white" />
-                        </div>
-                        <button onClick={handleDismiss} className="p-2 hover:bg-white/5 rounded-xl text-gray-600 hover:text-white transition-all">
-                            <X className="w-5 h-5" />
-                        </button>
-                    </div>
-
-                    <div className="space-y-2 mb-8">
-                        <h3 className="text-xl font-black text-white italic tracking-tighter uppercase leading-none">Operational Terminal</h3>
-                        <p className="text-[12px] text-gray-500 font-bold uppercase tracking-widest leading-relaxed">
-                            Deploy the Zenbourg OS for dedicated performance and real-time operational alerts.
-                        </p>
-                    </div>
-
+        <div className="fixed bottom-28 left-4 right-4 z-[200] max-w-sm mx-auto">
+            <div className="bg-[#161b22] border border-blue-500/20 rounded-3xl p-5 shadow-2xl shadow-black/60 flex items-center gap-4">
+                <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center shrink-0 shadow-lg shadow-blue-600/30">
+                    <Smartphone className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-white">Install App</p>
+                    <p className="text-xs text-gray-500 mt-0.5">Add to home screen for quick access</p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
                     <button
                         onClick={handleInstall}
-                        className="w-full h-14 bg-blue-600 text-white rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-all active:scale-95 shadow-xl hover:bg-blue-500"
+                        className="h-9 px-4 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition-all active:scale-95"
                     >
-                        <Download className="w-4 h-4" />
-                        Initialize Native Deployment
+                        Install
                     </button>
-                    
-                    <div className="mt-6 flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.3em] text-gray-700 italic">
-                        <CheckCircle2 size={12} className="text-emerald-500/40" />
-                        Authorized System Handshake Ready
-                    </div>
+                    <button
+                        onClick={handleDismiss}
+                        className="w-9 h-9 flex items-center justify-center text-gray-500 hover:text-white bg-white/[0.04] rounded-xl transition-all"
+                    >
+                        <X className="w-4 h-4" />
+                    </button>
                 </div>
-            </motion.div>
-        </AnimatePresence>
+            </div>
+        </div>
     )
 }

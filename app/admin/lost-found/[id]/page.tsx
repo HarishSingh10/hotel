@@ -34,7 +34,8 @@ export default function ItemDetailPage({ params }: { params: { id: string } }) {
         try {
             const res = await fetch(`/api/admin/lost-found/${params.id}`)
             if (res.ok) {
-                const data = await res.json()
+                const json = await res.json()
+                const data = json?.data ?? json
                 setItem(data)
                 if (data.roomId) {
                     fetchRoomHistory(data.roomId)
@@ -265,8 +266,8 @@ export default function ItemDetailPage({ params }: { params: { id: string } }) {
                                 </h2>
                                 <div className="p-8 bg-[#0d1117]/50 border border-gray-800 rounded-2xl shadow-inner relative">
                                     <h4 className="absolute -top-3 left-6 px-3 bg-[#161b22] text-[9px] font-bold text-gray-600 uppercase tracking-widest">Formal Record</h4>
-                                    <p className="text-[15px] text-gray-400 font-medium leading-relaxed italic">
-                                        "{item.description || 'No specialized physical briefing available.'}"
+                                    <p className="text-[15px] text-gray-400 font-medium leading-relaxed ">
+                                        &quot;{item.description || 'No specialized physical briefing available.'}&quot;
                                     </p>
                                 </div>
                             </div>
@@ -375,8 +376,8 @@ export default function ItemDetailPage({ params }: { params: { id: string } }) {
                                             </div>
                                             <span className="text-[10px] text-gray-700 font-bold uppercase tracking-widest">{new Date(item.createdAt).toLocaleTimeString()}</span>
                                         </div>
-                                        <p className="text-[14px] text-gray-400 font-medium leading-relaxed pl-6 border-l-2 border-blue-600/50 italic">
-                                            "Asset discovery protocol initiated. Security hash generated. Item transitioned to vault storage."
+                                        <p className="text-[14px] text-gray-400 font-medium leading-relaxed pl-6 border-l-2 border-blue-600/50 ">
+                                            &quot;Asset discovery protocol initiated. Security hash generated. Item transitioned to vault storage.&quot;
                                         </p>
                                     </div>
 
@@ -493,7 +494,7 @@ export default function ItemDetailPage({ params }: { params: { id: string } }) {
                                         ))
                                     )}
                                     <div className="pt-4 border-t border-gray-800/50">
-                                        <p className="text-[10px] text-gray-600 font-bold leading-relaxed italic uppercase tracking-wider">
+                                        <p className="text-[10px] text-gray-600 font-bold leading-relaxed  uppercase tracking-wider">
                                             Historical records are based on verified checkout timestamps.
                                         </p>
                                     </div>
@@ -535,7 +536,7 @@ export default function ItemDetailPage({ params }: { params: { id: string } }) {
                                         ))
                                     )}
                                     <div className="pt-4 border-t border-gray-800/50">
-                                        <p className="text-[10px] text-gray-600 font-bold leading-relaxed italic uppercase tracking-wider">
+                                        <p className="text-[10px] text-gray-600 font-bold leading-relaxed  uppercase tracking-wider">
                                             Historical records are based on verified checkout timestamps.
                                         </p>
                                     </div>
@@ -557,8 +558,8 @@ export default function ItemDetailPage({ params }: { params: { id: string } }) {
                                 </div>
                             </div>
                             <div className="space-y-4">
-                                <p className="text-[9px] font-bold text-gray-600 uppercase tracking-widest italic ml-1 leading-relaxed">
-                                    "Discovery confirmed at this physical location. Security footage and audit trails are cross-referenced."
+                                <p className="text-[9px] font-bold text-gray-600 uppercase tracking-widest  ml-1 leading-relaxed">
+                                    &quot;Discovery confirmed at this physical location. Security footage and audit trails are cross-referenced.&quot;
                                 </p>
                                 <button className="w-full py-4 border border-gray-800 hover:bg-gray-800 text-[10px] font-bold text-gray-500 hover:text-white uppercase tracking-widest rounded-xl transition-all">
                                     Review Surveillance

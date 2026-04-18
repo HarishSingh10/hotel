@@ -33,14 +33,24 @@ export async function GET(req: NextRequest) {
              return NextResponse.json({ error: 'Property context required' }, { status: 400 })
         }
 
-        // 1. Fetch Menu Items with their category and price
-        const menuItems = await prisma.menuItem.findMany({
+        // 1. Fetch Menu Items — deduplicate by name at DB level
+        const allMenuItems = await prisma.menuItem.findMany({
             where: {
                 ...(propertyId ? { propertyId } : {}),
                 ...(tab !== 'All Day' ? { category: tab } : {})
-            }
+            },
+            orderBy: { updatedAt: 'desc' } // most recently updated first
         })
-        
+
+        // Deduplicate: keep only the first (most recent) occurrence of each name
+        const seenNames = new Set<string>()
+        const menuItems = allMenuItems.filter(mi => {
+            const key = mi.name.toLowerCase().trim()
+            if (seenNames.has(key)) return false
+            seenNames.add(key)
+            return true
+        })
+
         const validItemNames = new Set(menuItems.map(m => m.name))
 
         // 2. Fetch food orders for the period
@@ -87,7 +97,7 @@ export async function GET(req: NextRequest) {
             }
         })
 
-        // 4. Map back to menu items to get margins
+        // 4. Map menu items to performance data (already deduplicated above)
         const itemPerformance = menuItems.map(mi => {
             const stats = itemStats[mi.name] || { units: 0, revenue: 0, totalRating: 0, ratings: [] }
             return {

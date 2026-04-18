@@ -42,8 +42,8 @@ export default function StaffTasksPage() {
 
     const categories = [
         { id: 'ALL', label: 'All Tasks', count: tasks.length },
-        { id: 'URGENT', label: 'Urgent', count: tasks.filter(t => t.priority === 'URGENT').length },
-        { id: 'PENDING', label: 'Pending', count: tasks.filter(t => t.status === 'PENDING').length },
+        { id: 'URGENT', label: 'Urgent', count: (tasks as any[]).filter((t: any) => t.priority === 'URGENT').length },
+        { id: 'PENDING', label: 'Pending', count: (tasks as any[]).filter((t: any) => t.status === 'PENDING').length },
     ]
 
     return (
@@ -57,8 +57,8 @@ export default function StaffTasksPage() {
                     <ChevronLeft className="w-5 h-5" />
                 </button>
                 <div className="flex flex-col items-center px-4">
-                    <h1 className="text-xl font-black text-white tracking-tight italic">Work Queue</h1>
-                    <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest mt-0.5 italic">Live Operations Tunnel</p>
+                    <h1 className="text-xl font-black text-white tracking-tight ">Work Queue</h1>
+                    <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest mt-0.5 ">Live Operations Tunnel</p>
                 </div>
                 <button className="w-10 h-10 rounded-xl bg-white/[0.03] border border-white/[0.05] flex items-center justify-center text-gray-400 active:scale-95 transition-all">
                     <Search className="w-4 h-4" />
@@ -100,7 +100,7 @@ export default function StaffTasksPage() {
                             <div className="absolute inset-0 bg-blue-500/10 blur-2xl animate-pulse"></div>
                         </div>
                         <div className="space-y-2">
-                            <h3 className="text-sm font-black text-white uppercase tracking-widest italic">Operations Synchronized</h3>
+                            <h3 className="text-sm font-black text-white uppercase tracking-widest ">Operations Synchronized</h3>
                             <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest leading-loose">The deployment queue is currently clear.<br/>New dispatches will synchronize in real-time.</p>
                         </div>
                     </div>
@@ -123,7 +123,7 @@ export default function StaffTasksPage() {
                                             <LayoutGrid className="w-7 h-7 text-gray-600 group-hover:text-blue-500 transition-colors" />
                                         </div>
                                         <div>
-                                            <h4 className="text-lg font-black text-white italic tracking-tight leading-none mb-2">Room {task.room?.roomNumber || 'Gen-Ops'}</h4>
+                                            <h4 className="text-lg font-black text-white  tracking-tight leading-none mb-2">Room {task.room?.roomNumber || 'Gen-Ops'}</h4>
                                             <div className="flex items-center gap-3">
                                                 <span className={cn(
                                                     "text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-lg border",
@@ -143,15 +143,15 @@ export default function StaffTasksPage() {
                                     </div>
                                 </div>
                                 
-                                <h3 className="text-2xl font-black text-white tracking-tighter italic mb-3 group-hover:text-blue-500 transition-colors leading-tight">{task.title}</h3>
-                                <p className="text-[14px] font-medium text-gray-500 leading-relaxed line-clamp-2 italic mb-10">{task.description || 'Initialize standard operating procedures and verify system integrity upon completion.'}</p>
+                                <h3 className="text-2xl font-black text-white tracking-tighter  mb-3 group-hover:text-blue-500 transition-colors leading-tight">{task.title}</h3>
+                                <p className="text-[14px] font-medium text-gray-500 leading-relaxed line-clamp-2  mb-10">{task.description || 'Initialize standard operating procedures and verify system integrity upon completion.'}</p>
                                 
                                 <div className="flex items-center justify-between border-t border-white/[0.03] pt-8">
                                     <div className="flex items-center gap-3">
                                         <div className="w-8 h-8 rounded-full bg-blue-600/10 flex items-center justify-center border border-blue-500/20">
                                             <Sparkles className="w-4 h-4 text-blue-500" />
                                         </div>
-                                        <span className="text-[9px] font-black text-gray-700 uppercase tracking-[0.2em] italic">Directives Ready</span>
+                                        <span className="text-[9px] font-black text-gray-700 uppercase tracking-[0.2em] ">Directives Ready</span>
                                     </div>
                                     <div className="flex items-center gap-3 group/btn">
                                         <span className="text-[9px] font-black text-white uppercase tracking-widest opacity-0 group-hover/btn:opacity-100 transition-all -translate-x-2 group-hover/btn:translate-x-0">Initiate</span>
@@ -169,7 +169,7 @@ export default function StaffTasksPage() {
             {/* Support Note */}
             <div className="p-6 bg-blue-600/5 rounded-[40px] border border-blue-500/10 flex items-start gap-4 mx-2">
                 <Info className="w-5 h-5 text-blue-500/40 shrink-0 mt-0.5" />
-                <p className="text-[10px] font-bold text-blue-200/40 leading-relaxed uppercase tracking-widest italic">Tasks are assigned based on current room status and priority algorithms. For issues, contact Ops-Command directly.</p>
+                <p className="text-[10px] font-bold text-blue-200/40 leading-relaxed uppercase tracking-widest ">Tasks are assigned based on current room status and priority algorithms. For issues, contact Ops-Command directly.</p>
             </div>
         </div>
     )

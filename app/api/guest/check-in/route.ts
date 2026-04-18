@@ -17,15 +17,16 @@ export async function POST(request: Request) {
 
         let guestId = null
 
-        // If we have a bookingId, we update THAT specific guest linked to the booking
+        // Get the booking's propertyId so we can link the guest to the right hotel
+        let bookingPropertyId: string | null = null
         if (bookingId) {
             const booking = await prisma.booking.findUnique({
                 where: { id: bookingId },
                 include: { guest: true }
             })
-
             if (booking) {
                 guestId = booking.guestId
+                bookingPropertyId = booking.propertyId
             }
         }
 
@@ -40,7 +41,6 @@ export async function POST(request: Request) {
 
         let guest
         if (resolvedGuest) {
-            // Update the record we found
             guest = await prisma.guest.update({
                 where: { id: resolvedGuest.id },
                 data: {
@@ -49,18 +49,21 @@ export async function POST(request: Request) {
                     idDocumentFront: idProof,
                     checkInStatus: 'COMPLETED',
                     checkInCompletedAt: new Date(),
-                    updatedAt: new Date()
+                    // Link to property if not already set
+                    ...(bookingPropertyId && !resolvedGuest.createdByPropertyId
+                        ? { createdByPropertyId: bookingPropertyId }
+                        : {}),
                 }
             })
         } else {
-            // Create a brand new record
             guest = await prisma.guest.create({
                 data: {
                     name,
                     phone: cleanPhone,
                     idDocumentFront: idProof,
                     checkInStatus: 'COMPLETED',
-                    checkInCompletedAt: new Date()
+                    checkInCompletedAt: new Date(),
+                    createdByPropertyId: bookingPropertyId ?? null,
                 }
             })
         }

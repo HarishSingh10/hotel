@@ -59,8 +59,9 @@ export default function AttendancePage() {
         try {
             const res = await fetch(buildContextUrl('/api/attendance', { date: filterDate }))
             if (res.ok) {
-                const data = await res.json()
-                setAttendance(data.attendances || [])
+                const json = await res.json()
+                const data = json?.data ?? json
+                setAttendance(data.attendances || data || [])
 
                 // Update stats
                 const present = data.attendances.filter((a: any) => a.status === 'PRESENT').length

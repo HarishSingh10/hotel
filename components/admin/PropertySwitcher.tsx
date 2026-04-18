@@ -33,7 +33,9 @@ export default function PropertySwitcher() {
             const res = await fetch('/api/admin/properties')
             if (res.ok) {
                 const data = await res.json()
-                setProperties(data)
+                // Handle both raw array and { success, data } formats
+                const list = Array.isArray(data) ? data : (data?.data ?? [])
+                setProperties(list)
             }
         } catch (error) {
             console.error('Failed to fetch properties:', error)

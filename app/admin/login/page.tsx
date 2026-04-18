@@ -37,7 +37,7 @@ export default function AdminLoginPage() {
         // Use timeout to let session propagate
         setTimeout(async () => {
           const session = await getSession()
-          const user = session?.user as any
+          const user = session?.user
           
           if (user?.department === 'ACCOUNTS') {
             router.push('/admin/payroll')

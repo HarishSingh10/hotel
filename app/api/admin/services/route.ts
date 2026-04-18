@@ -1,113 +1,133 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/options'
 import { prisma } from '@/lib/db'
 import { performAutoAssignment } from '@/lib/service-utils'
+import { unauthorized, badRequest, notFound, serverError } from '@/lib/api-response'
 
 export const dynamic = 'force-dynamic'
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
     const session = await getServerSession(authOptions)
-    if (!session) return new NextResponse('Unauthorized', { status: 401 })
+    if (!session) return unauthorized()
 
     try {
         const { searchParams } = new URL(request.url)
         const queryPropertyId = searchParams.get('propertyId')
-        const statusFilter = searchParams.get('status') // optional: ALL, PENDING, etc.
+        const statusFilter = searchParams.get('status')
+        const typeFilter = searchParams.get('type')
+        const page = parseInt(searchParams.get('page') ?? '1')
+        const limit = Math.min(parseInt(searchParams.get('limit') ?? '50'), 200)
 
-        const propertyId = session.user.propertyId || (session.user.role === 'SUPER_ADMIN' && queryPropertyId !== 'ALL' ? queryPropertyId : null)
+        let propertyId: string | null = null
+        if (session.user.role === 'SUPER_ADMIN') {
+            if (queryPropertyId && queryPropertyId !== 'ALL') propertyId = queryPropertyId
+        } else {
+            propertyId = session.user.propertyId ?? null
+        }
 
-        // Feature: Auto-assign tasks immediately (0s threshold) or retry unassigned ones (5s threshold)
+        // Trigger auto-assignment for unassigned requests (5s threshold to avoid re-assigning fresh ones)
         if (propertyId) {
-            await performAutoAssignment(propertyId, 5)
+            performAutoAssignment(propertyId, 5).catch(() => {})
         }
 
         const where: any = {}
+
         if (statusFilter && statusFilter !== 'ALL') {
             where.status = statusFilter
         } else {
             where.status = { not: 'COMPLETED' }
         }
 
-        if (propertyId) {
-            where.propertyId = propertyId
+        if (typeFilter && typeFilter !== 'ALL') where.type = typeFilter
+        if (propertyId) where.propertyId = propertyId
+
+        // Staff only see their assigned tasks
+        if (session.user.role === 'STAFF') {
+            const staff = await prisma.staff.findUnique({
+                where: { userId: session.user.id },
+                select: { id: true },
+            })
+            if (staff) where.assignedToId = staff.id
         }
 
-        const services = await prisma.serviceRequest.findMany({
-            where,
-            include: {
-                room: { select: { roomNumber: true } },
-                guest: { select: { name: true } },
-                assignedTo: {
-                    select: {
-                        id: true,
-                        profilePhoto: true,
-                        user: { select: { name: true } }
-                    }
-                }
-            },
-            orderBy: { createdAt: 'desc' }
-        })
+        const [services, total] = await Promise.all([
+            prisma.serviceRequest.findMany({
+                where,
+                include: {
+                    room: { select: { roomNumber: true } },
+                    guest: { select: { name: true, phone: true } },
+                    assignedTo: {
+                        select: {
+                            id: true,
+                            profilePhoto: true,
+                            user: { select: { name: true } },
+                        },
+                    },
+                },
+                orderBy: [{ priority: 'desc' }, { createdAt: 'asc' }],
+                skip: (page - 1) * limit,
+                take: limit,
+            }),
+            prisma.serviceRequest.count({ where }),
+        ])
 
-        const formatted = services.map(s => ({
+        const formatted = services.map((s) => ({
             id: s.id,
-            room: s.room?.roomNumber || 'N/A',
-            guest: s.guest?.name || 'Unknown',
+            room: s.room?.roomNumber ?? 'N/A',
+            guest: s.guest?.name ?? 'Unknown',
             type: s.type,
             title: s.title,
             description: s.description,
             priority: s.priority,
             status: s.status,
-            assignedTo: s.assignedTo,
+            assignedTo: s.assignedTo
+                ? { id: s.assignedTo.id, name: s.assignedTo.user?.name ?? 'Unknown', photo: s.assignedTo.profilePhoto }
+                : null,
             requestTime: s.createdAt,
-            slaLimit: s.slaMinutes
+            acceptedAt: s.acceptedAt,
+            slaLimit: s.slaMinutes,
         }))
 
-        return NextResponse.json(formatted)
-
-    } catch (error: any) {
-        console.error('[SERVICE_GET_ERROR]', error?.message || error)
-        return new NextResponse(error?.message || 'Internal Server Error', { status: 500 })
+        return NextResponse.json({
+            success: true,
+            data: formatted,
+            pagination: { page, limit, total, pages: Math.ceil(total / limit) },
+        })
+    } catch (error) {
+        return serverError(error, 'SERVICES_GET')
     }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions)
-    if (!session) return new NextResponse('Unauthorized', { status: 401 })
+    if (!session) return unauthorized()
 
     try {
         const body = await request.json()
         const { roomId, type, title, description, priority = 'NORMAL' } = body
 
-        if (!roomId) return new NextResponse('roomId is required', { status: 400 })
-        if (!title) return new NextResponse('title is required', { status: 400 })
+        if (!roomId) return badRequest('roomId is required')
+        if (!title) return badRequest('title is required')
 
-        // Check if room is occupied to link the guest AND get the propertyId from room
         const room = await prisma.room.findUnique({
             where: { id: roomId },
             include: {
-                bookings: {
-                    where: { status: 'CHECKED_IN' },
-                    take: 1
-                }
-            }
+                bookings: { where: { status: 'CHECKED_IN' }, take: 1 },
+            },
         })
+        if (!room) return notFound('Room')
 
-        if (!room) return new NextResponse('Room not found', { status: 404 })
+        const propertyId = session.user.propertyId ?? room.propertyId
+        if (!propertyId) return badRequest('Cannot determine property')
 
-        // For SUPER_ADMIN, propertyId may be null on session — derive it from the room
-        const propertyId = session.user.propertyId || room.propertyId
+        const guestId = room.bookings[0]?.guestId ?? null
 
-        if (!propertyId) return new NextResponse('Cannot determine property', { status: 400 })
-
-        const guestId = room.bookings[0]?.guestId
-
-        // Fetch custom SLA for this type
+        // Fetch custom SLA config
         const customConfig = await prisma.serviceConfig.findUnique({
-            where: { propertyId_type: { propertyId, type: type as any } }
+            where: { propertyId_type: { propertyId, type: type as any } },
         })
-
-        const slaMinutes = customConfig ? customConfig.totalSla : (type === 'MAINTENANCE' ? 60 : 30)
+        const slaMinutes = customConfig?.totalSla ?? (type === 'MAINTENANCE' ? 60 : 30)
 
         const serviceRequest = await prisma.serviceRequest.create({
             data: {
@@ -116,20 +136,19 @@ export async function POST(request: Request) {
                 guestId,
                 type,
                 title,
-                description,
+                description: description ?? null,
                 status: 'PENDING',
                 priority,
                 slaMinutes,
-                assignedToId: null
-            }
+                assignedToId: null,
+            },
         })
 
-        // Trigger auto-assignment immediately
-        await performAutoAssignment(propertyId, 0)
+        // Trigger auto-assignment asynchronously
+        performAutoAssignment(propertyId, 0).catch(() => {})
 
-        return NextResponse.json(serviceRequest)
-    } catch (error: any) {
-        console.error('[SERVICE_POST_ERROR]', error?.message || error)
-        return new NextResponse(error?.message || 'Internal Server Error', { status: 500 })
+        return NextResponse.json({ success: true, data: serviceRequest }, { status: 201 })
+    } catch (error) {
+        return serverError(error, 'SERVICES_POST')
     }
 }

@@ -1,277 +1,410 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState, useMemo } from 'react'
 import useSWR from 'swr'
 import { formatCurrency } from '@/lib/utils'
-import { Loader2 } from 'lucide-react'
 import {
-    Users, TrendingUp, IndianRupee, Award, Download,
-    Calendar, Filter, Search, ChevronDown, User,
-    Mail, Phone, Clock, ArrowRight, MoreHorizontal,
-    ShieldCheck, CreditCard, Star, PieChart
+    Loader2, Users, IndianRupee, Award, Download,
+    Calendar, Search, User, MoreHorizontal, CreditCard,
+    Info, RefreshCw, TrendingUp
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-
 import { buildContextUrl } from '@/lib/admin-context'
 import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
+import {
+    BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
+    ResponsiveContainer, PieChart, Pie, Cell, Legend
+} from 'recharts'
+
+const PIE_COLORS = ['#2563eb', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4']
+
+const TIER_CONFIG: Record<string, { color: string; bg: string; border: string }> = {
+    PLATINUM: { color: 'text-cyan-400',   bg: 'bg-cyan-400/10',   border: 'border-cyan-400/20' },
+    GOLD:     { color: 'text-amber-400',  bg: 'bg-amber-400/10',  border: 'border-amber-400/20' },
+    SILVER:   { color: 'text-slate-400',  bg: 'bg-slate-400/10',  border: 'border-slate-400/20' },
+    BRONZE:   { color: 'text-orange-400', bg: 'bg-orange-400/10', border: 'border-orange-400/20' },
+}
+
+const fetcher = (url: string) => fetch(url).then(r => r.json())
 
 export default function LoyaltyAnalysisPage() {
     const { data: session } = useSession()
-    const router = useRouter()
-    const [timeRange, setTimeRange] = useState('Last 12 Months')
+    const [search, setSearch] = useState('')
+    const [showFormula, setShowFormula] = useState(false)
+    const [exporting, setExporting] = useState(false)
 
-    const { data: loyaltyData, error, isLoading, mutate } = useSWR(
-        ['/api/admin/analytics/loyalty', session?.user?.role],
-        ([url]) => fetch(buildContextUrl(url)).then(res => res.json())
+    const apiUrl = buildContextUrl('/api/admin/analytics/loyalty')
+    const { data: raw, isLoading, mutate } = useSWR(apiUrl, fetcher)
+    const loyaltyData = raw?.data ?? raw
+
+    const handleExport = async () => {
+        if (!loyaltyData) return
+        setExporting(true)
+        try {
+            const jsPDF = (await import('jspdf')).default
+            const autoTable = (await import('jspdf-autotable')).default
+            const doc = new jsPDF()
+
+            // Header
+            doc.setFillColor(22, 27, 34)
+            doc.rect(0, 0, 210, 28, 'F')
+            doc.setTextColor(255, 255, 255)
+            doc.setFontSize(16)
+            doc.setFont('helvetica', 'bold')
+            doc.text('Guest Loyalty & Retention Report', 14, 13)
+            doc.setFontSize(9)
+            doc.setFont('helvetica', 'normal')
+            doc.text(`Generated: ${new Date().toLocaleDateString('en-IN')}`, 14, 21)
+
+            const { stats, topGuests, bookingSources } = loyaltyData
+
+            // KPIs
+            let y = 36
+            autoTable(doc, {
+                startY: y,
+                head: [['Metric', 'Value']],
+                body: [
+                    ['Repeat Guest Rate', `${stats.repeatRate}%`],
+                    ['Repeat Guest Count', stats.repeatGuestCount.toString()],
+                    ['Loyalty Revenue', formatCurrency(stats.loyaltyRevenue)],
+                    ['Loyalty Revenue %', `${stats.loyaltyRevenuePercent}% of total`],
+                    ['Avg. Lifetime Value', formatCurrency(stats.avgLTV)],
+                    ['Total Guests', stats.totalGuests.toString()],
+                ],
+                theme: 'striped',
+                headStyles: { fillColor: [37, 99, 235] },
+                styles: { fontSize: 9 },
+            })
+
+            // Loyalty Formula
+            y = (doc as any).lastAutoTable.finalY + 10
+            doc.setFontSize(10)
+            doc.setFont('helvetica', 'bold')
+            doc.setTextColor(33, 33, 33)
+            doc.text('Loyalty Tier Formula', 14, y)
+            y += 5
+            doc.setFontSize(8)
+            doc.setFont('helvetica', 'normal')
+            doc.setTextColor(80, 80, 80)
+            const formulaLines = [
+                'PLATINUM: Total Spent > ₹50,000 OR Total Stays > 10',
+                'GOLD:     Total Spent > ₹20,000 OR Total Stays > 5',
+                'SILVER:   Total Spent > ₹10,000 OR Total Stays > 2',
+                'BRONZE:   All other guests with at least 1 booking',
+                '',
+                'Repeat Rate = (Guests with 2+ stays / Total Guests) × 100',
+                'Avg LTV = Total Revenue from all bookings / Total Unique Guests',
+                'Loyalty Revenue = Revenue from guests with 2+ stays',
+            ]
+            formulaLines.forEach(line => {
+                doc.text(line, 14, y)
+                y += 5
+            })
+
+            // Top Guests
+            y += 5
+            doc.setFontSize(11)
+            doc.setFont('helvetica', 'bold')
+            doc.setTextColor(33, 33, 33)
+            doc.text('Top Loyal Guests', 14, y)
+            y += 4
+
+            autoTable(doc, {
+                startY: y,
+                head: [['Guest', 'Email', 'Stays', 'Total Spent', 'Last Visit', 'Tier']],
+                body: topGuests.map((g: any) => [
+                    g.name, g.email, g.stays.toString(),
+                    formatCurrency(g.spent),
+                    new Date(g.lastVisit).toLocaleDateString('en-IN'),
+                    g.tier,
+                ]),
+                theme: 'grid',
+                headStyles: { fillColor: [37, 99, 235] },
+                styles: { fontSize: 8 },
+            })
+
+            // Booking Sources
+            if (bookingSources?.length > 0) {
+                y = (doc as any).lastAutoTable.finalY + 10
+                doc.setFontSize(11)
+                doc.setFont('helvetica', 'bold')
+                doc.text('Booking Sources', 14, y)
+                y += 4
+                autoTable(doc, {
+                    startY: y,
+                    head: [['Source', 'Share %', 'Count']],
+                    body: bookingSources.map((s: any) => [s.label, `${s.value}%`, s.count.toString()]),
+                    theme: 'striped',
+                    headStyles: { fillColor: [34, 197, 94] },
+                    styles: { fontSize: 9 },
+                })
+            }
+
+            doc.save(`Loyalty_Report_${new Date().toISOString().split('T')[0]}.pdf`)
+            toast.success('PDF exported successfully')
+        } catch (err) {
+            console.error(err)
+            toast.error('Export failed')
+        } finally {
+            setExporting(false) }
+    }
+
+    const filteredGuests = useMemo(() => {
+        if (!loyaltyData?.topGuests) return []
+        if (!search.trim()) return loyaltyData.topGuests
+        const q = search.toLowerCase()
+        return loyaltyData.topGuests.filter((g: any) =>
+            g.name.toLowerCase().includes(q) || (g.email || '').toLowerCase().includes(q)
+        )
+    }, [loyaltyData?.topGuests, search])
+
+    if (isLoading) return (
+        <div className="flex items-center justify-center min-h-[400px]">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
     )
 
-    const handleExportReport = () => {
-        window.print()
-    }
+    if (!loyaltyData || loyaltyData.error) return (
+        <div className="flex items-center justify-center min-h-[400px] text-text-secondary text-sm">
+            Failed to load loyalty data. Make sure you have bookings recorded.
+        </div>
+    )
 
-    useEffect(() => {
-        if (session && !['SUPER_ADMIN', 'HOTEL_ADMIN', 'MANAGER', 'RECEPTIONIST'].includes(session.user.role)) {
-            router.push('/admin/dashboard')
-        }
-    }, [session, router])
-
-    if (isLoading) {
-        return (
-            <div className="min-h-screen bg-[#0d1117] flex items-center justify-center">
-                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-            </div>
-        )
-    }
-
-    if (!loyaltyData || loyaltyData.error) {
-        return (
-            <div className="min-h-screen bg-[#0d1117] flex items-center justify-center text-gray-400">
-                Failed to load loyalty analytics data.
-            </div>
-        )
-    }
-
-    const { stats, topGuests, chartData } = loyaltyData
+    const { stats, chartData, bookingSources } = loyaltyData
 
     return (
-        <div className="min-h-screen bg-[#0d1117] text-gray-300 font-sans p-8 print:p-0 print:bg-white print:text-black">
-            <style jsx global>{`
-                @media print {
-                    body { background: white !important; color: black !important; }
-                    .bg-[#161b22] { background: #f9fafb !important; border: 1px solid #e5e7eb !important; }
-                    .bg-[#0d1117] { background: #f0f2f5 !important; }
-                    .text-white { color: black !important; }
-                    .text-gray-300 { color: #374151 !important; }
-                    .border-gray-800 { border-color: #e5e7eb !important; }
-                    button, .no-print { display: none !important; }
-                    .print-header { display: block !important; }
-                    .shadow-sm, .shadow-lg { shadow: none !important; }
-                }
-            `}</style>
-
-            <div className="max-w-[1600px] mx-auto space-y-10">
-                
-                {/* Print Only Header */}
-                <div className="hidden print:block mb-10 border-b-4 border-black pb-6 text-center">
-                    <h1 className="text-4xl font-black uppercase tracking-tighter">ZENBOURG LOYALTY REPORT</h1>
-                    <p className="text-sm font-bold mt-2 uppercase tracking-[0.2em]">{new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} • {timeRange}</p>
+        <div className="space-y-6 animate-fade-in">
+            {/* Header */}
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl font-bold text-white">Guest Loyalty & Retention</h1>
+                    <p className="text-text-secondary text-sm mt-0.5">Insights into repeat visitor behaviour and lifetime value.</p>
                 </div>
-
-                {/* ── HEADER ── */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                    <div>
-                        <h1 className="text-3xl font-bold text-white tracking-tight mb-2">Guest Loyalty & Retention</h1>
-                        <p className="text-gray-500 font-medium">Insights into repeat visitor behavior and total lifetime value.</p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                        <button className="flex items-center gap-2 px-4 py-2.5 bg-[#161b22] border border-gray-800 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors">
-                            <Calendar className="w-4 h-4 text-gray-500" /> {timeRange}
-                        </button>
-                        <button 
-                            onClick={handleExportReport}
-                            className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold rounded-lg shadow-sm transition-all active:scale-[0.98] print:hidden"
-                        >
-                            <Download className="w-4 h-4" /> Export Report
-                        </button>
-                    </div>
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={() => setShowFormula(v => !v)}
+                        className="flex items-center gap-2 px-3 py-2 bg-surface-light border border-border rounded-xl text-xs font-semibold text-text-secondary hover:text-white transition-all"
+                    >
+                        <Info className="w-4 h-4" /> How tiers work
+                    </button>
+                    <button onClick={() => mutate()} className="p-2 bg-surface-light border border-border rounded-xl text-text-secondary hover:text-white transition-all" title="Refresh">
+                        <RefreshCw className="w-4 h-4" />
+                    </button>
+                    <button
+                        onClick={handleExport}
+                        disabled={exporting}
+                        className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-white text-sm font-semibold rounded-xl transition-all disabled:opacity-50"
+                    >
+                        {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                        Export PDF
+                    </button>
                 </div>
+            </div>
 
-                {/* ── TOP STATS ── */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {[
-                        { label: 'Repeat Guest %', value: `${stats.repeatRate}%`, trend: `${stats.repeatGuestCount} total`, icon: Users, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-                        { label: 'Loyalty Revenue', value: formatCurrency(stats.loyaltyRevenue), trend: `${stats.loyaltyRevenuePercent}% of total`, icon: IndianRupee, color: 'text-green-500', bg: 'bg-green-500/10' },
-                        { label: 'Avg. Lifetime Value', value: formatCurrency(stats.avgLTV), trend: '+5.2% per guest', icon: CreditCard, color: 'text-purple-500', bg: 'bg-purple-500/10' },
-                        { label: 'Total Guests', value: stats.totalGuests.toLocaleString(), trend: 'Active profiles', icon: Award, color: 'text-amber-500', bg: 'bg-amber-500/10' },
-                    ].map((stat, i) => (
-                        <div key={i} className="bg-[#161b22] border border-gray-800 rounded-xl p-8 shadow-sm group hover:border-gray-700 transition-all">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center shadow-lg", stat.bg)}>
-                                    <stat.icon className={cn("w-6 h-6", stat.color)} />
-                                </div>
-                                <span className="text-[10px] font-bold text-green-500 uppercase tracking-widest">{stat.trend}</span>
-                            </div>
-                            <p className="text-[11px] font-bold text-gray-600 uppercase tracking-[0.2em] mb-1">{stat.label}</p>
-                            <p className="text-3xl font-bold text-white tracking-tight  leading-none">{stat.value}</p>
-                        </div>
-                    ))}
-                </div>
-
-                {/* ── VISITOR ANALYTICS ── */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                    {/* Visitor Graph Placeholder */}
-                    <div className="lg:col-span-8 bg-[#161b22] border border-gray-800 rounded-xl p-8 shadow-sm">
-                        <div className="flex items-center justify-between mb-10">
-                            <h3 className="text-xl font-bold text-white">First-time vs. Repeat Visitors</h3>
-                            <div className="flex bg-[#0d1117] p-1 rounded-lg border border-gray-800">
-                                <button className="px-4 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-widest bg-blue-600 text-white shadow-sm">Monthly</button>
-                                <button className="px-4 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-gray-300 transition-colors">Weekly</button>
+            {/* Loyalty Formula Panel */}
+            {showFormula && (
+                <div className="bg-primary/5 border border-primary/20 rounded-2xl p-5 space-y-3">
+                    <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                        <Info className="w-4 h-4 text-primary" /> How Loyalty Tiers Are Calculated
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-text-secondary">
+                        <div className="space-y-2">
+                            <p className="font-semibold text-white">Tier Classification</p>
+                            <div className="space-y-1.5">
+                                {[
+                                    { tier: 'PLATINUM', rule: 'Total Spent > ₹50,000  OR  Stays > 10', color: 'text-cyan-400' },
+                                    { tier: 'GOLD',     rule: 'Total Spent > ₹20,000  OR  Stays > 5',  color: 'text-amber-400' },
+                                    { tier: 'SILVER',   rule: 'Total Spent > ₹10,000  OR  Stays > 2',  color: 'text-slate-400' },
+                                    { tier: 'BRONZE',   rule: 'All other guests with ≥ 1 booking',      color: 'text-orange-400' },
+                                ].map(t => (
+                                    <div key={t.tier} className="flex items-start gap-2">
+                                        <span className={cn('font-bold w-16 shrink-0', t.color)}>{t.tier}</span>
+                                        <span>{t.rule}</span>
+                                    </div>
+                                ))}
                             </div>
                         </div>
-                        <div className="h-64 flex items-end justify-between gap-4 px-2">
-                            {chartData.map((d: any, i: number) => {
-                                const max = Math.max(...chartData.map((x: any) => x.repeat + x.firstTime))
-                                const repeatHeight = (d.repeat / max) * 100
-                                const firstTimeHeight = (d.firstTime / max) * 100
-                                
-                                return (
-                                    <div key={i} className="flex-1 flex flex-col items-center gap-3 group px-1">
-                                        <div className="w-full flex flex-col-reverse gap-1.5 h-48">
-                                            <div
-                                                className="w-full bg-blue-600/40 rounded-t-sm group-hover:bg-blue-600/60 transition-all cursor-pointer relative"
-                                                style={{ height: `${repeatHeight}%` }}
-                                                title={`Repeat: ${d.repeat}`}
-                                            />
-                                            <div
-                                                className="w-full bg-[#233648]/40 rounded-t-sm group-hover:bg-[#233648]/60 transition-all cursor-pointer relative"
-                                                style={{ height: `${firstTimeHeight}%` }}
-                                                title={`First-time: ${d.firstTime}`}
-                                            />
+                        <div className="space-y-2">
+                            <p className="font-semibold text-white">Key Metrics Formulas</p>
+                            <div className="space-y-1.5 font-mono text-[11px]">
+                                <p><span className="text-primary">Repeat Rate</span> = (Guests with 2+ stays ÷ Total Guests) × 100</p>
+                                <p><span className="text-primary">Avg LTV</span> = Total Revenue ÷ Total Unique Guests</p>
+                                <p><span className="text-primary">Loyalty Revenue</span> = Revenue from guests with 2+ stays</p>
+                                <p><span className="text-primary">Loyalty Rev %</span> = Loyalty Revenue ÷ Total Revenue × 100</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* KPI Cards */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                {[
+                    { label: 'Repeat Guest Rate', value: `${stats.repeatRate}%`, sub: `${stats.repeatGuestCount} repeat guests`, icon: Users, color: 'text-blue-400', bg: 'bg-blue-500/10' },
+                    { label: 'Loyalty Revenue', value: formatCurrency(stats.loyaltyRevenue), sub: `${stats.loyaltyRevenuePercent}% of total revenue`, icon: IndianRupee, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
+                    { label: 'Avg. Lifetime Value', value: formatCurrency(stats.avgLTV), sub: 'Per unique guest', icon: CreditCard, color: 'text-purple-400', bg: 'bg-purple-500/10' },
+                    { label: 'Total Guests', value: stats.totalGuests.toLocaleString(), sub: 'Unique profiles', icon: Award, color: 'text-amber-400', bg: 'bg-amber-500/10' },
+                ].map((s, i) => (
+                    <div key={i} className="bg-surface border border-border rounded-2xl p-5">
+                        <div className={cn('w-9 h-9 rounded-xl flex items-center justify-center mb-3', s.bg)}>
+                            <s.icon className={cn('w-4.5 h-4.5', s.color)} />
+                        </div>
+                        <p className="text-xs text-text-secondary mb-1">{s.label}</p>
+                        <p className="text-xl font-bold text-white">{s.value}</p>
+                        <p className="text-[11px] text-text-tertiary mt-0.5">{s.sub}</p>
+                    </div>
+                ))}
+            </div>
+
+            {/* Charts Row */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                {/* First-time vs Repeat Visitors Bar Chart */}
+                <div className="lg:col-span-8 bg-surface border border-border rounded-2xl p-6">
+                    <h3 className="text-base font-semibold text-white mb-1">First-time vs. Repeat Visitors</h3>
+                    <p className="text-xs text-text-secondary mb-5">Monthly breakdown over the last 6 months</p>
+                    {chartData.every((d: any) => d.repeat === 0 && d.firstTime === 0) ? (
+                        <div className="h-64 flex items-center justify-center text-text-tertiary text-sm">
+                            No booking data available yet
+                        </div>
+                    ) : (
+                        <ResponsiveContainer width="100%" height={240}>
+                            <BarChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
+                                <XAxis dataKey="month" tick={{ fill: '#6b7280', fontSize: 11 }} />
+                                <YAxis tick={{ fill: '#6b7280', fontSize: 11 }} allowDecimals={false} />
+                                <Tooltip
+                                    contentStyle={{ background: '#161b22', border: '1px solid #374151', borderRadius: 8, color: '#fff' }}
+                                    formatter={(v: any, name: string) => [v, name === 'repeat' ? 'Repeat Visitors' : 'First-time Visitors']}
+                                />
+                                <Legend
+                                    formatter={(v) => v === 'repeat' ? 'Repeat Visitors' : 'First-time Visitors'}
+                                    wrapperStyle={{ fontSize: 11, color: '#9ca3af' }}
+                                />
+                                <Bar dataKey="repeat" fill="#2563eb" radius={[3, 3, 0, 0]} name="repeat" />
+                                <Bar dataKey="firstTime" fill="#374151" radius={[3, 3, 0, 0]} name="firstTime" />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    )}
+                </div>
+
+                {/* Booking Source Pie Chart — REAL DATA */}
+                <div className="lg:col-span-4 bg-surface border border-border rounded-2xl p-6 flex flex-col">
+                    <h3 className="text-base font-semibold text-white mb-1">Booking Source</h3>
+                    <p className="text-xs text-text-secondary mb-4">Where your guests come from</p>
+                    {!bookingSources || bookingSources.length === 0 ? (
+                        <div className="flex-1 flex items-center justify-center text-text-tertiary text-sm">
+                            No booking source data
+                        </div>
+                    ) : (
+                        <div className="flex-1">
+                            <ResponsiveContainer width="100%" height={180}>
+                                <PieChart>
+                                    <Pie
+                                        data={bookingSources}
+                                        cx="50%"
+                                        cy="50%"
+                                        innerRadius={50}
+                                        outerRadius={80}
+                                        paddingAngle={3}
+                                        dataKey="value"
+                                        nameKey="label"
+                                    >
+                                        {bookingSources.map((_: any, i: number) => (
+                                            <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip
+                                        contentStyle={{ background: '#161b22', border: '1px solid #374151', borderRadius: 8, color: '#fff' }}
+                                        formatter={(v: any, name: string) => [`${v}%`, name]}
+                                    />
+                                </PieChart>
+                            </ResponsiveContainer>
+                            <div className="space-y-2 mt-2">
+                                {bookingSources.map((s: any, i: number) => (
+                                    <div key={i} className="flex items-center justify-between text-xs">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: PIE_COLORS[i % PIE_COLORS.length] }} />
+                                            <span className="text-text-secondary capitalize">{s.label.toLowerCase().replace(/_/g, ' ')}</span>
                                         </div>
-                                        <span className="text-[10px] font-bold text-gray-600 uppercase whitespace-nowrap">{d.month}</span>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-text-tertiary text-[10px]">{s.count}</span>
+                                            <span className="font-semibold text-white w-8 text-right">{s.value}%</span>
+                                        </div>
                                     </div>
-                                )
-                            })}
-                        </div>
-                        <div className="flex items-center gap-8 mt-10 ml-2">
-                            <div className="flex items-center gap-3">
-                                <div className="w-2.5 h-2.5 rounded-full bg-blue-600" />
-                                <span className="text-[11px] font-bold text-gray-500 uppercase tracking-widest">Repeat Visitors</span>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <div className="w-2.5 h-2.5 rounded-full bg-[#233648]" />
-                                <span className="text-[11px] font-bold text-gray-500 uppercase tracking-widest">First-time Visitors</span>
+                                ))}
                             </div>
                         </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Top Loyal Guests Table */}
+            <div className="bg-surface border border-border rounded-2xl overflow-hidden">
+                <div className="p-5 border-b border-border flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h3 className="text-base font-semibold text-white">Top Loyal Guests</h3>
+                        <p className="text-xs text-text-secondary mt-0.5">Ranked by total lifetime spend at this property</p>
                     </div>
-
-                    {/* Booking Source Doughnut */}
-                    <div className="lg:col-span-4 bg-[#161b22] p-8 border border-gray-800 rounded-xl flex flex-col shadow-sm">
-                        <h3 className="text-xl font-bold text-white mb-2">Booking Source</h3>
-                        <p className="text-xs text-gray-500 font-medium mb-10 tracking-tight">By Loyalty Segments</p>
-
-                        <div className="relative flex-1 flex items-center justify-center">
-                            <div className="relative w-44 h-44 rounded-full border-[14px] border-[#0d1117] flex items-center justify-center shadow-lg">
-                                {/* Segment Sim */}
-                                <div className="absolute inset-[-14px] rounded-full border-[14px] border-blue-600" style={{ clipPath: 'polygon(50% 50%, 100% 0, 100% 100%, 0 100%, 0 0)' }} />
-                                <div className="absolute inset-[-14px] rounded-full border-[14px] border-[#233648]" style={{ clipPath: 'polygon(50% 50%, 0 0, 100% 0, 100% 36%)' }} />
-
-                                <div className="text-center">
-                                    <p className="text-3xl font-bold text-white leading-none">64%</p>
-                                    <p className="text-[9px] font-bold text-blue-500 uppercase tracking-[0.2em] mt-1">Direct</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="space-y-4 mt-auto pt-10">
-                            {[
-                                { label: 'Direct Booking', value: '84%', color: 'bg-blue-600' },
-                                { label: 'OTA (Booking/Expedia)', value: '22%', color: 'bg-[#233648]' },
-                                { label: 'Corporate', value: '14%', color: 'bg-gray-800' },
-                            ].map((source, i) => (
-                                <div key={i} className="flex items-center justify-between">
-                                    <div className="flex items-center gap-3 whitespace-nowrap">
-                                        <div className={cn("w-2 h-2 rounded-full", source.color)} />
-                                        <span className="text-xs font-bold text-gray-500 uppercase tracking-tighter">{source.label}</span>
-                                    </div>
-                                    <span className="text-sm font-bold text-white">{source.value}</span>
-                                </div>
-                            ))}
-                        </div>
+                    <div className="relative w-full md:w-72">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary" />
+                        <input
+                            value={search}
+                            onChange={e => setSearch(e.target.value)}
+                            placeholder="Search by name or email..."
+                            className="w-full pl-9 pr-4 py-2 bg-surface-light border border-border rounded-xl text-sm text-white placeholder:text-text-tertiary focus:ring-1 focus:ring-primary outline-none"
+                        />
                     </div>
                 </div>
-
-                {/* ── TOP LOYAL GUESTS TABLE ── */}
-                <div className="bg-[#161b22] border border-gray-800 rounded-xl shadow-sm overflow-hidden">
-                    <div className="p-8 border-b border-gray-800 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                        <div>
-                            <h3 className="text-xl font-bold text-white">Top Loyal Guests</h3>
-                            <p className="text-[11px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">High Lifetime Value Identification</p>
-                        </div>
-                        <div className="relative w-full md:w-80">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600" />
-                            <input
-                                placeholder="Filter by name..."
-                                className="w-full bg-[#0d1117] border border-gray-800 rounded-lg pl-12 pr-4 py-2.5 text-sm text-gray-300 placeholder:text-gray-700 outline-none focus:border-blue-500/50 transition-all shadow-inner"
-                            />
-                        </div>
-                    </div>
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left">
-                            <thead>
-                                <tr className="bg-[#0d1117] text-[11px] font-bold text-gray-600 uppercase tracking-[0.25em]">
-                                    <th className="px-8 py-5">Guest Name</th>
-                                    <th className="px-8 py-5">Total Stays</th>
-                                    <th className="px-8 py-5">Total Spent</th>
-                                    <th className="px-8 py-5 text-center">Last Visit</th>
-                                    <th className="px-8 py-5">Loyalty Tier</th>
-                                    <th className="px-8 py-5 text-right">Actions</th>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                        <thead>
+                            <tr className="border-b border-border bg-surface-light">
+                                <th className="px-5 py-3 text-[10px] font-bold text-text-tertiary uppercase tracking-wider">Guest</th>
+                                <th className="px-5 py-3 text-[10px] font-bold text-text-tertiary uppercase tracking-wider">Total Stays</th>
+                                <th className="px-5 py-3 text-[10px] font-bold text-text-tertiary uppercase tracking-wider">Total Spent</th>
+                                <th className="px-5 py-3 text-[10px] font-bold text-text-tertiary uppercase tracking-wider">Last Visit</th>
+                                <th className="px-5 py-3 text-[10px] font-bold text-text-tertiary uppercase tracking-wider">Loyalty Tier</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-border">
+                            {filteredGuests.length === 0 ? (
+                                <tr>
+                                    <td colSpan={5} className="px-5 py-10 text-center text-text-tertiary text-sm">
+                                        {search ? 'No guests match your search' : 'No guest data available'}
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-800/50">
-                                {topGuests.map((guest: any, i: number) => (
-                                    <tr key={i} className="hover:bg-white/[0.02] transition-colors group">
-                                        <td className="px-8 py-6">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center border border-white/5 overflow-hidden">
-                                                    <User className="w-5 h-5 text-gray-600" />
+                            ) : filteredGuests.map((guest: any, i: number) => {
+                                const tc = TIER_CONFIG[guest.tier] ?? TIER_CONFIG.BRONZE
+                                return (
+                                    <tr key={i} className="hover:bg-surface-light transition-colors">
+                                        <td className="px-5 py-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-9 h-9 rounded-full bg-surface-light border border-border flex items-center justify-center shrink-0">
+                                                    <User className="w-4 h-4 text-text-tertiary" />
                                                 </div>
                                                 <div>
-                                                    <p className="text-sm font-bold text-white mb-0.5 whitespace-nowrap">{guest.name}</p>
-                                                    <p className="text-[10px] text-gray-600 font-bold uppercase tracking-tighter">{guest.email}</p>
+                                                    <p className="text-sm font-semibold text-white">{guest.name}</p>
+                                                    <p className="text-[11px] text-text-tertiary">{guest.email}</p>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-8 py-6 whitespace-nowrap">
-                                            <span className="text-sm font-bold text-gray-300">{guest.stays} stays</span>
+                                        <td className="px-5 py-4 text-sm text-text-secondary">{guest.stays} stays</td>
+                                        <td className="px-5 py-4 text-sm font-semibold text-white">{formatCurrency(guest.spent)}</td>
+                                        <td className="px-5 py-4 text-sm text-text-secondary">
+                                            {new Date(guest.lastVisit).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                                         </td>
-                                        <td className="px-8 py-6 whitespace-nowrap">
-                                            <span className="text-sm font-bold text-white tracking-tight">{formatCurrency(guest.spent)}</span>
-                                        </td>
-                                        <td className="px-8 py-6 text-center whitespace-nowrap">
-                                            <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">{new Date(guest.lastVisit).toLocaleDateString()}</span>
-                                        </td>
-                                        <td className="px-8 py-6 whitespace-nowrap">
-                                            <div className={cn(
-                                                "w-fit px-3 py-1 rounded-md text-[9px] font-bold uppercase tracking-[0.3em] border",
-                                                guest.bg, guest.border, guest.color
-                                            )}>
+                                        <td className="px-5 py-4">
+                                            <span className={cn('text-[10px] font-bold px-2.5 py-1 rounded-full border uppercase tracking-wider', tc.color, tc.bg, tc.border)}>
                                                 {guest.tier}
-                                            </div>
-                                        </td>
-                                        <td className="px-8 py-6 text-right">
-                                            <button className="p-2 border border-transparent hover:border-gray-800 hover:bg-gray-800 rounded-lg text-gray-600 hover:text-white transition-all">
-                                                <MoreHorizontal className="w-5 h-5" />
-                                            </button>
+                                            </span>
                                         </td>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                                )
+                            })}
+                        </tbody>
+                    </table>
                 </div>
-
             </div>
         </div>
     )

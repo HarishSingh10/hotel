@@ -5,34 +5,48 @@ import { SWRConfig } from 'swr'
 import { useEffect } from 'react'
 import { Toaster } from 'sonner'
 
+const globalFetcher = async (url: string) => {
+    const res = await fetch(url)
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: res.statusText }))
+        throw Object.assign(new Error(err?.error ?? 'Request failed'), { status: res.status })
+    }
+    const json = await res.json()
+    // Support both { data: ... } and raw array/object responses
+    return json?.data !== undefined ? json.data : json
+}
+
 export function Providers({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw.js').then(
-                function(registration) {
-                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
-                },
-                function(err) {
-                    console.log('ServiceWorker registration failed: ', err);
-                }
-            );
+            navigator.serviceWorker
+                .register('/sw.js')
+                .catch((err) => console.warn('ServiceWorker registration failed:', err))
         }
     }, [])
 
     return (
         <SessionProvider>
-            <SWRConfig 
+            <SWRConfig
                 value={{
-                    fetcher: (resource, init) => fetch(resource, init).then(res => res.json()),
+                    fetcher: globalFetcher,
                     revalidateOnFocus: false,
                     revalidateIfStale: true,
-                    dedupingInterval: 5000
+                    dedupingInterval: 5000,
+                    errorRetryCount: 2,
+                    onError: (error) => {
+                        if (error?.status === 401) {
+                            // Redirect to login on auth failure
+                            if (typeof window !== 'undefined' && window.location.pathname.startsWith('/admin')) {
+                                window.location.href = '/admin/login'
+                            }
+                        }
+                    },
                 }}
             >
                 {children}
-                <Toaster richColors position="top-right" theme="dark" />
+                <Toaster richColors position="top-right" theme="dark" closeButton />
             </SWRConfig>
         </SessionProvider>
     )
 }
-

@@ -79,13 +79,14 @@ export default function BookingsPage() {
     setLoading(true)
     try {
       const roomsRes = await fetch('/api/admin/rooms?status=ALL')
-      const roomsData = await roomsRes.json()
-      setRooms(Array.isArray(roomsData) ? roomsData : [])
+      const roomsJson = await roomsRes.json()
+      setRooms(Array.isArray(roomsJson) ? roomsJson : (roomsJson?.data ?? []))
 
       const bookingsRes = await fetch(`/api/admin/bookings?start=${startDate.toISOString()}&end=${endDate.toISOString()}`)
-      const bookingsData = await bookingsRes.json()
+      const bookingsJson = await bookingsRes.json()
+      const bookingsData = Array.isArray(bookingsJson) ? bookingsJson : (bookingsJson?.data ?? [])
 
-      const formatted = (Array.isArray(bookingsData) ? bookingsData : []).map((b: any) => ({
+      const formatted = bookingsData.map((b: any) => ({
         id: b.id,
         guest: b.guest?.name ?? 'Guest',
         room: b.room?.roomNumber ?? '',

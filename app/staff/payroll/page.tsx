@@ -67,8 +67,8 @@ export default function PayrollPage() {
                     <ChevronLeft className="w-5 h-5" />
                 </button>
                 <div className="flex flex-col items-center">
-                    <h1 className="text-xl font-black text-white tracking-tight italic">Financials & Payroll</h1>
-                    <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mt-0.5">Secure Tunnel Active</span>
+                    <h1 className="text-xl font-black text-white tracking-tight ">My Payslips</h1>
+                    <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mt-0.5">Salary History</span>
                 </div>
                 <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500">
                     <ShieldCheck className="w-5 h-5" />
@@ -84,12 +84,12 @@ export default function PayrollPage() {
                         <Wallet className="w-6 h-6 text-white" />
                     </div>
                     <div>
-                        <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest italic leading-none mb-1.5">CTC / Annual Package</p>
-                        <h2 className="text-2xl font-black text-white tracking-tight italic">₹ {((staffInfo?.baseSalary || 0) * 12).toLocaleString()}</h2>
+                        <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest  leading-none mb-1.5">CTC / Annual Package</p>
+                        <h2 className="text-2xl font-black text-white tracking-tight ">₹ {((staffInfo?.baseSalary || 0) * 12).toLocaleString()}</h2>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-4">
                     <div className="bg-white/[0.02] border border-white/[0.03] p-4 rounded-3xl">
                         <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-1.5">Monthly Base</p>
                         <p className="text-sm font-black text-white">₹ {(staffInfo?.baseSalary || 0).toLocaleString()}</p>
@@ -104,7 +104,7 @@ export default function PayrollPage() {
             {/* Payroll List */}
             <div className="space-y-4 min-h-[300px]">
                 <div className="flex items-center justify-between px-2">
-                    <h3 className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] italic">Salary Credits</h3>
+                    <h3 className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] ">Salary Credits</h3>
                     <Filter className="w-4 h-4 text-gray-700" />
                 </div>
 
@@ -121,14 +121,13 @@ export default function PayrollPage() {
                                     <FileText className="w-5 h-5 text-gray-500 group-hover:text-white transition-colors" />
                                 </div>
                                 <div>
-                                    <h4 className="text-sm font-black text-white italic tracking-tight">{item.month} {item.year}</h4>
-                                    <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mt-0.5">Credited: {format(new Date(item.paymentDate || item.updatedAt), 'MMM dd')}</p>
-                                </div>
+                                    <h4 className="text-sm font-black text-white  tracking-tight">{item.month} {item.year}</h4>
+                                    <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mt-0.5">Credited: {format(new Date(item.paymentDate || item.updatedAt), 'MMM dd')}</p>                                </div>
                             </div>
                             <div className="text-right flex items-center gap-6">
                                 <div className="hidden sm:block">
-                                    <p className="text-xs font-black text-white italic">₹ {item.netSalary.toLocaleString()}</p>
-                                    <span className="text-[8px] font-black text-emerald-500 uppercase tracking-tighter">Paid Success</span>
+                                    <p className="text-xs font-black text-white ">₹ {item.netSalary.toLocaleString()}</p>
+                                    <span className="text-[8px] font-black text-emerald-500 uppercase tracking-tighter">Paid</span>
                                 </div>
                                 <button
                                     onClick={() => handleDownload(item)}
@@ -149,8 +148,8 @@ export default function PayrollPage() {
                         <Info className="w-5 h-5 text-amber-500" />
                     </div>
                     <div>
-                        <h4 className="text-xs font-black text-white uppercase tracking-widest mb-1.5 flex items-center gap-2">Tax Verification Note</h4>
-                        <p className="text-[10px] font-medium text-gray-500 leading-relaxed italic">Your salary slips are cryptographically signed. If you notice any discrepancy in TDS or PF, please raise a ticket via the support portal or contact HR Finance Desk within 3 working days.</p>
+                        <h4 className="text-xs font-black text-white uppercase tracking-widest mb-1.5 flex items-center gap-2">Note</h4>
+                        <p className="text-[10px] font-medium text-gray-500 leading-relaxed ">Your salary slips are generated by the system. If you notice any discrepancy in your pay, please raise a ticket via the support section or contact HR within 3 working days.</p>
                     </div>
                 </div>
             </div>

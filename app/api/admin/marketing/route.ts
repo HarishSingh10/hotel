@@ -19,25 +19,48 @@ const twilioClient = twilio(
     process.env.TWILIO_AUTH_TOKEN
 )
 
+import { sendMarketingBlast } from '@/lib/email'
+
 // Real Notification Sender
-async function sendRealNotification(guest: any, channel: string, promoCode?: string, propertyName?: string) {
-    const message = `Hello ${guest.name}! Use code ${promoCode || 'ZENVIP'} for 20% off your next stay at ${propertyName || 'our hotel'}. Book now!`
-    
+async function sendRealNotification(guest: any, channel: string, promoCode?: string, propertyName?: string, customMessage?: string) {
+    const message = customMessage || `Hello ${guest.name}! Use code ${promoCode || 'ZENVIP'} for 20% off your next stay at ${propertyName || 'our hotel'}. Book now!`
+
+    // Normalize phone to E.164 format
+    const rawPhone = (guest.phone || '').replace(/\D/g, '')
+    const e164Phone = rawPhone.length === 10 ? `+91${rawPhone}` : `+${rawPhone}`
+
     try {
-        if (channel === 'WHATSAPP') {
-            await twilioClient.messages.create({
-                from: `whatsapp:${process.env.TWILIO_PHONE_NUMBER || '+14155238886'}`,
-                to: `whatsapp:${guest.phone.startsWith('+') ? guest.phone : '+91' + guest.phone}`,
-                body: message
+        if (channel === 'SMS') {
+            // Send real SMS via Twilio
+            const result = await twilioClient.messages.create({
+                body: message,
+                from: process.env.TWILIO_PHONE_NUMBER!,
+                to: e164Phone,
             })
-            console.log(`[MARKETING] WhatsApp sent to ${guest.phone}`)
+            console.log(`[MARKETING] SMS sent to ${e164Phone} — SID: ${result.sid}`)
+        } else if (channel === 'WHATSAPP') {
+            const waFrom = process.env.TWILIO_WHATSAPP_NUMBER || '+14155238886'
+            await twilioClient.messages.create({
+                from: `whatsapp:${waFrom}`,
+                to: `whatsapp:${e164Phone}`,
+                body: message,
+            })
+            console.log(`[MARKETING] WhatsApp sent to ${e164Phone}`)
         } else if (channel === 'EMAIL' && guest.email) {
-            // Placeholder for real email (e.g. Resend/Nodemailer)
-            console.log(`[MARKETING] Email sent to ${guest.email}: ${message}`)
+            await sendMarketingBlast({
+                to: guest.email,
+                guestName: guest.name,
+                hotelName: propertyName || 'Zenbourg',
+                promoCode: promoCode || 'ZENVIP',
+            })
+            console.log(`[MARKETING] Email sent to ${guest.email}`)
+        } else {
+            console.warn(`[MARKETING] Unknown channel "${channel}" or missing contact for guest ${guest.name}`)
+            return false
         }
         return true
-    } catch (err) {
-        console.error(`[MARKETING_ERROR] Failed to send via ${channel}:`, err)
+    } catch (err: any) {
+        console.error(`[MARKETING_ERROR] Failed to send ${channel} to ${e164Phone}:`, err?.message || err)
         return false
     }
 }
@@ -160,35 +183,48 @@ export async function POST(req: NextRequest) {
 
         // ACTION: BLAST (Real Outreach)
         if (action === 'BLAST') {
-            const guests = await prisma.guest.findMany({
-                where: { bookings: { some: { propertyId: propertyId as string } } },
-                include: { bookings: { where: { propertyId: propertyId as string } } }
-            })
-            
-            if (guests.length === 0) return NextResponse.json({ error: 'No guests found for this segment' }, { status: 404 })
+            const { guestIds, message: customMessage } = body
 
-            // Filter by "Diamond" or "Platinum" logic if segment specified
-            let targetGuests = guests
-            if (segment.includes('Member')) targetGuests = guests.filter(g => g.bookings.length >= 2)
+            // If specific guestIds provided, use those; otherwise fall back to segment filter
+            let targetGuests: any[]
+            if (guestIds && Array.isArray(guestIds) && guestIds.length > 0) {
+                targetGuests = await prisma.guest.findMany({
+                    where: { id: { in: guestIds } },
+                })
+            } else {
+                targetGuests = await prisma.guest.findMany({
+                    where: { bookings: { some: { propertyId: propertyId as string } } },
+                    include: { bookings: { where: { propertyId: propertyId as string } } }
+                })
+                if (segment?.includes('Member')) {
+                    targetGuests = targetGuests.filter((g: any) => g.bookings?.length >= 2)
+                }
+            }
+
+            if (targetGuests.length === 0) {
+                return NextResponse.json({ error: 'No guests found' }, { status: 404 })
+            }
 
             // Record Campaign
-            const campaign = await prisma.campaign.create({
-                data: {
-                    name: name || `Blast ${format(new Date(), 'MMM dd')}`,
-                    segment: segment,
-                    channel: channel as any,
-                    status: 'ACTIVE',
-                    propertyId: propertyId as string,
-                    performance: 0,
-                    promoCode: promoCode
-                }
-            })
+            try {
+                await prisma.campaign.create({
+                    data: {
+                        name: name || `Blast ${format(new Date(), 'MMM dd')}`,
+                        segment: segment || 'Custom',
+                        channel: (channel || 'SMS') as any,
+                        status: 'ACTIVE',
+                        propertyId: propertyId as string,
+                        performance: 0,
+                        promoCode: promoCode || null,
+                    }
+                })
+            } catch { /* campaign logging is non-critical */ }
 
-            // Async send (limit to 10 for safety/demo)
-            const blastList = targetGuests.slice(0, 10)
+            // Send SMS via Twilio
             let sentCount = 0
-            for (const g of blastList) {
-                const ok = await sendRealNotification(g, channel, promoCode, property?.name)
+            for (const g of targetGuests) {
+                const msgText = customMessage || `Hello ${g.name}! Use code ${promoCode || 'ZENVIP'} for 20% off your next stay at ${property?.name || 'our hotel'}.`
+                const ok = await sendRealNotification(g, channel || 'SMS', promoCode, property?.name, msgText)
                 if (ok) sentCount++
             }
 

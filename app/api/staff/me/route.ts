@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/options'
 import { prisma } from '@/lib/db'
+import bcrypt from 'bcryptjs'
 
 export const dynamic = 'force-dynamic'
 
@@ -103,15 +104,71 @@ export async function PATCH(request: Request) {
     if (!session) return new NextResponse('Unauthorized', { status: 401 })
 
     try {
-        const { dndEnabled } = await request.json()
-        
-        const updatedUser = await prisma.user.update({
-            where: { id: session.user.id },
-            data: { dndEnabled }
-        })
+        const body = await request.json()
+        const { currentPassword, newPassword, phone, address, emergencyContactName, emergencyContactPhone } = body
 
-        return NextResponse.json(updatedUser)
+        // ── Password change ──────────────────────────────────────────────────
+        if (currentPassword && newPassword) {
+            const user = await prisma.user.findUnique({
+                where: { id: session.user.id },
+                select: { password: true },
+            })
+            if (!user?.password) {
+                return NextResponse.json({ error: 'No password set on this account' }, { status: 400 })
+            }
+            const valid = await bcrypt.compare(currentPassword, user.password)
+            if (!valid) {
+                return NextResponse.json({ error: 'Current password is incorrect' }, { status: 400 })
+            }
+            if (newPassword.length < 8) {
+                return NextResponse.json({ error: 'New password must be at least 8 characters' }, { status: 400 })
+            }
+            const hashed = await bcrypt.hash(newPassword, 12)
+            await prisma.user.update({
+                where: { id: session.user.id },
+                data: { password: hashed },
+            })
+            return NextResponse.json({ success: true, message: 'Password updated' })
+        }
+
+        // ── Profile update ───────────────────────────────────────────────────
+        // Update phone on User model
+        if (phone !== undefined && phone.trim()) {
+            try {
+                await prisma.user.update({
+                    where: { id: session.user.id },
+                    data: { phone: phone.trim() },
+                })
+            } catch (phoneErr: any) {
+                if (phoneErr?.code === 'P2002') {
+                    return NextResponse.json({ error: 'Phone number already in use' }, { status: 400 })
+                }
+                throw phoneErr
+            }
+        }
+
+        // Update address / emergency contact on Staff model
+        const staffUpdates: Record<string, string> = {}
+        if (address !== undefined) staffUpdates.address = address
+        if (emergencyContactName !== undefined) staffUpdates.emergencyContactName = emergencyContactName
+        if (emergencyContactPhone !== undefined) staffUpdates.emergencyContactPhone = emergencyContactPhone
+
+        if (Object.keys(staffUpdates).length > 0) {
+            const staff = await prisma.staff.findUnique({
+                where: { userId: session.user.id },
+                select: { id: true },
+            })
+            if (staff) {
+                await prisma.staff.update({
+                    where: { id: staff.id },
+                    data: staffUpdates,
+                })
+            }
+        }
+
+        return NextResponse.json({ success: true, message: 'Profile updated' })
     } catch (error) {
+        console.error('Staff PATCH error:', error)
         return new NextResponse('Internal Server Error', { status: 500 })
     }
 }

@@ -1,25 +1,23 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { sendOTP } from '@/lib/twilio';
+import { NextRequest, NextResponse } from 'next/server'
+import { sendOTP } from '@/lib/twilio'
+import { rateLimit, getClientIp } from '@/lib/rate-limit'
+import { badRequest, tooManyRequests, serverError } from '@/lib/api-response'
 
-export const dynamic = 'force-dynamic';
+export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
+    // Rate limit: 5 OTPs per 10 minutes per IP
+    const ip = getClientIp(request)
+    const rl = rateLimit(`otp-send:${ip}`, { limit: 5, windowSec: 600 })
+    if (!rl.success) return tooManyRequests(rl.resetAt)
+
     try {
-        const { phone } = await request.json();
+        const { phone } = await request.json()
+        if (!phone) return badRequest('Phone number is required')
 
-        if (!phone) {
-            return NextResponse.json({ error: 'Phone number is required' }, { status: 400 });
-        }
-
-        const result = await sendOTP(phone);
-        
-        return NextResponse.json({
-            success: true,
-            message: 'OTP sent successfully',
-            sid: result.sid
-        });
+        const result = await sendOTP(phone)
+        return NextResponse.json({ success: true, message: 'OTP sent successfully', sid: result.sid })
     } catch (error: any) {
-        console.error('Send OTP Route Error:', error);
-        return NextResponse.json({ error: error.message || 'Failed to send OTP' }, { status: 500 });
+        return serverError(error, 'OTP_SEND')
     }
 }

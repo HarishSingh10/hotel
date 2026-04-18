@@ -71,7 +71,9 @@ export async function PATCH(
             name, email, phone, designation, department, 
             baseSalary, dateOfJoining, employeeId,
             emergencyContactName, emergencyContactPhone, address,
-            contractType, workShift, managerName, status
+            contractType, workShift, managerName, status,
+            annualLeaveBalance, sickLeaveBalance, casualLeaveBalance,
+            bankName, accountNumber, ifscCode
         } = body
 
         const currentStaff = await prisma.staff.findUnique({
@@ -105,6 +107,12 @@ export async function PATCH(
                     ...(contractType && { contractType }),
                     ...(workShift && { workShift }),
                     ...(managerName && { managerName }),
+                    ...(annualLeaveBalance !== undefined && { annualLeaveBalance: parseInt(annualLeaveBalance) }),
+                    ...(sickLeaveBalance !== undefined && { sickLeaveBalance: parseInt(sickLeaveBalance) }),
+                    ...(casualLeaveBalance !== undefined && { casualLeaveBalance: parseInt(casualLeaveBalance) }),
+                    ...(bankName !== undefined && { bankName }),
+                    ...(accountNumber !== undefined && { accountNumber }),
+                    ...(ifscCode !== undefined && { ifscCode }),
                 }
             })
         ])

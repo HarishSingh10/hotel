@@ -2,24 +2,33 @@
 
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import {
-    User, Mail, Phone, LogOut,
+    User, Mail, Phone, LogOut, Camera,
     FileText, Calendar, CreditCard,
-    Settings, Umbrella, Info, Clock,
-    ChevronRight, ShieldCheck, Briefcase, Smartphone,
-    Loader2, Zap, ArrowRight, Star, Moon, BellOff
+    Umbrella, Clock, ChevronRight,
+    ShieldCheck, Briefcase, Edit2, Save, X,
+    Loader2, Star, Lock, Key
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import dynamic from 'next/dynamic'
-const PWAInstall = dynamic(() => import('@/components/common/PWAInstall'), { ssr: false })
+import { toast } from 'sonner'
 import { format } from 'date-fns'
+import { usePwaInstall } from '@/lib/hooks/usePwaInstall'
 
 export default function StaffProfilePage() {
     const { data: session } = useSession()
     const router = useRouter()
+    const { isInstallable, installPwa } = usePwaInstall()
     const [loading, setLoading] = useState(true)
     const [staffData, setStaffData] = useState<any>(null)
+    const [editing, setEditing] = useState(false)
+    const [saving, setSaving] = useState(false)
+    const [editForm, setEditForm] = useState({ phone: '', address: '', emergencyContactName: '', emergencyContactPhone: '' })
+    const [changingPassword, setChangingPassword] = useState(false)
+    const [pwForm, setPwForm] = useState({ current: '', newPw: '', confirm: '' })
+    const [savingPw, setSavingPw] = useState(false)
+    const photoRef = useRef<HTMLInputElement>(null)
+    const [profilePhoto, setProfilePhoto] = useState<string | null>(null)
 
     const fetchProfile = useCallback(async () => {
         try {
@@ -27,241 +36,302 @@ export default function StaffProfilePage() {
             if (res.ok) {
                 const data = await res.json()
                 setStaffData(data)
+                const p = data?.profile || {}
+                setEditForm({
+                    phone: p.user?.phone || '',
+                    address: p.address || '',
+                    emergencyContactName: p.emergencyContactName || '',
+                    emergencyContactPhone: p.emergencyContactPhone || '',
+                })
             }
-        } catch (error) {
-            console.error("Error fetching profile:", error)
-        } finally {
-            setLoading(false)
-        }
+        } catch { /* silent */ } finally { setLoading(false) }
     }, [])
 
     useEffect(() => {
         fetchProfile()
-    }, [fetchProfile])
-
-    const handleRequestVerification = async () => {
-        // Optimistic Update
-        setStaffData((prev: any) => ({
-            ...prev,
-            profile: { ...prev.profile, verificationRequested: true }
-        }))
-        
-        try {
-            const res = await fetch('/api/staff/verify', { method: 'POST' })
-            if (res.ok) {
-                toast.success("Verification request sent to owner")
-                fetchProfile()
-            }
-        } catch (error) {
-            console.error("Verification request error:", error)
+        // Load saved profile photo
+        if (session?.user?.id) {
+            const saved = localStorage.getItem(`profile_photo_${session.user.id}`)
+            if (saved) setProfilePhoto(saved)
         }
+    }, [fetchProfile, session?.user?.id])
+
+    const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+        if (file.size > 2 * 1024 * 1024) { toast.error('Photo must be under 2MB'); return }
+        const reader = new FileReader()
+        reader.onloadend = () => {
+            const dataUrl = reader.result as string
+            setProfilePhoto(dataUrl)
+            if (session?.user?.id) localStorage.setItem(`profile_photo_${session.user.id}`, dataUrl)
+            toast.success('Profile photo updated')
+        }
+        reader.readAsDataURL(file)
     }
 
-    const handleToggleDND = async (currentStatus: boolean) => {
-        // Optimistic Update
-        setStaffData((prev: any) => ({
-            ...prev,
-            profile: { 
-                ...prev.profile, 
-                user: { ...prev.profile.user, dndEnabled: !currentStatus } 
-            }
-        }))
-
+    const handleSaveProfile = async () => {
+        setSaving(true)
         try {
             const res = await fetch('/api/staff/me', {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ dndEnabled: !currentStatus })
+                body: JSON.stringify(editForm),
             })
-            if (!res.ok) {
-               fetchProfile() // Rollback on error
-            }
-        } catch (error) {
-            console.error("DND update error:", error)
-            fetchProfile()
-        }
+            if (res.ok) {
+                toast.success('Profile updated')
+                setEditing(false)
+                fetchProfile()
+            } else toast.error('Failed to save')
+        } catch { toast.error('Error') } finally { setSaving(false) }
+    }
+
+    const handleChangePassword = async () => {
+        if (!pwForm.current || !pwForm.newPw) { toast.error('Fill all fields'); return }
+        if (pwForm.newPw !== pwForm.confirm) { toast.error('Passwords do not match'); return }
+        if (pwForm.newPw.length < 8) { toast.error('Password must be at least 8 characters'); return }
+        setSavingPw(true)
+        try {
+            const res = await fetch('/api/staff/me', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ currentPassword: pwForm.current, newPassword: pwForm.newPw }),
+            })
+            const data = await res.json()
+            if (res.ok) {
+                toast.success('Password changed successfully')
+                setChangingPassword(false)
+                setPwForm({ current: '', newPw: '', confirm: '' })
+            } else toast.error(data.error ?? 'Failed to change password')
+        } catch { toast.error('Error') } finally { setSavingPw(false) }
+    }
+
+    const handleRequestVerification = async () => {
+        try {
+            const res = await fetch('/api/staff/verify', { method: 'POST' })
+            if (res.ok) { toast.success('Verification request sent to manager'); fetchProfile() }
+        } catch { /* silent */ }
     }
 
     if (loading) return (
-        <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        <div className="flex items-center justify-center min-h-[60vh]">
             <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
-            <p className="mt-4 text-[10px] font-black uppercase tracking-widest text-gray-500">Syncing Profile Node...</p>
         </div>
     )
 
     const profile = staffData?.profile || {}
     const user = profile?.user || session?.user || {}
+    const displayPhoto = profilePhoto || profile.profilePhoto
 
-    const quickActions = [
-        { label: 'Leave Requests', icon: Umbrella, href: '/staff/leave', color: 'text-amber-500', bg: 'bg-amber-600/10' },
-        { label: 'Payroll Hub', icon: CreditCard, href: '/staff/payroll', color: 'text-blue-500', bg: 'bg-blue-600/10' },
-        { label: 'Attendance Log', icon: Calendar, href: '/staff/attendance', color: 'text-indigo-500', bg: 'bg-indigo-600/10' },
-        { label: 'Operational SOP', icon: Info, href: '/staff/sop', color: 'text-purple-500', bg: 'bg-purple-600/10' },
-    ]
+    const ic = 'w-full bg-[#0d1117] border border-white/[0.06] rounded-2xl px-4 py-3 text-sm text-white outline-none focus:border-blue-500/50 transition-all'
 
     return (
-        <div className="space-y-8 animate-fade-in pb-16">
-            {/* Header: Premium Glassmorphism & Identity */}
-            <div className="bg-[#161b22] border border-white/[0.05] rounded-[45px] p-8 flex flex-col items-center relative overflow-hidden group shadow-2xl shadow-black/40">
-                {/* Visual Flair */}
-                <div className="absolute top-0 right-0 w-48 h-48 bg-blue-600/5 blur-[80px] rounded-full translate-x-16 -translate-y-16"></div>
-                <div className="absolute bottom-0 left-0 w-32 h-32 bg-indigo-600/5 blur-[60px] rounded-full -translate-x-16 translate-y-16"></div>
-                
-                <div className="absolute top-6 right-8 flex items-center gap-1.5 px-3 py-1 bg-white/[0.03] border border-white/[0.05] rounded-full">
-                    <div className={cn("w-1.5 h-1.5 rounded-full animate-pulse", profile.status === 'ACTIVE' ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" : "bg-gray-500")}></div>
-                    <span className={cn("text-[9px] font-black uppercase tracking-widest", profile.status === 'ACTIVE' ? "text-emerald-500" : "text-gray-500")}>
-                        {profile.status === 'ACTIVE' ? 'Live System' : profile.status || 'Standby'}
+        <div className="space-y-6 animate-fade-in pb-16">
+
+            {/* ── Profile Card ── */}
+            <div className="bg-[#161b22] border border-white/[0.05] rounded-[40px] p-8 flex flex-col items-center relative overflow-hidden shadow-2xl">
+                <div className="absolute top-0 right-0 w-48 h-48 bg-blue-600/5 blur-[80px] rounded-full translate-x-16 -translate-y-16 pointer-events-none" />
+
+                {/* Status badge */}
+                <div className="absolute top-5 right-6 flex items-center gap-1.5 px-3 py-1 bg-white/[0.03] border border-white/[0.05] rounded-full">
+                    <div className={cn('w-1.5 h-1.5 rounded-full animate-pulse', profile.isVerified ? 'bg-emerald-500' : 'bg-amber-500')} />
+                    <span className={cn('text-[9px] font-bold uppercase tracking-widest', profile.isVerified ? 'text-emerald-500' : 'text-amber-500')}>
+                        {profile.isVerified ? 'Verified' : 'Unverified'}
                     </span>
                 </div>
 
-                <div className="relative mb-6">
-                    <div className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-600 to-indigo-700 p-1 transition-all duration-300 shadow-xl shadow-blue-500/20 relative">
-                        <div className="w-full h-full rounded-full bg-[#0d1117] flex items-center justify-center overflow-hidden border-4 border-[#161b22]">
-                            {profile.profilePhoto ? (
-                                <img
-                                    src={profile.profilePhoto}
-                                    alt=""
-                                    className="w-full h-full object-cover transition-all duration-300"
-                                />
+                {/* Avatar with upload */}
+                <div className="relative mb-5">
+                    <div className="w-28 h-28 rounded-full bg-gradient-to-br from-blue-600 to-indigo-700 p-[2px] shadow-xl shadow-blue-500/20">
+                        <div className="w-full h-full rounded-full bg-[#0d1117] overflow-hidden border-4 border-[#161b22]">
+                            {displayPhoto ? (
+                                <img src={displayPhoto} alt="" className="w-full h-full object-cover" />
                             ) : (
                                 <div className="w-full h-full flex items-center justify-center bg-blue-600/10">
-                                    <User className="w-12 h-12 text-blue-500" />
+                                    <User className="w-10 h-10 text-blue-500" />
                                 </div>
                             )}
                         </div>
-                        <div className="absolute bottom-0 right-0 w-10 h-10 bg-[#161b22] border border-white/10 rounded-full flex items-center justify-center shadow-lg">
-                            <Star className="w-5 h-5 text-amber-500 fill-amber-500/20" />
-                        </div>
                     </div>
-                </div>
-
-                <div className="text-center space-y-1">
-                    <h2 className="text-3xl font-black text-white tracking-tighter italic">{user.name || 'Staff User'}</h2>
-                    <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] italic underline decoration-blue-500/40 decoration-2 underline-offset-8 decoration-dashed">
-                        {profile.designation || 'Operational Associate'} • {profile.department || 'Operations'}
-                    </p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3 w-full mt-10">
-                    <button 
-                        onClick={() => router.push('/staff/settings')}
-                        className="h-14 bg-white/[0.03] border border-white/[0.05] rounded-2xl text-[10px] font-black uppercase tracking-widest text-white hover:bg-white/[0.08] transition-all flex items-center justify-center gap-2 active:scale-95"
+                    <button
+                        onClick={() => photoRef.current?.click()}
+                        className="absolute bottom-0 right-0 w-9 h-9 bg-blue-600 rounded-full flex items-center justify-center border-2 border-[#161b22] shadow-lg hover:bg-blue-500 transition-all active:scale-95"
                     >
-                        <Settings className="w-4 h-4 text-gray-500" /> Settings Portal
+                        <Camera className="w-4 h-4 text-white" />
                     </button>
-                    
+                    <input ref={photoRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
+                </div>
+
+                <h2 className="text-2xl font-bold text-white">{user.name || 'Staff'}</h2>
+                <p className="text-sm text-gray-500 mt-1">
+                    {profile.designation || 'Staff'} · {profile.department?.replace('_', ' ') || 'Operations'}
+                </p>
+                <p className="text-xs text-gray-600 mt-0.5">ID: {profile.employeeId || '—'}</p>
+
+                {/* Action buttons */}
+                <div className="grid grid-cols-2 gap-3 w-full mt-6">
+                    <button
+                        onClick={() => setEditing(true)}
+                        className="h-12 bg-white/[0.04] border border-white/[0.08] rounded-2xl text-xs font-semibold text-white flex items-center justify-center gap-2 hover:bg-white/[0.08] transition-all active:scale-95"
+                    >
+                        <Edit2 className="w-4 h-4" /> Edit Profile
+                    </button>
                     {profile.isVerified ? (
-                        <div className="h-14 bg-blue-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-blue-600/20 flex items-center justify-center gap-2">
-                            <ShieldCheck className="w-4 h-4" /> Identity Verified
+                        <div className="h-12 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-2xl text-xs font-semibold flex items-center justify-center gap-2">
+                            <ShieldCheck className="w-4 h-4" /> ID Verified
                         </div>
                     ) : profile.verificationRequested ? (
-                        <div className="h-14 bg-amber-500/10 border border-amber-500/20 text-amber-500 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2">
-                             Verification Active
+                        <div className="h-12 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-2xl text-xs font-semibold flex items-center justify-center gap-2">
+                            <Clock className="w-4 h-4" /> Pending Review
                         </div>
                     ) : (
-                        <button 
+                        <button
                             onClick={handleRequestVerification}
-                            className="h-14 bg-blue-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-blue-600/20 hover:bg-blue-500 transition-all flex items-center justify-center gap-2 active:scale-95"
+                            className="h-12 bg-blue-600 text-white rounded-2xl text-xs font-semibold flex items-center justify-center gap-2 hover:bg-blue-500 transition-all active:scale-95"
                         >
-                            <User className="w-4 h-4" /> Request Verify
+                            <ShieldCheck className="w-4 h-4" /> Verify ID
                         </button>
                     )}
                 </div>
             </div>
 
-            {/* Quick Actions Grid: Corporate Aesthetic */}
-            <div className="grid grid-cols-2 gap-4">
-                {quickActions.map((action, i) => (
-                    <button
-                        key={i}
-                        onClick={() => router.push(action.href)}
-                        className="bg-[#161b22] border border-white/[0.05] p-6 rounded-[35px] flex flex-col gap-4 text-left transition-all hover:bg-white/[0.02] active:scale-95 group shadow-lg shadow-black/20"
-                    >
-                        <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center border border-white/[0.05] shadow-inner", action.bg)}>
-                            <action.icon className={cn("w-6 h-6", action.color)} />
-                        </div>
-                        <div className="space-y-1">
-                            <span className="text-[11px] font-black uppercase tracking-widest text-white italic group-hover:text-blue-500 transition-colors">{action.label}</span>
-                            <p className="text-[9px] font-bold text-gray-600 uppercase tracking-widest">Access Internal</p>
-                        </div>
+            {/* ── Edit Profile Form ── */}
+            {editing && (
+                <div className="bg-[#161b22] border border-white/[0.05] rounded-[35px] p-6 space-y-4">
+                    <div className="flex items-center justify-between mb-2">
+                        <h3 className="text-sm font-bold text-white">Edit Profile</h3>
+                        <button onClick={() => setEditing(false)} className="p-1.5 hover:bg-white/5 rounded-lg transition-colors">
+                            <X className="w-4 h-4 text-gray-400" />
+                        </button>
+                    </div>
+                    <div className="space-y-1.5">
+                        <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider block">Phone Number</label>
+                        <input value={editForm.phone} onChange={e => setEditForm(p => ({ ...p, phone: e.target.value }))} className={ic} placeholder="+91 98765 43210" />
+                    </div>
+                    <div className="space-y-1.5">
+                        <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider block">Home Address</label>
+                        <input value={editForm.address} onChange={e => setEditForm(p => ({ ...p, address: e.target.value }))} className={ic} placeholder="Your home address" />
+                    </div>
+                    <div className="space-y-1.5">
+                        <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider block">Emergency Contact Name</label>
+                        <input value={editForm.emergencyContactName} onChange={e => setEditForm(p => ({ ...p, emergencyContactName: e.target.value }))} className={ic} placeholder="e.g. Rahul Sharma" />
+                    </div>
+                    <div className="space-y-1.5">
+                        <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider block">Emergency Contact Phone</label>
+                        <input value={editForm.emergencyContactPhone} onChange={e => setEditForm(p => ({ ...p, emergencyContactPhone: e.target.value }))} className={ic} placeholder="+91 98765 43210" />
+                    </div>
+                    <button onClick={handleSaveProfile} disabled={saving}
+                        className="w-full h-12 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-sm font-semibold rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-95">
+                        {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                        Save Changes
                     </button>
-                ))}
-            </div>
-
-            {/* Credentials Card: Sleek List */}
-            <div className="bg-[#161b22] border border-white/[0.05] rounded-[40px] overflow-hidden shadow-2xl shadow-black/40">
-                <div className="px-8 py-6 border-b border-white/[0.03] flex items-center justify-between bg-white/[0.01]">
-                    <h3 className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] italic">System Credentials</h3>
-                    <Briefcase className="w-4 h-4 text-gray-700" />
                 </div>
-                <div className="p-4 space-y-2">
+            )}
+
+            {/* ── My Details ── */}
+            <div className="bg-[#161b22] border border-white/[0.05] rounded-[35px] overflow-hidden">
+                <div className="px-6 py-4 border-b border-white/[0.04]">
+                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">My Details</h3>
+                </div>
+                <div className="divide-y divide-white/[0.03]">
                     {[
-                        { label: 'Staff Node', value: profile.employeeId || 'IDX-992', icon: Smartphone },
-                        { label: 'Email Core', value: user.email || 'N/A', icon: Mail },
-                        { label: 'Operational Since', value: profile.dateOfJoining ? format(new Date(profile.dateOfJoining), 'MMM yyyy') : 'N/A', icon: Calendar },
+                        { label: 'Email', value: user.email || '—', icon: Mail },
+                        { label: 'Phone', value: user.phone || editForm.phone || '—', icon: Phone },
+                        { label: 'Department', value: profile.department?.replace('_', ' ') || '—', icon: Briefcase },
+                        { label: 'Joined', value: profile.dateOfJoining ? format(new Date(profile.dateOfJoining), 'dd MMM yyyy') : '—', icon: Calendar },
+                        { label: 'Work Shift', value: profile.workShift || '—', icon: Clock },
+                        { label: 'Emergency Contact', value: profile.emergencyContactName ? `${profile.emergencyContactName} · ${profile.emergencyContactPhone || ''}` : '—', icon: Phone },
                     ].map((item, i) => (
-                        <div key={i} className="px-6 py-5 bg-[#0d1117]/40 rounded-3xl border border-white/[0.02] flex items-center justify-between group transition-all hover:border-blue-500/20">
-                            <div className="flex items-center gap-4">
-                                <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-white/[0.03] text-gray-600 group-hover:text-blue-500 transition-colors">
-                                    <item.icon className="w-5 h-5" />
-                                </div>
-                                <div>
-                                    <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-0.5">{item.label}</p>
-                                    <p className="text-sm font-bold text-gray-200">{item.value}</p>
-                                </div>
+                        <div key={i} className="px-6 py-4 flex items-center gap-4">
+                            <div className="w-9 h-9 rounded-xl bg-white/[0.03] flex items-center justify-center shrink-0">
+                                <item.icon className="w-4 h-4 text-gray-600" />
                             </div>
-                            <ArrowRight className="w-4 h-4 text-gray-800 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+                            <div className="flex-1 min-w-0">
+                                <p className="text-[10px] text-gray-600 uppercase tracking-wider font-semibold">{item.label}</p>
+                                <p className="text-sm text-white font-medium truncate mt-0.5">{item.value}</p>
+                            </div>
                         </div>
                     ))}
                 </div>
             </div>
 
-            {/* Privacy Section: DND Control */}
-            <div className="bg-[#161b22] border border-white/[0.05] rounded-[40px] overflow-hidden shadow-2xl shadow-black/40">
-                <div className="px-8 py-6 border-b border-white/[0.03] flex items-center justify-between bg-white/[0.01]">
-                    <h3 className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] italic">Security & Privacy</h3>
-                    <ShieldCheck className="w-4 h-4 text-gray-700" />
+            {/* ── Quick Links ── */}
+            <div className="bg-[#161b22] border border-white/[0.05] rounded-[35px] overflow-hidden">
+                <div className="px-6 py-4 border-b border-white/[0.04]">
+                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Quick Access</h3>
                 </div>
-                <div className="p-6">
-                    <div className="flex items-center justify-between p-6 bg-[#0d1117]/40 rounded-[30px] border border-white/[0.02]">
-                        <div className="flex items-center gap-4">
-                            <div className={cn(
-                                "w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500",
-                                user.dndEnabled ? "bg-amber-500/20 text-amber-500 shadow-lg shadow-amber-500/10" : "bg-white/[0.03] text-gray-600"
-                            )}>
-                                {user.dndEnabled ? <Moon className="w-6 h-6" /> : <BellOff className="w-6 h-6" />}
+                <div className="divide-y divide-white/[0.03]">
+                    {[
+                        { label: 'Leave Requests', icon: Umbrella, href: '/staff/leave', color: 'text-amber-400', bg: 'bg-amber-500/10' },
+                        { label: 'My Payslips', icon: CreditCard, href: '/staff/payroll', color: 'text-blue-400', bg: 'bg-blue-500/10' },
+                        { label: 'Attendance History', icon: Calendar, href: '/staff/attendance', color: 'text-indigo-400', bg: 'bg-indigo-500/10' },
+                        { label: 'My Tasks', icon: FileText, href: '/staff/tasks', color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
+                    ].map((item, i) => (
+                        <button key={i} onClick={() => router.push(item.href)}
+                            className="w-full px-6 py-4 flex items-center gap-4 hover:bg-white/[0.02] transition-colors active:scale-[0.98]">
+                            <div className={cn('w-9 h-9 rounded-xl flex items-center justify-center shrink-0', item.bg)}>
+                                <item.icon className={cn('w-4 h-4', item.color)} />
                             </div>
-                            <div>
-                                <p className="text-[11px] font-black text-white uppercase tracking-widest mb-0.5">Do Not Disturb</p>
-                                <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Silence System Alerts</p>
-                            </div>
-                        </div>
-                        <button 
-                            onClick={() => handleToggleDND(user.dndEnabled)}
-                            className={cn(
-                                "w-14 h-8 rounded-full border relative transition-all duration-500 p-1",
-                                user.dndEnabled ? "bg-amber-500 border-amber-600 shadow-lg shadow-amber-500/20" : "bg-white/[0.03] border-white/10"
-                            )}
-                        >
-                            <div className={cn(
-                                "w-6 h-6 rounded-full bg-white transition-all duration-500 shadow-sm",
-                                user.dndEnabled ? "translate-x-6" : "translate-x-0"
-                            )} />
+                            <span className="flex-1 text-sm font-medium text-white text-left">{item.label}</span>
+                            <ChevronRight className="w-4 h-4 text-gray-700" />
                         </button>
-                    </div>
+                    ))}
                 </div>
             </div>
 
-            <PWAInstall />
+            {/* ── Change Password ── */}
+            <div className="bg-[#161b22] border border-white/[0.05] rounded-[35px] overflow-hidden">
+                <button
+                    onClick={() => setChangingPassword(v => !v)}
+                    className="w-full px-6 py-4 flex items-center gap-4 hover:bg-white/[0.02] transition-colors"
+                >
+                    <div className="w-9 h-9 rounded-xl bg-slate-500/10 flex items-center justify-center shrink-0">
+                        <Key className="w-4 h-4 text-slate-400" />
+                    </div>
+                    <span className="flex-1 text-sm font-medium text-white text-left">Change Password</span>
+                    <ChevronRight className={cn('w-4 h-4 text-gray-700 transition-transform', changingPassword && 'rotate-90')} />
+                </button>
+                {changingPassword && (
+                    <div className="px-6 pb-6 space-y-3 border-t border-white/[0.04] pt-4">
+                        <input type="password" value={pwForm.current} onChange={e => setPwForm(p => ({ ...p, current: e.target.value }))}
+                            className={ic} placeholder="Current password" />
+                        <input type="password" value={pwForm.newPw} onChange={e => setPwForm(p => ({ ...p, newPw: e.target.value }))}
+                            className={ic} placeholder="New password (min 8 chars)" />
+                        <input type="password" value={pwForm.confirm} onChange={e => setPwForm(p => ({ ...p, confirm: e.target.value }))}
+                            className={ic} placeholder="Confirm new password" />
+                        <button onClick={handleChangePassword} disabled={savingPw}
+                            className="w-full h-11 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-sm font-semibold rounded-2xl flex items-center justify-center gap-2 transition-all">
+                            {savingPw ? <Loader2 className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />}
+                            Update Password
+                        </button>
+                    </div>
+                )}
+            </div>
 
+            {/* ── Install App ── */}
+            {isInstallable && (
+                <button onClick={installPwa}
+                    className="w-full p-5 bg-[#161b22] border border-blue-500/20 rounded-[35px] flex items-center gap-4 hover:bg-blue-600/5 transition-all active:scale-[0.98]">
+                    <div className="w-11 h-11 rounded-2xl bg-blue-600 flex items-center justify-center shrink-0 shadow-lg shadow-blue-600/30">
+                        <Star className="w-5 h-5 text-white" />
+                    </div>
+                    <div className="flex-1 text-left">
+                        <p className="text-sm font-bold text-white">Install App</p>
+                        <p className="text-[10px] text-gray-500 mt-0.5">Save to home screen for quick access</p>
+                    </div>
+                    <div className="w-9 h-9 rounded-xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center">
+                        <ChevronRight className="w-4 h-4 text-blue-400" />
+                    </div>
+                </button>
+            )}
+
+            {/* ── Sign Out ── */}
             <button
                 onClick={() => signOut({ callbackUrl: '/staff/login' })}
-                className="w-full h-16 bg-rose-500/5 text-rose-500 border border-rose-500/10 rounded-[25px] font-black text-[10px] uppercase tracking-[0.3em] flex items-center justify-center gap-3 hover:bg-rose-500/10 transition-all active:scale-[0.98] mt-4 shadow-xl shadow-rose-500/5 italic"
+                className="w-full h-14 bg-rose-500/5 text-rose-400 border border-rose-500/10 rounded-[25px] text-sm font-semibold flex items-center justify-center gap-3 hover:bg-rose-500/10 transition-all active:scale-[0.98]"
             >
-                <LogOut className="w-4 h-4" />
-                Disconnect Operational Link
+                <LogOut className="w-4 h-4" /> Sign Out
             </button>
         </div>
     )
 }
-

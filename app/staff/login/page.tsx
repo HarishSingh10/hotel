@@ -52,10 +52,10 @@ export default function StaffLoginPage() {
                     <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-3xl mx-auto flex items-center justify-center shadow-2xl shadow-blue-600/20 mb-6 group hover:rotate-6 transition-transform">
                         <ShieldCheck className="w-8 h-8 text-white" />
                     </div>
-                    <h1 className="text-3xl font-black text-white tracking-tighter italic">ZENBOURG</h1>
+                    <h1 className="text-3xl font-black text-white tracking-tighter ">ZENBOURG</h1>
                     <div className="flex items-center justify-center gap-2 mt-2">
                         <div className="h-[1px] w-4 bg-blue-500/40"></div>
-                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500 italic">Operations Tunnel</p>
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500 ">Staff Login</p>
                         <div className="h-[1px] w-4 bg-blue-500/40"></div>
                     </div>
                 </div>
@@ -66,14 +66,14 @@ export default function StaffLoginPage() {
                     
                     <form onSubmit={handleLogin} className="space-y-6 relative z-10">
                         <div className="space-y-2">
-                            <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 ml-4">Email / Staff ID</label>
+                            <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 ml-4">Email or Phone</label>
                             <div className="relative">
                                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-700" />
                                 <input
                                     type="text"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    placeholder="ops@zenbourg.com"
+                                    placeholder="your@email.com or phone number"
                                     className="w-full bg-[#0d1117] border border-white/[0.05] rounded-2xl px-12 py-4 text-xs text-white outline-none focus:border-blue-500/50 transition-all font-bold placeholder:text-gray-800"
                                     required
                                 />
@@ -81,7 +81,7 @@ export default function StaffLoginPage() {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 ml-4">Access Secret</label>
+                            <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 ml-4">Password</label>
                             <div className="relative">
                                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-700" />
                                 <input
@@ -104,8 +104,8 @@ export default function StaffLoginPage() {
                                 <Loader2 className="w-5 h-5 animate-spin" />
                             ) : (
                                 <>
-                                    <span>Initiate Tunnel</span>
-                                    <Zap className="w-4 h-4 fill-white animate-pulse" />
+                                    <span>Sign In</span>
+                                    <Zap className="w-4 h-4 fill-white" />
                                 </>
                             )}
                         </button>
@@ -115,8 +115,8 @@ export default function StaffLoginPage() {
                 {/* Footer Info */}
                 <div className="mt-10 text-center space-y-4">
                     <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest leading-relaxed">
-                        Authorized Personnel Only<br/>
-                        System logs are being monitored globally.
+                        For hotel staff only.<br/>
+                        Contact your manager if you need access.
                     </p>
                     <div className="flex items-center justify-center gap-4 text-gray-800">
                         <div className="w-8 h-[1px] bg-white/5"></div>

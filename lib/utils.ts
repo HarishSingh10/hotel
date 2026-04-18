@@ -1,10 +1,20 @@
 import { format, formatDistanceToNow, differenceInMinutes, differenceInHours, differenceInDays } from 'date-fns'
 
 /**
- * Merge CSS class names
+ * Merge CSS class names (supports conditional classes)
  */
-export function cn(...classes: (string | number | boolean | undefined | null)[]): string {
-  return classes.filter(Boolean).join(' ')
+export function cn(...classes: (string | number | boolean | undefined | null | Record<string, boolean>)[]): string {
+  return classes
+    .flatMap((c) => {
+      if (!c) return []
+      if (typeof c === 'object') {
+        return Object.entries(c)
+          .filter(([, v]) => v)
+          .map(([k]) => k)
+      }
+      return [String(c)]
+    })
+    .join(' ')
 }
 
 /**
