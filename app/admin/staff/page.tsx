@@ -32,6 +32,7 @@ export default function StaffPage() {
     const [searchQuery, setSearchQuery] = useState('')
     const [filterDept, setFilterDept] = useState('ALL')
     const [activeTab, setActiveTab] = useState<'ALL' | 'VERIFICATION'>('ALL')
+    const [idProofModal, setIdProofModal] = useState<string | null>(null)
 
     // Form State for Add/Edit
     const [formData, setFormData] = useState({
@@ -387,11 +388,8 @@ export default function StaffPage() {
                                             <>
                                                 {/* ID proof thumbnail */}
                                                 {(staff.documents as any)?.idProofImage && (
-                                                    <a
-                                                        href={(staff.documents as any).idProofImage}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        onClick={e => e.stopPropagation()}
+                                                    <button
+                                                        onClick={e => { e.stopPropagation(); setIdProofModal((staff.documents as any).idProofImage) }}
                                                         title="View ID proof"
                                                         className="w-8 h-8 rounded-lg overflow-hidden border border-white/10 hover:border-blue-400/50 transition-all shrink-0"
                                                     >
@@ -400,7 +398,7 @@ export default function StaffPage() {
                                                             alt="ID"
                                                             className="w-full h-full object-cover"
                                                         />
-                                                    </a>
+                                                    </button>
                                                 )}
                                                 <Button
                                                     size="sm"
@@ -448,5 +446,35 @@ export default function StaffPage() {
                 </div>
             </Card>
         </div>
+
+        {/* ID Proof Image Modal */}
+        {idProofModal && (
+            <div
+                className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+                onClick={() => setIdProofModal(null)}
+            >
+                <div
+                    className="relative max-w-lg w-full bg-[#161b22] rounded-3xl overflow-hidden shadow-2xl border border-white/[0.08]"
+                    onClick={e => e.stopPropagation()}
+                >
+                    <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
+                        <p className="text-sm font-bold text-white">ID Proof Document</p>
+                        <button
+                            onClick={() => setIdProofModal(null)}
+                            className="p-1.5 hover:bg-white/5 rounded-lg transition-colors text-gray-400 hover:text-white"
+                        >
+                            <XCircle className="w-5 h-5" />
+                        </button>
+                    </div>
+                    <div className="p-4">
+                        <img
+                            src={idProofModal}
+                            alt="ID Proof"
+                            className="w-full rounded-2xl object-contain max-h-[70vh]"
+                        />
+                    </div>
+                </div>
+            </div>
+        )}
     )
 }
