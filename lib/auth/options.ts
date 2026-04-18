@@ -72,6 +72,22 @@ export const authOptions: NextAuthOptions = {
                 token.role = (user as any).role
                 token.propertyId = (user as any).propertyId ?? null
                 token.department = (user as any).department ?? null
+
+                // Fetch property plan for middleware feature gating
+                const pid = (user as any).propertyId
+                if (pid) {
+                    try {
+                        const prop = await prisma.property.findUnique({
+                            where: { id: pid },
+                            select: { plan: true },
+                        })
+                        token.plan = prop?.plan ?? 'BASE'
+                    } catch {
+                        token.plan = 'BASE'
+                    }
+                } else {
+                    token.plan = 'BASE'
+                }
             }
             return token
         },
@@ -81,6 +97,7 @@ export const authOptions: NextAuthOptions = {
                 session.user.role = token.role as string
                 session.user.propertyId = (token.propertyId as string) ?? null
                 session.user.department = (token.department as string) ?? null
+                ;(session.user as any).plan = token.plan ?? 'BASE'
             }
             return session
         },

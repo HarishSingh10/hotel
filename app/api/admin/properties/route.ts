@@ -1,16 +1,13 @@
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@/prisma/generated/client'
+import { prisma } from '@/lib/db'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/options'
 
 export const dynamic = 'force-dynamic'
 
-const prisma = new PrismaClient()
-
 export async function POST(request: Request) {
     try {
         const session = await getServerSession(authOptions)
-
         if (!session || session.user.role !== 'SUPER_ADMIN') {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
@@ -40,25 +37,23 @@ export async function POST(request: Request) {
     } catch (error) {
         console.error('Error creating property:', error)
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
-    } finally {
-        await prisma.$disconnect()
     }
 }
 
 export async function GET() {
     try {
         const session = await getServerSession(authOptions)
-
         if (!session || session.user.role !== 'SUPER_ADMIN') {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
-        const properties = await prisma.property.findMany()
+        const properties = await prisma.property.findMany({
+            select: { id: true, name: true, plan: true },
+            orderBy: { createdAt: 'desc' },
+        })
         return NextResponse.json(properties)
     } catch (error) {
         console.error('Error fetching properties:', error)
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
-    } finally {
-        await prisma.$disconnect()
     }
 }
