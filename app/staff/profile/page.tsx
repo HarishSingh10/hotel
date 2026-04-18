@@ -106,11 +106,30 @@ export default function StaffProfilePage() {
         } catch { toast.error('Error') } finally { setSavingPw(false) }
     }
 
+    const [showVerifyForm, setShowVerifyForm] = useState(false)
+    const [verifyForm, setVerifyForm] = useState({ idType: '', idNumber: '', idProofImage: '' })
+    const [submittingVerify, setSubmittingVerify] = useState(false)
+    const verifyImageRef = useRef<HTMLInputElement>(null)
+
     const handleRequestVerification = async () => {
+        if (!verifyForm.idProofImage) { toast.error('Please upload your ID proof image'); return }
+        if (!verifyForm.idType) { toast.error('Please select ID type'); return }
+        setSubmittingVerify(true)
         try {
-            const res = await fetch('/api/staff/verify', { method: 'POST' })
-            if (res.ok) { toast.success('Verification request sent to manager'); fetchProfile() }
-        } catch { /* silent */ }
+            const res = await fetch('/api/staff/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(verifyForm),
+            })
+            if (res.ok) {
+                toast.success('Verification request sent to manager')
+                setShowVerifyForm(false)
+                setVerifyForm({ idType: '', idNumber: '', idProofImage: '' })
+                fetchProfile()
+            } else {
+                toast.error('Failed to send request')
+            }
+        } catch { toast.error('Error') } finally { setSubmittingVerify(false) }
     }
 
     if (loading) return (
@@ -186,7 +205,7 @@ export default function StaffProfilePage() {
                         </div>
                     ) : (
                         <button
-                            onClick={handleRequestVerification}
+                            onClick={() => setShowVerifyForm(true)}
                             className="h-12 bg-blue-600 text-white rounded-2xl text-xs font-semibold flex items-center justify-center gap-2 hover:bg-blue-500 transition-all active:scale-95"
                         >
                             <ShieldCheck className="w-4 h-4" /> Verify ID
@@ -194,6 +213,95 @@ export default function StaffProfilePage() {
                     )}
                 </div>
             </div>
+
+            {/* ── ID Verification Form ── */}
+            {showVerifyForm && (
+                <div className="bg-[#161b22] border border-blue-500/20 rounded-[35px] p-6 space-y-4">
+                    <div className="flex items-center justify-between mb-2">
+                        <h3 className="text-sm font-bold text-white">Submit ID for Verification</h3>
+                        <button onClick={() => setShowVerifyForm(false)} className="p-1.5 hover:bg-white/5 rounded-lg transition-colors">
+                            <X className="w-4 h-4 text-gray-400" />
+                        </button>
+                    </div>
+
+                    {/* ID Type */}
+                    <div className="space-y-1.5">
+                        <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider block">ID Type</label>
+                        <select
+                            value={verifyForm.idType}
+                            onChange={e => setVerifyForm(p => ({ ...p, idType: e.target.value }))}
+                            className={cn(ic, 'appearance-none')}
+                        >
+                            <option value="">Select ID type</option>
+                            <option value="Aadhaar Card">Aadhaar Card</option>
+                            <option value="PAN Card">PAN Card</option>
+                            <option value="Passport">Passport</option>
+                            <option value="Voter ID">Voter ID</option>
+                            <option value="Driving Licence">Driving Licence</option>
+                        </select>
+                    </div>
+
+                    {/* ID Number */}
+                    <div className="space-y-1.5">
+                        <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider block">ID Number</label>
+                        <input
+                            value={verifyForm.idNumber}
+                            onChange={e => setVerifyForm(p => ({ ...p, idNumber: e.target.value }))}
+                            className={ic}
+                            placeholder="e.g. XXXX XXXX XXXX"
+                        />
+                    </div>
+
+                    {/* ID Proof Image */}
+                    <div className="space-y-1.5">
+                        <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider block">
+                            ID Proof Photo <span className="text-rose-400">*</span>
+                        </label>
+                        <input
+                            ref={verifyImageRef}
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={e => {
+                                const file = e.target.files?.[0]
+                                if (!file) return
+                                if (file.size > 5 * 1024 * 1024) { toast.error('Image must be under 5MB'); return }
+                                const reader = new FileReader()
+                                reader.onloadend = () => setVerifyForm(p => ({ ...p, idProofImage: reader.result as string }))
+                                reader.readAsDataURL(file)
+                            }}
+                        />
+                        {verifyForm.idProofImage ? (
+                            <div className="relative rounded-2xl overflow-hidden border border-white/[0.06]">
+                                <img src={verifyForm.idProofImage} alt="ID proof" className="w-full h-40 object-cover" />
+                                <button
+                                    onClick={() => setVerifyForm(p => ({ ...p, idProofImage: '' }))}
+                                    className="absolute top-2 right-2 w-7 h-7 bg-black/60 rounded-full flex items-center justify-center"
+                                >
+                                    <X className="w-3.5 h-3.5 text-white" />
+                                </button>
+                            </div>
+                        ) : (
+                            <button
+                                onClick={() => verifyImageRef.current?.click()}
+                                className="w-full h-28 bg-[#0d1117] border border-dashed border-white/[0.08] rounded-2xl flex flex-col items-center justify-center gap-2 hover:border-blue-500/40 transition-all"
+                            >
+                                <Camera className="w-6 h-6 text-gray-600" />
+                                <span className="text-xs text-gray-600">Tap to upload ID photo</span>
+                            </button>
+                        )}
+                    </div>
+
+                    <button
+                        onClick={handleRequestVerification}
+                        disabled={submittingVerify}
+                        className="w-full h-12 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-sm font-semibold rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-95"
+                    >
+                        {submittingVerify ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
+                        Submit for Verification
+                    </button>
+                </div>
+            )}
 
             {/* ── Edit Profile Form ── */}
             {editing && (

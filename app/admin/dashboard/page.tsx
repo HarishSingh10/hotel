@@ -436,7 +436,7 @@ export default function AdminDashboard() {
           <div className="bg-[#233648] border border-white/[0.07] rounded-xl p-5">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-[14px] font-semibold text-white">On-Duty Staff</h2>
-              <button className="text-gray-500 hover:text-white transition-colors"><MoreHorizontal className="w-4 h-4" /></button>
+              <button onClick={() => router.push('/admin/support')} className="text-gray-500 hover:text-white transition-colors"><MoreHorizontal className="w-4 h-4" /></button>
             </div>
             <div className="space-y-3">
               {stats.onDutyStaffDetails?.length > 0 ? stats.onDutyStaffDetails.map((staff: any, i: number) => (
@@ -448,7 +448,11 @@ export default function AdminDashboard() {
                       <p className="text-[11px] text-gray-500 capitalize">{staff.department}</p>
                     </div>
                   </div>
-                  <button className="text-gray-600 hover:text-blue-400 transition-colors">
+                  <button
+                    onClick={() => router.push(`/admin/support?tab=messages&withUserId=${staff.userId}`)}
+                    title={`Message ${staff.name}`}
+                    className="text-gray-600 hover:text-blue-400 transition-colors active:scale-95"
+                  >
                     <MessageSquare className="w-4 h-4" />
                   </button>
                 </div>

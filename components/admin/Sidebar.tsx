@@ -18,7 +18,6 @@ import {
   Settings,
   Building2,
   LogOut,
-  Wrench,
   ClipboardCheck,
   Search,
   UtensilsCrossed,
@@ -31,7 +30,8 @@ import {
   X,
   Lock,
 } from 'lucide-react'
-import { planHasFeature, planMeetsRequirement, normalizePlan, type PlanTier } from '@/lib/plan-features'
+import { usePermissions } from '@/lib/hooks/usePermissions'
+import { type PlanTier } from '@/lib/plan-features'
 
 interface NavItem {
   label: string
@@ -78,7 +78,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const { data: session } = useSession()
   const userRole = session?.user?.role || 'STAFF'
   const userDept = (session?.user as any)?.department
-  const userPlan = normalizePlan((session?.user as any)?.plan ?? 'BASE')
+
+  // Use live plan from DB (not stale JWT token)
+  const { plan: livePlan, hasFeature } = usePermissions()
+  const userPlan = livePlan || 'BASE'
 
   const [serviceCount, setServiceCount] = useState(0)
   const [unreadMessages, setUnreadMessages] = useState(0)
@@ -155,11 +158,11 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     return true
   }
 
-  // Determine if a nav item is plan-locked
+  // Determine if a nav item is plan-locked (uses live plan from DB)
   const isPlanLocked = (featureKey?: string): boolean => {
     if (userRole === 'SUPER_ADMIN') return false
     if (!featureKey) return false
-    return !planHasFeature(userPlan, featureKey)
+    return !hasFeature(featureKey)
   }
 
   const itemsWithMeta = navItems

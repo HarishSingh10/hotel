@@ -7,17 +7,13 @@ import { planHasFeature, planMeetsRequirement, type PlanTier } from '@/lib/plan-
 export type PermissionMap = Record<string, boolean>
 
 interface UsePermissionsReturn {
-    // Role-based
     permissions: PermissionMap
     can: (permissionId: string) => boolean
     isAdmin: boolean
     role: string
-
-    // Plan-based
     plan: string
     hasFeature: (featureKey: string) => boolean
     planMeets: (minPlan: PlanTier) => boolean
-
     loading: boolean
 }
 
@@ -34,18 +30,9 @@ export function usePermissions(): UsePermissionsReturn {
     const isAdmin = role === 'SUPER_ADMIN' || role === 'HOTEL_ADMIN'
 
     const fetchPermissions = useCallback(async () => {
-        if (!propertyId || propertyId === 'ALL') {
-            setLoading(false)
-            return
-        }
+        if (!propertyId || propertyId === 'ALL') { setLoading(false); return }
+        if (isAdmin) { setLoading(false); return }
 
-        // Admins have all permissions — no need to fetch
-        if (isAdmin) {
-            setLoading(false)
-            return
-        }
-
-        // Use cache if same property+role
         if (_cache && _cache.propertyId === propertyId && _cache.role === role) {
             setPermissions(_cache.data)
             setLoading(false)
@@ -56,27 +43,22 @@ export function usePermissions(): UsePermissionsReturn {
             const res = await fetch(`/api/admin/settings/roles?propertyId=${propertyId}`)
             if (res.ok) {
                 const json = await res.json()
-                const rolePerms = (json.rolePermissions ?? []).find(
-                    (rp: any) => rp.role === role
-                )
+                const rolePerms = (json.rolePermissions ?? []).find((rp: any) => rp.role === role)
                 const perms: PermissionMap = rolePerms?.permissions ?? {}
                 _cache = { propertyId, role, data: perms }
                 setPermissions(perms)
             }
-        } catch { /* silent */ } finally {
-            setLoading(false)
-        }
+        } catch { /* silent */ } finally { setLoading(false) }
     }, [propertyId, role, isAdmin])
 
-    // Fetch property plan
     const fetchPlan = useCallback(async () => {
         if (!propertyId || propertyId === 'ALL') return
         try {
             const res = await fetch(`/api/admin/settings/property?propertyId=${propertyId}`)
             if (res.ok) {
                 const json = await res.json()
-                const plan = json.data?.plan ?? json.property?.plan
-                if (plan) setPlan(plan)
+                const p = json.data?.plan ?? json.property?.plan
+                if (p) setPlan(p)
             }
         } catch { /* silent */ }
     }, [propertyId])
@@ -87,6 +69,23 @@ export function usePermissions(): UsePermissionsReturn {
             fetchPlan()
         }
     }, [session, fetchPermissions, fetchPlan])
+
+    // Listen for plan upgrade event — re-fetch plan immediately without page reload
+    useEffect(() => {
+        const handler = (e: Event) => {
+            const detail = (e as CustomEvent).detail
+            // If the upgraded property matches ours, update plan immediately
+            if (!detail?.propertyId || detail.propertyId === propertyId) {
+                if (detail?.plan) {
+                    setPlan(detail.plan)
+                } else {
+                    fetchPlan()
+                }
+            }
+        }
+        window.addEventListener('planUpgraded', handler)
+        return () => window.removeEventListener('planUpgraded', handler)
+    }, [propertyId, fetchPlan])
 
     const can = useCallback((permissionId: string): boolean => {
         if (isAdmin) return true
