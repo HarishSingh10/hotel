@@ -191,25 +191,26 @@ export default function MessagesPage() {
         const conversation = conversations.find(c => c.id === selectedConversation)
 
         return (
-            <div className="flex flex-col h-[90vh] -mt-10 -mx-4 bg-[#0d1117] relative z-[60]">
+            // Fixed full-screen overlay — sits above the bottom nav
+            <div className="fixed inset-0 top-16 bg-[#0d1117] z-[60] flex flex-col">
                 {/* Header */}
-                <div className="p-5 bg-[#161b22] border-b border-white/[0.05] flex items-center gap-4 sticky top-0 z-20">
+                <div className="px-4 py-3 bg-[#161b22] border-b border-white/[0.05] flex items-center gap-3 shrink-0">
                     <button
                         onClick={() => setSelectedConversation(null)}
-                        className="p-2.5 bg-white/[0.03] rounded-xl text-gray-400 hover:text-white transition-all"
+                        className="p-2 bg-white/[0.04] rounded-xl text-gray-400 hover:text-white transition-all active:scale-95"
                     >
                         <ChevronLeft className="w-5 h-5" />
                     </button>
-                    <div>
-                        <h3 className="text-sm font-bold text-white">{conversation?.title}</h3>
+                    <div className="flex-1 min-w-0">
+                        <h3 className="text-sm font-bold text-white truncate">{conversation?.title}</h3>
                         <p className="text-[10px] text-gray-500 mt-0.5">
                             {conversation?.isService ? 'Service request thread' : 'Direct message'}
                         </p>
                     </div>
                 </div>
 
-                {/* Messages */}
-                <div className="flex-1 overflow-y-auto p-5 space-y-4 pb-28">
+                {/* Messages — scrollable, padded so last message clears the input bar */}
+                <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 pb-24">
                     {!conversation?.messages.length ? (
                         <div className="text-center py-12 text-gray-600 text-sm">No messages yet</div>
                     ) : conversation.messages.map((msg: any) => {
@@ -241,21 +242,21 @@ export default function MessagesPage() {
                     <div ref={messagesEndRef} />
                 </div>
 
-                {/* Input */}
-                <div className="absolute bottom-4 left-4 right-4 bg-[#161b22]/95 backdrop-blur-xl border border-white/[0.06] p-3 rounded-3xl shadow-2xl">
-                    <div className="flex gap-3 items-center">
+                {/* Input bar — fixed to bottom, sits just above the bottom nav */}
+                <div className="shrink-0 px-4 pb-24 pt-3 bg-[#0d1117] border-t border-white/[0.05]">
+                    <div className="flex gap-3 items-center bg-[#161b22] border border-white/[0.06] rounded-2xl px-4 py-2">
                         <input
                             type="text"
                             value={replyContent}
                             onChange={e => setReplyContent(e.target.value)}
                             onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSendReply()}
                             placeholder="Type a message..."
-                            className="flex-1 bg-transparent outline-none text-sm text-white px-3 placeholder:text-gray-600"
+                            className="flex-1 bg-transparent outline-none text-sm text-white placeholder:text-gray-600 py-1.5"
                         />
                         <button
                             onClick={handleSendReply}
                             disabled={sending || !replyContent.trim()}
-                            className="w-11 h-11 bg-blue-600 hover:bg-blue-500 disabled:opacity-30 text-white rounded-2xl flex items-center justify-center transition-all active:scale-95"
+                            className="w-9 h-9 bg-blue-600 hover:bg-blue-500 disabled:opacity-30 text-white rounded-xl flex items-center justify-center transition-all active:scale-95 shrink-0"
                         >
                             {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                         </button>

@@ -107,6 +107,7 @@ export async function GET(request: NextRequest) {
                 salary: canSeeSalary ? s.baseSalary : null,
                 employeeId: s.employeeId,
                 dateOfJoining: s.dateOfJoining,
+                documents: s.documents ?? null,
             }
         })
 

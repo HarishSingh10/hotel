@@ -328,6 +328,7 @@ export async function GET(req: NextRequest) {
             onDutyStaff: onDutyStaffFull.length,
             onDutyStaffNames: onDutyStaffFull.map((s: any) => s.user.name),
             onDutyStaffDetails: onDutyStaffFull.map((s: any) => ({
+                userId: s.userId,
                 name: s.user.name,
                 department: s.department?.replace('_', ' ') || 'Staff'
             })),

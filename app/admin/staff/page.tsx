@@ -385,6 +385,23 @@ export default function StaffPage() {
                                     <div className="w-48 flex justify-end opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0 gap-2">
                                         {staff.verificationRequested && (
                                             <>
+                                                {/* ID proof thumbnail */}
+                                                {(staff.documents as any)?.idProofImage && (
+                                                    <a
+                                                        href={(staff.documents as any).idProofImage}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        onClick={e => e.stopPropagation()}
+                                                        title="View ID proof"
+                                                        className="w-8 h-8 rounded-lg overflow-hidden border border-white/10 hover:border-blue-400/50 transition-all shrink-0"
+                                                    >
+                                                        <img
+                                                            src={(staff.documents as any).idProofImage}
+                                                            alt="ID"
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                    </a>
+                                                )}
                                                 <Button
                                                     size="sm"
                                                     className="h-8 bg-emerald-600/10 text-emerald-500 hover:bg-emerald-600 hover:text-white border-emerald-500/20 text-[10px]"

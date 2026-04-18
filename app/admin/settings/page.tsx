@@ -498,7 +498,7 @@ function SubscriptionView({ propertyId, currentPlan, onUpgrade }: {
 
 // ─── Main Settings Page ───────────────────────────────────────────────────────
 export default function SettingsPage() {
-  const { data: session } = useSession()
+  const { data: session, update } = useSession()
   const [view, setView] = useState('OVERVIEW')
   const [saving, setSaving] = useState(false)
   const [hotelInfo, setHotelInfo] = useState<HotelInfo>({ name: '', description: '', address: '', phone: '', email: '', plan: 'BASE', features: [], planExpiresAt: null, ranking: 0 })
@@ -578,7 +578,14 @@ export default function SettingsPage() {
           try {
             const vRes = await fetch('/api/admin/subscription/upgrade', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'VERIFY_PAYMENT', planId: plan.plan, propertyId: currentPropertyId, razorpayData: resp }) })
             const vData = await vRes.json()
-            if (vData.success) { setHotelInfo(p => ({ ...p, plan: plan.plan })); toast.success(`Upgraded to ${plan.displayName}!`) }
+            if (vData.success) {
+              setHotelInfo(p => ({ ...p, plan: plan.plan }))
+              toast.success(`Upgraded to ${plan.displayName}!`)
+              // Dispatch event so Sidebar/usePermissions re-fetches live plan immediately
+              window.dispatchEvent(new CustomEvent('planUpgraded', { detail: { plan: plan.plan, propertyId: currentPropertyId } }))
+              // Also update the NextAuth session token so middleware stays in sync
+              await update()
+            }
             else toast.error(vData.error ?? 'Verification failed')
           } catch { toast.error('Verification error') } finally { setSaving(false) }
         },

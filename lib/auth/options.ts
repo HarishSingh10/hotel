@@ -66,7 +66,7 @@ export const authOptions: NextAuthOptions = {
         }),
     ],
     callbacks: {
-        async jwt({ token, user }) {
+        async jwt({ token, user, trigger }) {
             if (user) {
                 token.id = user.id
                 token.role = (user as any).role
@@ -89,6 +89,18 @@ export const authOptions: NextAuthOptions = {
                     token.plan = 'BASE'
                 }
             }
+
+            // Re-fetch plan when session.update() is called (e.g. after upgrade)
+            if (trigger === 'update' && token.propertyId) {
+                try {
+                    const prop = await prisma.property.findUnique({
+                        where: { id: token.propertyId as string },
+                        select: { plan: true },
+                    })
+                    if (prop?.plan) token.plan = prop.plan
+                } catch { /* silent */ }
+            }
+
             return token
         },
         async session({ session, token }) {

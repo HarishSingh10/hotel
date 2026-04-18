@@ -6,7 +6,7 @@ import useSWR from 'swr'
 import { toast } from 'sonner'
 import {
     LayoutGrid, Loader2, Smartphone, Package,
-    Trophy, TrendingUp, Calendar,
+    Trophy, Calendar,
     ShieldCheck,
     Clock, Zap, ArrowRight, CheckCircle2, ClipboardList,
     MessageCircle
@@ -211,21 +211,6 @@ export default function StaffDashboard() {
                             </>
                         )}
                     </button>
-
-                    {isPunchedIn && (
-                        <div className="mt-8 pt-8 border-t border-white/[0.03] animate-fade-in flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                                <div className="p-3 bg-emerald-500/10 rounded-xl border border-emerald-500/20 shadow-inner">
-                                    <TrendingUp className="w-4 h-4 text-emerald-500" />
-                                </div>
-                                <div>
-                                    <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest">Performance</p>
-                                    <p className="text-[11px] font-black text-white ">View your stats</p>
-                                </div>
-                            </div>
-                            <ArrowRight className="w-5 h-5 text-gray-800" />
-                        </div>
-                    )}
                 </div>
             </div>
 

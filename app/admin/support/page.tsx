@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import {
     Search, MessageSquare, Clock, CheckCircle2, AlertCircle,
     Send, User, Building, ArrowLeft, Users, Loader2,
@@ -27,7 +28,16 @@ const ROLE_COLOR: Record<string, string> = {
 }
 
 export default function SupportPage() {
+    return (
+        <Suspense fallback={<div className="p-8 text-center text-text-secondary animate-pulse">Loading...</div>}>
+            <SupportPageInner />
+        </Suspense>
+    )
+}
+
+function SupportPageInner() {
     const { data: session } = useSession()
+    const searchParams = useSearchParams()
     const [tab, setTab] = useState<'TICKETS' | 'MESSAGES'>('TICKETS')
 
     // ── Guest Tickets ──────────────────────────────────────────────────────────
@@ -139,6 +149,23 @@ export default function SupportPage() {
         const t1 = setInterval(fetchTickets, 15000)
         return () => clearInterval(t1)
     }, [])
+
+    // Handle ?tab=messages&withUserId= from dashboard message button
+    useEffect(() => {
+        const tabParam = searchParams.get('tab')
+        const withUserId = searchParams.get('withUserId')
+
+        if (tabParam === 'messages') {
+            setTab('MESSAGES')
+        }
+
+        if (withUserId && contacts.length > 0) {
+            const contact = contacts.find((c: any) => c.id === withUserId)
+            if (contact) {
+                setSelectedContact(contact)
+            }
+        }
+    }, [searchParams, contacts])
 
     useEffect(() => {
         if (selectedContact) {
