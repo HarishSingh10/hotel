@@ -451,15 +451,23 @@ export default function ReportsPage() {
                                     <Avatar name={staff.name} />
                                     <div className="flex-1 min-w-0">
                                         <p className="text-sm font-bold text-text-primary truncate">{staff.name}</p>
-                                        <p className="text-[11px] text-text-tertiary font-bold capitalize">{staff.department} • {staff.tasksCompleted} Tasks</p>
+                                        <p className="text-[11px] text-text-tertiary font-bold capitalize">
+                                            {staff.department} • {staff.tasksCompleted} Task{staff.tasksCompleted !== 1 ? 's' : ''}
+                                        </p>
                                     </div>
                                     <div className="flex items-center gap-1 shrink-0">
-                                        <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
-                                        <span className="text-sm font-bold text-text-primary">{staff.rating}</span>
+                                        {staff.rating !== null && staff.rating !== undefined ? (
+                                            <>
+                                                <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
+                                                <span className="text-sm font-bold text-text-primary">{staff.rating}</span>
+                                            </>
+                                        ) : (
+                                            <span className="text-[10px] text-text-tertiary font-medium px-2 py-0.5 bg-white/5 rounded-md">No data</span>
+                                        )}
                                     </div>
                                 </div>
                             )) : (
-                                <p className="text-sm text-text-tertiary  py-4">No staff data available yet.</p>
+                                <p className="text-sm text-text-tertiary py-4">No staff data available yet.</p>
                             )}
                         </div>
                     </Card>

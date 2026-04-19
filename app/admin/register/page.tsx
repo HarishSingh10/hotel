@@ -103,13 +103,17 @@ export default function AdminRegisterPage() {
             }
 
             // 2. If paid plan, handle Razorpay payment
-            if (formData.plan !== 'BASE') {
+            if (formData.plan !== 'BASE' && formData.plan !== 'ENTERPRISE') {
                 try {
                     toast.loading(`Initializing payment for ${formData.plan} plan...`)
                     const orderRes = await fetch('/api/subscription/razorpay', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ plan: formData.plan, propertyId: data.propertyId })
+                        body: JSON.stringify({
+                            plan: formData.plan,
+                            propertyId: data.propertyId,
+                            userId: data.user?.id,   // pass userId so API can verify without session
+                        })
                     })
                     const order = await orderRes.json()
                     toast.dismiss()
@@ -129,7 +133,12 @@ export default function AdminRegisterPage() {
                                     const verifyRes = await fetch('/api/subscription/verify', {
                                         method: 'POST',
                                         headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify({ ...response, plan: formData.plan, propertyId: data.propertyId })
+                                        body: JSON.stringify({
+                                            ...response,
+                                            plan: formData.plan,
+                                            propertyId: data.propertyId,
+                                            userId: data.user?.id,  // pass userId here too
+                                        })
                                     })
                                     const verifyData = await verifyRes.json()
                                     if (verifyData.success) resolve(true)

@@ -271,14 +271,33 @@ export default function NewBookingPage() {
                 body: JSON.stringify(newGuestData)
             })
             if (!res.ok) throw new Error()
-            const guest = await res.json()
-            setAllGuests([guest, ...allGuests])
-            setSelectedGuest(guest)
+            const json = await res.json()
+            // API returns { success, data: guest } — unwrap it
+            const guest = json?.data ?? json
+            // Normalize to match the GET formatted shape so the list renders correctly
+            const normalizedGuest = {
+                id: guest.id,
+                name: guest.name,
+                email: guest.email,
+                phone: guest.phone,
+                address: guest.address ?? null,
+                dateOfBirth: guest.dateOfBirth ?? null,
+                idType: guest.idType ?? null,
+                idNumber: guest.idNumber ?? null,
+                checkInStatus: guest.checkInStatus ?? 'PENDING',
+                totalStays: 0,
+                bookings: [],
+                roomNumber: 'N/A',
+                source: 'DIRECT',
+                status: null,
+            }
+            setAllGuests([normalizedGuest, ...allGuests])
+            setSelectedGuest(normalizedGuest)
             setShowNewGuestModal(false)
             setNewGuestData({ name: '', email: '', phone: '', address: '', dateOfBirth: '' })
-            toast.success("Guest Registry Updated")
+            toast.success("Guest created successfully")
         } catch (err) {
-            toast.error("Cloud registry error")
+            toast.error("Failed to create guest")
         } finally {
             setLoading(false)
         }
@@ -436,7 +455,7 @@ export default function NewBookingPage() {
                             {selectedGuest ? (
                                 <>
                                     <h2 className="text-xl font-bold text-white tracking-tight">{selectedGuest.name}</h2>
-                                    <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Guest ID: #882910</p>
+                                    <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">Guest ID: #{selectedGuest.id?.slice(-6).toUpperCase()}</p>
 
                                     <div className="grid grid-cols-2 gap-4 mt-8">
                                         <div className="p-4 bg-black/20 rounded-2xl border border-white/5">
@@ -465,9 +484,13 @@ export default function NewBookingPage() {
                                     </div>
 
                                     <div className="mt-10 pt-10 border-t border-white/5">
-                                        <p className="text-[13px] text-gray-500 leading-relaxed font-bold">
-                                            &quot;Prefers high floor away from elevator. Allergic to feather pillows.&quot;
-                                        </p>
+                                        {selectedGuest?.notes ? (
+                                            <p className="text-[13px] text-gray-500 leading-relaxed font-bold">
+                                                &quot;{selectedGuest.notes}&quot;
+                                            </p>
+                                        ) : (
+                                            <p className="text-[12px] text-gray-700 italic">No special notes on file.</p>
+                                        )}
                                     </div>
                                 </>
                             ) : (

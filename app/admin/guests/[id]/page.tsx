@@ -6,7 +6,7 @@ import { format } from 'date-fns'
 import {
     ArrowLeft, Mail, Phone, MessageSquare, Edit, LogOut,
     Upload, CheckCircle2, Loader2, X, Plus, FileCheck, Star,
-    User, MapPin, Calendar, CreditCard, Clock, History, Settings
+    User, MapPin, Calendar, CreditCard, Clock, History, Settings, FileText, Download, Printer
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
@@ -36,6 +36,7 @@ export default function GuestDetailPage() {
     const [uploading, setUploading] = useState<'front' | 'back' | null>(null)
     const [isEditing, setIsEditing] = useState(false)
     const [editForm, setEditForm] = useState<any>({})
+    const [invoiceBooking, setInvoiceBooking] = useState<any>(null)
 
     const frontRef = useRef<HTMLInputElement>(null)
     const backRef = useRef<HTMLInputElement>(null)
@@ -113,6 +114,7 @@ export default function GuestDetailPage() {
     const activeBooking = bookings.find(b => b.status === 'CHECKED_IN')
 
     return (
+        <>
         <div className="min-h-screen bg-[#0A0F16] text-gray-300 p-4 lg:p-8 space-y-6 animate-fade-in">
             
             {/* Header / Breadcrumb */}
@@ -214,7 +216,7 @@ export default function GuestDetailPage() {
                         </div>
                     </div>
 
-                    {/* Stay History Matrix */}
+                    {/* Stay & Billing History */}
                     <div className="bg-[#111823] border border-white/[0.05] rounded-[2.5rem] overflow-hidden shadow-2xl">
                         <div className="px-10 py-8 border-b border-white/5 flex items-center justify-between">
                             <h3 className="text-lg font-bold text-white tracking-tight">Stay & Billing History</h3>
@@ -226,21 +228,22 @@ export default function GuestDetailPage() {
                                     <tr className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.25em]">
                                         <th className="px-10 py-6">Reference / Room</th>
                                         <th className="px-10 py-6">Check-In / Out</th>
-                                        <th className="px-10 py-6">Global Status</th>
-                                        <th className="px-10 py-6 text-right">Revenue</th>
+                                        <th className="px-10 py-6">Status</th>
+                                        <th className="px-10 py-6 text-right">Amount</th>
+                                        <th className="px-10 py-6 text-right">Invoice</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-white/[0.03]">
                                     {bookings.length === 0 ? (
-                                        <tr><td colSpan={4} className="px-10 py-16 text-center text-gray-600 font-medium">No previous reservation history found for this guest.</td></tr>
+                                        <tr><td colSpan={5} className="px-10 py-16 text-center text-gray-600 font-medium">No previous reservation history found for this guest.</td></tr>
                                     ) : bookings.map((b, i) => (
                                         <tr key={i} className="hover:bg-white/[0.015] transition-colors group">
                                             <td className="px-10 py-7">
-                                                <p className="text-[14px] font-bold text-white group-hover:text-blue-400 transition-colors">Unit {b.roomNumber}</p>
+                                                <p className="text-[14px] font-bold text-white group-hover:text-blue-400 transition-colors">Room {b.roomNumber}</p>
                                                 <p className="text-[9px] text-gray-600 uppercase font-bold tracking-widest mt-0.5">{b.roomType || 'Standard'}</p>
                                             </td>
                                             <td className="px-10 py-7 text-[13px] font-semibold text-gray-300">
-                                                {format(new Date(b.checkIn), 'dd MMM')} - {format(new Date(b.checkOut), 'dd MMM yyyy')}
+                                                {format(new Date(b.checkIn), 'dd MMM')} – {format(new Date(b.checkOut), 'dd MMM yyyy')}
                                             </td>
                                             <td className="px-10 py-7">
                                                 <span className={cn("px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase border tracking-widest", STATUS_CONFIG[b.status]?.cls)}>
@@ -248,8 +251,16 @@ export default function GuestDetailPage() {
                                                 </span>
                                             </td>
                                             <td className="px-10 py-7 text-right">
-                                                <p className="text-[15px] font-bold text-white">₹{b.totalAmount.toLocaleString()}</p>
+                                                <p className="text-[15px] font-bold text-white">₹{(b.finalAmount ?? b.totalAmount ?? 0).toLocaleString()}</p>
                                                 <p className="text-[9px] text-gray-600 font-bold uppercase">{b.source || 'Direct'}</p>
+                                            </td>
+                                            <td className="px-10 py-7 text-right">
+                                                <button
+                                                    onClick={() => setInvoiceBooking(b)}
+                                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-500/10 hover:bg-indigo-500 border border-indigo-500/20 hover:border-indigo-500 text-indigo-400 hover:text-white text-[10px] font-bold rounded-xl transition-all ml-auto"
+                                                >
+                                                    <FileText className="w-3.5 h-3.5" /> Invoice
+                                                </button>
                                             </td>
                                         </tr>
                                     ))}
@@ -355,5 +366,171 @@ export default function GuestDetailPage() {
                 </div>
             )}
         </div>
+
+        {/* Invoice Modal */}
+        {invoiceBooking && (
+            <GuestInvoiceModal
+                booking={invoiceBooking}
+                guestName={guest?.name ?? 'Guest'}
+                onClose={() => setInvoiceBooking(null)}
+            />
+        )}
+        </>
+    )
+}
+
+// ─── Guest Invoice Modal ─────────────────────────────────────────────────────
+function GuestInvoiceModal({ booking, guestName, onClose }: {
+    booking: any
+    guestName: string
+    onClose: () => void
+}) {
+    const nights = Math.max(1, Math.ceil(
+        (new Date(booking.checkOut).getTime() - new Date(booking.checkIn).getTime()) / (1000 * 60 * 60 * 24)
+    ))
+    const base     = booking.baseAmount       ?? booking.totalAmount ?? 0
+    const gstAmt   = booking.gstAmount        ?? 0
+    const scAmt    = booking.serviceChargeAmount ?? 0
+    const ltAmt    = booking.luxuryTaxAmount  ?? 0
+    const discAmt  = booking.discountAmount   ?? 0
+    const finalAmt = booking.finalAmount      ?? booking.totalAmount ?? 0
+    const gstPct   = booking.gstPercent       ?? 0
+    const scPct    = booking.serviceChargePercent ?? 0
+    const ltPct    = booking.luxuryTaxPercent ?? 0
+    const discPct  = booking.discountPercent  ?? 0
+    const invoiceNo = `INV-${booking.id?.slice(-6).toUpperCase() ?? '000000'}`
+    const roomNo   = booking.roomNumber ?? booking.room?.roomNumber ?? '—'
+    const roomType = booking.roomType   ?? booking.room?.type ?? ''
+
+    const handleDownloadPDF = async () => {
+        try {
+            const { jsPDF } = await import('jspdf')
+            const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
+            const indigo = [99, 102, 241] as [number, number, number]
+            const dark   = [15, 23, 42]   as [number, number, number]
+            const mid    = [71, 85, 105]  as [number, number, number]
+            const light  = [148, 163, 184] as [number, number, number]
+            const white  = [255, 255, 255] as [number, number, number]
+            const red    = [239, 68, 68]  as [number, number, number]
+
+            doc.setFillColor(...indigo); doc.rect(0, 0, 210, 38, 'F')
+            doc.setTextColor(...white); doc.setFontSize(20); doc.setFont('helvetica', 'bold')
+            doc.text('HOTEL INVOICE', 14, 16)
+            doc.setFontSize(9); doc.setFont('helvetica', 'normal')
+            doc.text(`Guest: ${guestName}`, 14, 24)
+            doc.text(`Room: ${roomNo}`, 14, 30)
+            doc.setFont('helvetica', 'bold')
+            doc.text(invoiceNo, 196, 16, { align: 'right' })
+            doc.setFont('helvetica', 'normal')
+            doc.text(`Checkout: ${format(new Date(booking.checkOut), 'dd MMM yyyy')}`, 196, 24, { align: 'right' })
+
+            let y = 50
+            doc.setFillColor(...indigo); doc.rect(14, y, 182, 9, 'F')
+            doc.setTextColor(...white); doc.setFontSize(8); doc.setFont('helvetica', 'bold')
+            doc.text('DESCRIPTION', 18, y + 6); doc.text('AMOUNT (₹)', 192, y + 6, { align: 'right' })
+            y += 9
+
+            const rows: [string, number, boolean][] = [
+                [`Room Charges (${nights} night${nights > 1 ? 's' : ''} × ₹${(base / nights).toFixed(0)})`, base, false],
+                ...(gstAmt > 0 ? [[`GST (${gstPct}%)`, gstAmt, false] as [string, number, boolean]] : []),
+                ...(scAmt  > 0 ? [[`Service Charge (${scPct}%)`, scAmt, false] as [string, number, boolean]] : []),
+                ...(ltAmt  > 0 ? [[`Luxury Tax (${ltPct}%)`, ltAmt, false] as [string, number, boolean]] : []),
+                ...(discAmt > 0 ? [[`Discount (${discPct}%)`, discAmt, true] as [string, number, boolean]] : []),
+            ]
+            rows.forEach(([label, amount, isDisc], idx) => {
+                doc.setFillColor(idx % 2 === 0 ? 255 : 248, idx % 2 === 0 ? 255 : 250, idx % 2 === 0 ? 255 : 252)
+                doc.rect(14, y, 182, 9, 'F')
+                doc.setDrawColor(226, 232, 240); doc.setLineWidth(0.2); doc.line(14, y + 9, 196, y + 9)
+                doc.setTextColor(...mid); doc.setFont('helvetica', 'normal'); doc.text(label, 18, y + 6)
+                doc.setTextColor(isDisc ? red[0] : dark[0], isDisc ? red[1] : dark[1], isDisc ? red[2] : dark[2])
+                doc.setFont('helvetica', 'bold')
+                doc.text(`${isDisc ? '-' : ''}₹${amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, 192, y + 6, { align: 'right' })
+                y += 9
+            })
+            doc.setFillColor(...indigo); doc.rect(14, y, 182, 13, 'F')
+            doc.setTextColor(...white); doc.setFontSize(10); doc.setFont('helvetica', 'bold')
+            doc.text('TOTAL AMOUNT', 18, y + 9)
+            doc.setFontSize(13)
+            doc.text(`₹${finalAmt.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, 192, y + 9, { align: 'right' })
+            y += 20
+            doc.setDrawColor(226, 232, 240); doc.setLineWidth(0.5); doc.line(14, y, 196, y)
+            y += 8
+            doc.setTextColor(...light); doc.setFontSize(7); doc.setFont('helvetica', 'normal')
+            doc.text('Thank you for staying with us!', 14, y)
+            doc.text(`Generated: ${format(new Date(), 'dd MMM yyyy')}`, 196, y, { align: 'right' })
+            doc.save(`Invoice_${guestName.replace(/\s+/g, '_')}_${invoiceNo}.pdf`)
+        } catch { /* silent */ }
+    }
+
+    return (
+        <>
+            <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm" onClick={onClose} />
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 pointer-events-none">
+                <div
+                    className="w-full max-w-lg bg-white text-slate-900 rounded-3xl shadow-2xl pointer-events-auto overflow-hidden max-h-[90vh] overflow-y-auto"
+                    onClick={e => e.stopPropagation()}
+                >
+                    <div className="bg-indigo-600 px-6 py-6 text-white">
+                        <div className="flex items-start justify-between">
+                            <div>
+                                <h2 className="text-xl font-black uppercase tracking-tight">Guest Invoice</h2>
+                                <p className="text-indigo-200 text-xs mt-1">{guestName} · Room {roomNo}</p>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-indigo-300 text-[10px] uppercase tracking-wider">Invoice No.</p>
+                                <p className="text-base font-mono font-bold">{invoiceNo}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="p-6 space-y-5">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest border-b border-indigo-100 pb-1 mb-2">Stay Details</p>
+                                {[
+                                    ['Room',      `${roomNo}${roomType ? ' · ' + roomType : ''}`],
+                                    ['Check-in',  format(new Date(booking.checkIn),  'dd MMM yyyy')],
+                                    ['Check-out', format(new Date(booking.checkOut), 'dd MMM yyyy')],
+                                    ['Nights',    String(nights)],
+                                ].map(([l, v]) => (
+                                    <div key={l} className="flex justify-between text-xs mb-1.5">
+                                        <span className="text-slate-400">{l}</span>
+                                        <span className="font-semibold text-slate-800">{v}</span>
+                                    </div>
+                                ))}
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest border-b border-indigo-100 pb-1 mb-2">Billing</p>
+                                {[
+                                    ['Base Amount', `₹${base.toLocaleString('en-IN')}`],
+                                    ...(gstAmt > 0 ? [[`GST (${gstPct}%)`, `₹${gstAmt.toLocaleString('en-IN')}`]] : []),
+                                    ...(scAmt  > 0 ? [[`Service (${scPct}%)`, `₹${scAmt.toLocaleString('en-IN')}`]] : []),
+                                    ...(discAmt > 0 ? [[`Discount`, `-₹${discAmt.toLocaleString('en-IN')}`]] : []),
+                                ].map(([l, v]) => (
+                                    <div key={l} className="flex justify-between text-xs mb-1.5">
+                                        <span className="text-slate-400">{l}</span>
+                                        <span className={`font-semibold ${String(v).startsWith('-') ? 'text-red-500' : 'text-slate-800'}`}>{v}</span>
+                                    </div>
+                                ))}
+                                <div className="flex justify-between text-sm font-black border-t border-slate-200 pt-2 mt-2">
+                                    <span className="text-slate-700">Total</span>
+                                    <span className="text-indigo-600">₹{finalAmt.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="flex gap-3 pt-2">
+                            <button onClick={handleDownloadPDF} className="flex-1 flex items-center justify-center gap-2 h-11 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold rounded-2xl transition-all active:scale-95">
+                                <Download className="w-4 h-4" /> Download PDF
+                            </button>
+                            <button onClick={() => window.print()} className="h-11 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold rounded-2xl transition-all flex items-center gap-2">
+                                <Printer className="w-4 h-4" /> Print
+                            </button>
+                            <button onClick={onClose} className="h-11 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold rounded-2xl transition-all">
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </>
     )
 }

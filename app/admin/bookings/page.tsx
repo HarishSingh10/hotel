@@ -2,11 +2,12 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { startOfWeek, addDays, format, differenceInDays, isToday } from 'date-fns'
-import { ChevronLeft, ChevronRight, Plus, Star, Download, Loader2, Calendar } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Plus, Star, Download, Loader2, Calendar, FileText, Printer } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { CheckCircle2, LogOut, XCircle } from 'lucide-react'
 import { downloadCSV } from '@/lib/csv'
+import { formatCurrency } from '@/lib/utils'
 
 // ---- Color/status helpers ----
 const STATUS_CONFIG: Record<string, { bar: string; label: string; dot: string; text: string }> = {
@@ -57,7 +58,10 @@ export default function BookingsPage() {
   const [bookings, setBookings] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedBooking, setSelectedBooking] = useState<any>(null)
+  const [fullBooking, setFullBooking] = useState<any>(null)
   const [isUpdating, setIsUpdating] = useState(false)
+  const [showInvoice, setShowInvoice] = useState(false)
+  const [invoiceData, setInvoiceData] = useState<any>(null)
   const [roomFilter, setRoomFilter] = useState('All Rooms')
   const [floorFilter, setFloorFilter] = useState('All Floors')
 
@@ -118,7 +122,27 @@ export default function BookingsPage() {
       })
       if (res.ok) {
         toast.success(`Booking ${action.replace('_', ' ').toLowerCase()} successfully`)
-        setSelectedBooking(null)
+
+        // On checkout — fetch full booking details and show invoice
+        if (action === 'CHECK_OUT') {
+          try {
+            const detailRes = await fetch(`/api/admin/bookings?status=ALL&limit=1`)
+            // Fetch the specific booking with all pricing fields
+            const allRes = await fetch(`/api/admin/bookings?status=ALL&limit=200`)
+            if (allRes.ok) {
+              const allJson = await allRes.json()
+              const allBookings = Array.isArray(allJson) ? allJson : (allJson?.data ?? [])
+              const full = allBookings.find((b: any) => b.id === selectedBooking.id)
+              if (full) {
+                setInvoiceData(full)
+                setShowInvoice(true)
+                setSelectedBooking(null)
+              }
+            }
+          } catch { /* non-critical */ }
+        } else {
+          setSelectedBooking(null)
+        }
         fetchData()
       } else {
         const err = await res.json()
@@ -145,18 +169,20 @@ export default function BookingsPage() {
     const totalDays = days.length
     const startDiff = differenceInDays(booking.startDate, startDate)
     const leftOffset = Math.max(0, startDiff)
-    const visibleNights = differenceInDays(
-      // Ensure we compare local midnights
-      booking.endDate > endDate ? parseLocal(toLocalDateStr(addDays(endDate, 1))) : booking.endDate,
-      booking.startDate < startDate ? startDate : booking.startDate
-    )
-    
-    // Safety check for width
-    const width = Math.max(0.5, Math.min(visibleNights, totalDays - leftOffset))
-    
+
+    // Booking spans from check-in to check-out (check-out day is the last column it occupies)
+    const clampedStart = booking.startDate < startDate ? startDate : booking.startDate
+    const clampedEnd   = booking.endDate   > addDays(endDate, 1) ? addDays(endDate, 1) : booking.endDate
+
+    // Width = number of days the bar covers (check-in day through last night = endDate - startDate in days)
+    const width = Math.max(0.5, Math.min(
+      differenceInDays(clampedEnd, clampedStart),
+      totalDays - leftOffset
+    ))
+
     return {
-      left: `calc(${(leftOffset / totalDays) * 100}% + 2px)`,
-      width: `calc(${(width / totalDays) * 100}% - 4px)`,
+      left:  `calc(${(leftOffset / totalDays) * 100}% + 2px)`,
+      width: `calc(${(width   / totalDays) * 100}% - 4px)`,
     }
   }
 
@@ -262,26 +288,36 @@ export default function BookingsPage() {
 
       {/* === CALENDAR GRID (Desktop) / LIST (Mobile) === */}
       <div className="flex-1 flex flex-col overflow-hidden bg-[#101922] relative">
+        {/* Desktop: scrollable container for month view */}
+        <div className={cn(
+          "hidden md:flex flex-col flex-1 overflow-hidden",
+          viewMode === 'month' ? "overflow-x-auto" : ""
+        )}>
+          {/* Min width for month view so columns don't get crushed */}
+          <div className={cn(
+            "flex flex-col flex-1",
+            viewMode === 'month' ? "min-w-[1400px]" : "w-full"
+          )}>
+
         {/* Desktop Header */}
-        <div className="hidden md:flex border-b border-white/[0.07] shrink-0 bg-[#233648]">
+        <div className="flex border-b border-white/[0.07] shrink-0 bg-[#233648]">
           <div className="w-[180px] shrink-0 flex items-center px-4 py-3 border-r border-white/[0.07]">
             <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">Inventory Hub</span>
           </div>
           <div className="flex-1 grid" style={{ gridTemplateColumns: `repeat(${days.length}, 1fr)` }}>
-            {days.map((day, idx) => (
+            {days.map((day) => (
               <div
                 key={day.toString()}
                 className={cn(
                   'py-3 px-1 text-center border-r border-white/[0.07] last:border-r-0',
                   isToday(day) ? 'bg-[#4A9EFF]/5' : '',
-                  viewMode === 'month' && idx % 3 !== 0 ? 'hidden lg:block' : ''
                 )}
               >
                 <p className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500 mb-1">
                    {viewMode === 'day' ? format(day, 'EEEE') : format(day, 'EEE')}
                 </p>
                 <p className={cn(
-                  'text-[15px] font-black inline-flex w-7 h-7 items-center justify-center rounded-lg transition-all',
+                  'text-[13px] font-black inline-flex w-7 h-7 items-center justify-center rounded-lg transition-all',
                   isToday(day) ? 'bg-[#4A9EFF] text-white shadow-lg' : 'text-white'
                 )}>{format(day, 'd')}</p>
               </div>
@@ -290,7 +326,7 @@ export default function BookingsPage() {
         </div>
 
         {/* Desktop Rows */}
-        <div className="hidden md:block flex-1 overflow-y-auto custom-scrollbar">
+        <div className="flex-1 overflow-y-auto custom-scrollbar">
           {loading ? (
              <div className="flex items-center justify-center h-full"><Loader2 className="w-8 h-8 animate-spin text-blue-500" /></div>
           ) : filteredRooms.map((room, idx) => {
@@ -334,6 +370,9 @@ export default function BookingsPage() {
               )
           })}
         </div>
+
+          </div>{/* end min-width wrapper */}
+        </div>{/* end scrollable container */}
 
         {/* Mobile View: Vertical Booking List */}
         <div className="md:hidden flex-1 overflow-y-auto custom-scrollbar bg-[#0d1117]">
@@ -498,7 +537,270 @@ export default function BookingsPage() {
           </div>
         </>
       )}
+
+      {/* === INVOICE MODAL === */}
+      {showInvoice && invoiceData && (
+        <InvoiceModal
+          booking={invoiceData}
+          onClose={() => { setShowInvoice(false); setInvoiceData(null) }}
+        />
+      )}
     </div>
+  )
+}
+
+// ─── Invoice Modal ────────────────────────────────────────────────────────────
+function InvoiceModal({ booking, onClose }: { booking: any; onClose: () => void }) {
+  const nights = differenceInDays(
+    new Date(booking.checkOut),
+    new Date(booking.checkIn)
+  ) || 1
+
+  const base       = booking.baseAmount       ?? booking.totalAmount ?? 0
+  const gstAmt     = booking.gstAmount        ?? 0
+  const scAmt      = booking.serviceChargeAmount ?? 0
+  const ltAmt      = booking.luxuryTaxAmount  ?? 0
+  const discAmt    = booking.discountAmount   ?? 0
+  const finalAmt   = booking.finalAmount      ?? booking.totalAmount ?? 0
+  const gstPct     = booking.gstPercent       ?? 0
+  const scPct      = booking.serviceChargePercent ?? 0
+  const ltPct      = booking.luxuryTaxPercent ?? 0
+  const discPct    = booking.discountPercent  ?? 0
+  const invoiceNo  = `INV-${booking.id?.slice(-6).toUpperCase() ?? '000000'}`
+  const hotelName  = booking.property?.name ?? 'Hotel'
+  const guestName  = booking.guest?.name ?? 'Guest'
+  const roomNo     = booking.room?.roomNumber ?? '—'
+  const roomType   = booking.room?.type ?? ''
+
+  const handleDownloadPDF = async () => {
+    try {
+      const { jsPDF } = await import('jspdf')
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
+
+      const indigo = [99, 102, 241] as [number, number, number]
+      const dark   = [15, 23, 42]   as [number, number, number]
+      const mid    = [71, 85, 105]  as [number, number, number]
+      const light  = [148, 163, 184] as [number, number, number]
+      const white  = [255, 255, 255] as [number, number, number]
+      const red    = [239, 68, 68]  as [number, number, number]
+      const green  = [16, 185, 129] as [number, number, number]
+
+      // Header
+      doc.setFillColor(...indigo)
+      doc.rect(0, 0, 210, 38, 'F')
+      doc.setTextColor(...white)
+      doc.setFontSize(20); doc.setFont('helvetica', 'bold')
+      doc.text(hotelName.toUpperCase(), 14, 16)
+      doc.setFontSize(9); doc.setFont('helvetica', 'normal')
+      doc.text('Guest Invoice', 14, 24)
+      doc.text(`Checkout: ${format(new Date(booking.checkOut), 'dd MMM yyyy')}`, 14, 30)
+      doc.setFont('helvetica', 'bold')
+      doc.text(invoiceNo, 196, 16, { align: 'right' })
+      doc.setFont('helvetica', 'normal')
+      doc.text(`Issued: ${format(new Date(), 'dd MMM yyyy')}`, 196, 24, { align: 'right' })
+
+      // Guest + Room info
+      let y = 50
+      doc.setTextColor(...indigo); doc.setFontSize(8); doc.setFont('helvetica', 'bold')
+      doc.text('GUEST DETAILS', 14, y)
+      doc.setDrawColor(...indigo); doc.setLineWidth(0.3); doc.line(14, y + 1.5, 95, y + 1.5)
+      y += 7
+      const infoRows = [
+        ['Guest Name', guestName],
+        ['Room', `${roomNo}${roomType ? ' — ' + roomType : ''}`],
+        ['Check-in',  format(new Date(booking.checkIn),  'dd MMM yyyy')],
+        ['Check-out', format(new Date(booking.checkOut), 'dd MMM yyyy')],
+        ['Nights',    String(nights)],
+      ]
+      infoRows.forEach(([label, value]) => {
+        doc.setTextColor(...light); doc.setFont('helvetica', 'normal'); doc.text(label, 14, y)
+        doc.setTextColor(...dark);  doc.setFont('helvetica', 'bold');   doc.text(value, 60, y)
+        y += 6
+      })
+
+      // Charges table
+      y += 6
+      doc.setFillColor(...indigo); doc.rect(14, y, 182, 9, 'F')
+      doc.setTextColor(...white); doc.setFontSize(8); doc.setFont('helvetica', 'bold')
+      doc.text('DESCRIPTION', 18, y + 6)
+      doc.text('AMOUNT (₹)', 192, y + 6, { align: 'right' })
+      y += 9
+
+      const rows: [string, number, string][] = [
+        [`Room Charges (${nights} night${nights > 1 ? 's' : ''} × ₹${(base / nights).toFixed(0)})`, base, 'normal'],
+        ...(gstAmt > 0 ? [[`GST (${gstPct}%)`, gstAmt, 'normal'] as [string, number, string]] : []),
+        ...(scAmt  > 0 ? [[`Service Charge (${scPct}%)`, scAmt, 'normal'] as [string, number, string]] : []),
+        ...(ltAmt  > 0 ? [[`Luxury Tax (${ltPct}%)`, ltAmt, 'normal'] as [string, number, string]] : []),
+        ...(discAmt > 0 ? [[`Discount (${discPct}%)`, -discAmt, 'discount'] as [string, number, string]] : []),
+      ]
+
+      rows.forEach(([label, amount, type], idx) => {
+        doc.setFillColor(idx % 2 === 0 ? 255 : 248, idx % 2 === 0 ? 255 : 250, idx % 2 === 0 ? 255 : 252)
+        doc.rect(14, y, 182, 9, 'F')
+        doc.setDrawColor(226, 232, 240); doc.setLineWidth(0.2); doc.line(14, y + 9, 196, y + 9)
+        doc.setTextColor(...mid); doc.setFont('helvetica', 'normal'); doc.text(label, 18, y + 6)
+        if (type === 'discount') doc.setTextColor(...red)
+        else doc.setTextColor(...dark)
+        doc.setFont('helvetica', 'bold')
+        doc.text(`${type === 'discount' ? '-' : ''}₹${Math.abs(amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, 192, y + 6, { align: 'right' })
+        y += 9
+      })
+
+      // Total
+      doc.setFillColor(...indigo); doc.rect(14, y, 182, 13, 'F')
+      doc.setTextColor(...white); doc.setFontSize(10); doc.setFont('helvetica', 'bold')
+      doc.text('TOTAL AMOUNT', 18, y + 9)
+      doc.setFontSize(13)
+      doc.text(`₹${finalAmt.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, 192, y + 9, { align: 'right' })
+      y += 20
+
+      // Footer
+      doc.setDrawColor(226, 232, 240); doc.setLineWidth(0.5); doc.line(14, y, 196, y)
+      y += 8
+      doc.setTextColor(...light); doc.setFontSize(7); doc.setFont('helvetica', 'normal')
+      doc.text('Thank you for staying with us. We hope to see you again!', 14, y)
+      doc.text(`Generated: ${format(new Date(), 'dd MMM yyyy, hh:mm a')}`, 196, y, { align: 'right' })
+
+      doc.save(`Invoice_${guestName.replace(/\s+/g, '_')}_${invoiceNo}.pdf`)
+      toast.success('Invoice downloaded')
+    } catch (err) {
+      console.error(err)
+      toast.error('Failed to generate PDF')
+    }
+  }
+
+  return (
+    <>
+      <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm" onClick={onClose} />
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
+        <div
+          className="w-full max-w-lg bg-white text-slate-900 rounded-3xl shadow-2xl pointer-events-auto overflow-hidden max-h-[90vh] overflow-y-auto"
+          onClick={e => e.stopPropagation()}
+        >
+          {/* Invoice Header */}
+          <div className="bg-indigo-600 px-6 py-6 text-white">
+            <div className="flex items-start justify-between">
+              <div>
+                <h2 className="text-xl font-black uppercase tracking-tight">{hotelName}</h2>
+                <p className="text-indigo-200 text-xs mt-1">Guest Invoice · Checkout Receipt</p>
+              </div>
+              <div className="text-right">
+                <p className="text-indigo-300 text-[10px] uppercase tracking-wider">Invoice No.</p>
+                <p className="text-base font-mono font-bold">{invoiceNo}</p>
+                <p className="text-indigo-200 text-[10px] mt-1">{format(new Date(), 'dd MMM yyyy')}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-6 space-y-5">
+            {/* Guest + Stay Info */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest border-b border-indigo-100 pb-1 mb-2">Guest</p>
+                {[
+                  ['Name',      guestName],
+                  ['Room',      `${roomNo}${roomType ? ' · ' + roomType : ''}`],
+                ].map(([l, v]) => (
+                  <div key={l} className="flex justify-between text-xs mb-1.5">
+                    <span className="text-slate-400">{l}</span>
+                    <span className="font-semibold text-slate-800">{v}</span>
+                  </div>
+                ))}
+              </div>
+              <div>
+                <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest border-b border-indigo-100 pb-1 mb-2">Stay</p>
+                {[
+                  ['Check-in',  format(new Date(booking.checkIn),  'dd MMM yyyy')],
+                  ['Check-out', format(new Date(booking.checkOut), 'dd MMM yyyy')],
+                  ['Nights',    String(nights)],
+                ].map(([l, v]) => (
+                  <div key={l} className="flex justify-between text-xs mb-1.5">
+                    <span className="text-slate-400">{l}</span>
+                    <span className="font-semibold text-slate-800">{v}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Charges Table */}
+            <div className="border border-slate-100 rounded-2xl overflow-hidden">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="bg-indigo-600 text-white">
+                    <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest">Description</th>
+                    <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-right">Amount</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  <tr className="bg-white">
+                    <td className="px-4 py-3 text-sm text-slate-700">
+                      Room Charges
+                      <span className="text-xs text-slate-400 ml-1">({nights} night{nights > 1 ? 's' : ''} × ₹{(base / nights).toFixed(0)})</span>
+                    </td>
+                    <td className="px-4 py-3 text-sm font-mono font-bold text-slate-800 text-right">₹{base.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                  </tr>
+                  {gstAmt > 0 && (
+                    <tr className="bg-slate-50/50">
+                      <td className="px-4 py-3 text-sm text-slate-700">GST ({gstPct}%)</td>
+                      <td className="px-4 py-3 text-sm font-mono font-bold text-slate-800 text-right">₹{gstAmt.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                    </tr>
+                  )}
+                  {scAmt > 0 && (
+                    <tr className="bg-white">
+                      <td className="px-4 py-3 text-sm text-slate-700">Service Charge ({scPct}%)</td>
+                      <td className="px-4 py-3 text-sm font-mono font-bold text-slate-800 text-right">₹{scAmt.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                    </tr>
+                  )}
+                  {ltAmt > 0 && (
+                    <tr className="bg-slate-50/50">
+                      <td className="px-4 py-3 text-sm text-slate-700">Luxury Tax ({ltPct}%)</td>
+                      <td className="px-4 py-3 text-sm font-mono font-bold text-slate-800 text-right">₹{ltAmt.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                    </tr>
+                  )}
+                  {discAmt > 0 && (
+                    <tr className="bg-red-50/40">
+                      <td className="px-4 py-3 text-sm text-slate-700">Discount ({discPct}%)</td>
+                      <td className="px-4 py-3 text-sm font-mono font-bold text-red-500 text-right">-₹{discAmt.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                    </tr>
+                  )}
+                  <tr className="bg-indigo-600">
+                    <td className="px-4 py-4 text-sm font-black text-white uppercase tracking-wide">Total Amount</td>
+                    <td className="px-4 py-4 text-xl font-mono font-black text-white text-right">₹{finalAmt.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            {/* Footer note */}
+            <p className="text-[10px] text-slate-400 text-center">
+              Thank you for staying with us. We hope to see you again!
+            </p>
+
+            {/* Actions */}
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={handleDownloadPDF}
+                className="flex-1 flex items-center justify-center gap-2 h-11 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold rounded-2xl transition-all active:scale-95"
+              >
+                <Download className="w-4 h-4" /> Download PDF
+              </button>
+              <button
+                onClick={() => window.print()}
+                className="h-11 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold rounded-2xl transition-all active:scale-95 flex items-center gap-2"
+              >
+                <Printer className="w-4 h-4" /> Print
+              </button>
+              <button
+                onClick={onClose}
+                className="h-11 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold rounded-2xl transition-all active:scale-95"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
   )
 }
 
