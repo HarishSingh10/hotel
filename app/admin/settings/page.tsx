@@ -54,7 +54,6 @@ const PERMISSIONS_SCHEMA = [
 ]
 
 const ROLES = [
-  { id: 'HOTEL_ADMIN',  label: 'Hotel Admin',  desc: 'Full property management' },
   { id: 'MANAGER',      label: 'Manager',      desc: 'Operations and staff oversight' },
   { id: 'RECEPTIONIST', label: 'Receptionist', desc: 'Front desk and check-in' },
   { id: 'STAFF',        label: 'Staff',        desc: 'Task execution only' },
@@ -534,7 +533,13 @@ export default function SettingsPage() {
       const d = await r.json()
       if (d.success) {
         const cur = (d.rolePermissions || []).find((rp: any) => rp.role === selectedRole)
-        setPermissions(cur?.permissions || {})
+        const raw: Record<string, any> = cur?.permissions || {}
+        // Normalize: convert 'READ'/'READ_WRITE' → true, 'NONE'/undefined → false
+        const normalized: Record<string, boolean> = {}
+        Object.entries(raw).forEach(([k, v]) => {
+          normalized[k] = v === true || v === 'READ' || v === 'READ_WRITE'
+        })
+        setPermissions(normalized)
       }
     } catch { /* silent */ }
   }, [currentPropertyId, selectedRole])
@@ -546,7 +551,13 @@ export default function SettingsPage() {
     if (!currentPropertyId || currentPropertyId === 'ALL') { toast.error('Select a hotel first'); return }
     setSaving(true)
     try {
-      const r = await fetch('/api/admin/settings/property', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ propertyId: currentPropertyId, ...hotelInfo }) })
+      // Only send editable branding fields — never send plan/features (those are SUPER_ADMIN only)
+      const { name, description, address, phone, email } = hotelInfo
+      const r = await fetch('/api/admin/settings/property', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ propertyId: currentPropertyId, name, description, address, phone, email })
+      })
       const d = await r.json()
       if (d.success) toast.success('Hotel info saved')
       else toast.error(d.error ?? 'Failed to save')
@@ -557,7 +568,16 @@ export default function SettingsPage() {
     if (!currentPropertyId || currentPropertyId === 'ALL') { toast.error('Select a hotel first'); return }
     setSaving(true)
     try {
-      const r = await fetch('/api/admin/settings/roles', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ propertyId: currentPropertyId, role: selectedRole, permissions }) })
+      // Convert boolean map → PermissionLevel strings for server-side checkPermission()
+      const permissionLevels: Record<string, string> = {}
+      Object.entries(permissions).forEach(([k, v]) => {
+        permissionLevels[k] = v ? 'READ_WRITE' : 'NONE'
+      })
+      const r = await fetch('/api/admin/settings/roles', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ propertyId: currentPropertyId, role: selectedRole, permissions: permissionLevels })
+      })
       const d = await r.json()
       if (d.success) toast.success('Permissions saved')
       else toast.error(d.error ?? 'Failed to save')

@@ -242,12 +242,23 @@ export async function GET(req: NextRequest) {
         })
 
         const leaderboard = staffWithTasks
-            .map(s => ({
-                name: s.user.name,
-                department: s.department.replace('_', ' '),
-                tasksCompleted: s.serviceRequests.length,
-                rating: s.performanceScores[0]?.avgRating || (4 + Math.random()).toFixed(1)
-            }))
+            .map(s => {
+                const tasksCompleted = s.serviceRequests.length
+                const perfScore = s.performanceScores[0]
+                // Only show a rating if there's real performance data
+                const rating = perfScore?.avgRating
+                    ? (Math.round(perfScore.avgRating * 10) / 10).toFixed(1)
+                    : tasksCompleted > 0
+                        ? (Math.round(((perfScore?.tasksOnTime ?? tasksCompleted) / tasksCompleted) * 5 * 10) / 10).toFixed(1)
+                        : null // no tasks = no rating
+
+                return {
+                    name: s.user.name,
+                    department: s.department.replace('_', ' '),
+                    tasksCompleted,
+                    rating,
+                }
+            })
             .sort((a, b) => b.tasksCompleted - a.tasksCompleted)
             .slice(0, 5)
 

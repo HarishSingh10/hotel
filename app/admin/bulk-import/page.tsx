@@ -90,10 +90,14 @@ export default function BulkImportPage() {
             setPreviewData(parsed.slice(0, 100).map(r => ({
                 status: r._errors.length > 0 ? 'Error' : r._warnings.length > 0 ? 'Alert' : 'Ready',
                 name: r._name || 'Unknown',
+                phone: r._phone || '—',
                 checkIn: r._checkIn || 'N/A',
-                type: r._roomNumber || 'Auto-assign',
+                checkOut: r._checkOut || 'N/A',
+                room: r._roomNumber || 'Auto-assign',
+                guests: r.guests_count || r.pax || '1',
                 source: r._source || 'DIRECT',
-                notes: r._errors.length > 0 ? r._errors[0] : r._warnings.length > 0 ? r._warnings[0] : 'No errors',
+                amount: r._amount > 0 ? `₹${r._amount}` : '—',
+                notes: r._errors.length > 0 ? r._errors[0] : r._warnings.length > 0 ? r._warnings[0] : '✓ OK',
                 _valid: r._valid,
             })))
             setRawData(parsed)
@@ -297,46 +301,54 @@ export default function BulkImportPage() {
 
                         {/* 2. Field Mapping */}
                         <div className="bg-[#161b22] border border-white/5 rounded-2xl p-8 shadow-sm">
-                            <div className="flex items-center justify-between mb-8">
+                            <div className="flex items-center justify-between mb-6">
                                 <div className="flex items-center gap-3">
                                     <div className="w-8 h-8 rounded-lg bg-blue-600/10 flex items-center justify-center text-blue-500 font-bold text-xs">2</div>
-                                    <h3 className="text-lg font-bold text-white">Field Mapping</h3>
+                                    <h3 className="text-lg font-bold text-white">Required Fields</h3>
                                 </div>
                                 <span className="text-[9px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded tracking-tighter uppercase">Auto-Matched</span>
                             </div>
 
-                            <div className="space-y-6">
+                            <div className="space-y-2 mb-6">
                                 {[
-                                    { label: 'Guest Full Name', value: 'guest_name' },
-                                    { label: 'Check-in Date', value: 'check_in' },
-                                    { label: 'Room Number', value: 'room_number' },
-                                    { label: 'Booking Source', value: 'source' },
+                                    { col: 'guest_name',    label: 'Guest Full Name',   required: true,  example: 'Rahul Sharma' },
+                                    { col: 'guest_phone',   label: 'Phone Number',      required: true,  example: '9876543210' },
+                                    { col: 'check_in',      label: 'Check-in Date',     required: true,  example: '2026-05-01' },
+                                    { col: 'check_out',     label: 'Check-out Date',    required: true,  example: '2026-05-04' },
+                                    { col: 'guest_email',   label: 'Email',             required: false, example: 'guest@email.com' },
+                                    { col: 'room_number',   label: 'Room Number',       required: false, example: '101' },
+                                    { col: 'guests_count',  label: 'No. of Guests',     required: false, example: '2' },
+                                    { col: 'source',        label: 'Booking Source',    required: false, example: 'DIRECT' },
+                                    { col: 'total_amount',  label: 'Total Amount (₹)',  required: false, example: '5000' },
+                                    { col: 'notes',         label: 'Notes',             required: false, example: 'Early check-in' },
                                 ].map((field, i) => (
-                                    <div key={i} className="space-y-2">
-                                        <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest block">{field.label}</label>
-                                        <div className="relative">
-                                            <select
-                                                className="w-full bg-[#0d1117] border border-white/5 rounded-xl px-4 py-3.5 text-sm text-white appearance-none outline-none focus:border-blue-500/50 transition-all font-bold"
-                                                defaultValue={field.value}
-                                            >
-                                                <option value="guest_name">guest_name</option>
-                                                <option value="check_in">check_in</option>
-                                                <option value="room_number">room_number</option>
-                                                <option value="source">source</option>
-                                            </select>
-                                            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+                                    <div key={i} className="flex items-center justify-between py-2 border-b border-white/[0.04] last:border-0">
+                                        <div className="flex items-center gap-2">
+                                            {field.required
+                                                ? <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0" />
+                                                : <span className="w-1.5 h-1.5 rounded-full bg-gray-700 shrink-0" />
+                                            }
+                                            <span className="text-xs font-medium text-gray-300">{field.label}</span>
+                                            {field.required && <span className="text-[9px] text-rose-400 font-bold">*</span>}
                                         </div>
+                                        <code className="text-[10px] text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded font-mono">{field.col}</code>
                                     </div>
                                 ))}
-
-                                <button
-                                    onClick={runValidation}
-                                    disabled={validating || !file}
-                                    className="w-full mt-4 py-4 bg-[#0d1117] border border-white/5 hover:border-blue-500/50 text-white rounded-2xl font-bold text-xs uppercase tracking-[0.2em] transition-all shadow-lg active:scale-[0.98] disabled:opacity-20 flex items-center justify-center gap-2"
-                                >
-                                    {validating ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Run Validation'}
-                                </button>
                             </div>
+
+                            <div className="p-3 bg-amber-500/5 border border-amber-500/10 rounded-xl mb-4">
+                                <p className="text-[10px] text-amber-400 font-medium">
+                                    <span className="font-bold">Source values:</span> DIRECT, WALK_IN, BOOKING_COM, MAKE_MY_TRIP, AGODA, EXPEDIA, AIRBNB, OTHER
+                                </p>
+                            </div>
+
+                            <button
+                                onClick={runValidation}
+                                disabled={validating || !file}
+                                className="w-full py-4 bg-[#0d1117] border border-white/5 hover:border-blue-500/50 text-white rounded-2xl font-bold text-xs uppercase tracking-[0.2em] transition-all shadow-lg active:scale-[0.98] disabled:opacity-20 flex items-center justify-center gap-2"
+                            >
+                                {validating ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Run Validation'}
+                            </button>
                         </div>
                     </div>
 
@@ -357,48 +369,45 @@ export default function BulkImportPage() {
                                 <table className="w-full text-left">
                                     <thead>
                                         <tr className="bg-[#0d1117] text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em]">
-                                            <th className="px-8 py-5">Status</th>
-                                            <th className="px-8 py-5">Guest Name</th>
-                                            <th className="px-8 py-5">Check-in</th>
-                                            <th className="px-8 py-5">Room Type</th>
-                                            <th className="px-8 py-5">Source</th>
-                                            <th className="px-8 py-5">Notes</th>
+                                            <th className="px-4 py-4 whitespace-nowrap">Status</th>
+                                            <th className="px-4 py-4 whitespace-nowrap">Guest Name</th>
+                                            <th className="px-4 py-4 whitespace-nowrap">Phone</th>
+                                            <th className="px-4 py-4 whitespace-nowrap">Check-in</th>
+                                            <th className="px-4 py-4 whitespace-nowrap">Check-out</th>
+                                            <th className="px-4 py-4 whitespace-nowrap">Room</th>
+                                            <th className="px-4 py-4 whitespace-nowrap">Guests</th>
+                                            <th className="px-4 py-4 whitespace-nowrap">Source</th>
+                                            <th className="px-4 py-4 whitespace-nowrap">Amount</th>
+                                            <th className="px-4 py-4 whitespace-nowrap">Notes</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-white/5">
                                         {previewData.map((row, i) => (
-                                            <tr key={i} className="hover:bg-white/[0.02] transition-colors group">
-                                                <td className="px-8 py-6">
+                                            <tr key={i} className="hover:bg-white/[0.02] transition-colors">
+                                                <td className="px-4 py-4">
                                                     <div className="flex items-center gap-2">
                                                         <div className={cn(
-                                                            "w-2 h-2 rounded-full",
-                                                            row.status === 'Ready' ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" :
-                                                                row.status === 'Alert' ? "bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]" :
-                                                                    "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]"
+                                                            "w-2 h-2 rounded-full shrink-0",
+                                                            row.status === 'Ready' ? "bg-emerald-500" :
+                                                            row.status === 'Alert' ? "bg-amber-500" : "bg-red-500"
                                                         )} />
-                                                        <span className="text-[11px] font-bold uppercase tracking-tighter text-gray-300">{row.status}</span>
+                                                        <span className="text-[10px] font-bold uppercase tracking-tighter text-gray-300">{row.status}</span>
                                                     </div>
                                                 </td>
-                                                <td className="px-8 py-6">
-                                                    <span className="text-sm font-bold text-white truncate max-w-[150px] block">{row.name}</span>
-                                                </td>
-                                                <td className="px-8 py-6">
-                                                    <span className={cn("text-xs font-bold tracking-widest uppercase", row.checkIn === 'INVALID_DATE' ? "text-red-500 bg-red-500/10 px-2 py-1 rounded" : "text-gray-400")}>
-                                                        {row.checkIn}
-                                                    </span>
-                                                </td>
-                                                <td className="px-8 py-6">
-                                                    <span className="text-xs text-gray-400 font-medium">{row.type}</span>
-                                                </td>
-                                                <td className="px-8 py-6 text-xs text-gray-400 font-medium">
-                                                    {row.source}
-                                                </td>
-                                                <td className="px-8 py-6">
+                                                <td className="px-4 py-4 text-sm font-semibold text-white whitespace-nowrap">{row.name}</td>
+                                                <td className="px-4 py-4 text-xs text-gray-400 font-mono whitespace-nowrap">{row.phone}</td>
+                                                <td className="px-4 py-4 text-xs text-gray-400 whitespace-nowrap">{row.checkIn}</td>
+                                                <td className="px-4 py-4 text-xs text-gray-400 whitespace-nowrap">{row.checkOut}</td>
+                                                <td className="px-4 py-4 text-xs text-gray-400 whitespace-nowrap">{row.room}</td>
+                                                <td className="px-4 py-4 text-xs text-gray-400 text-center">{row.guests}</td>
+                                                <td className="px-4 py-4 text-xs text-gray-400 whitespace-nowrap">{row.source}</td>
+                                                <td className="px-4 py-4 text-xs text-gray-400 whitespace-nowrap">{row.amount}</td>
+                                                <td className="px-4 py-4">
                                                     <span className={cn(
-                                                        "px-3 py-1 rounded-md text-[9px] font-bold uppercase tracking-widest border transition-all",
-                                                        row.status === 'Ready' ? "border-emerald-500/10 bg-emerald-500/5 text-gray-600" :
-                                                            row.status === 'Alert' ? "border-amber-500/20 bg-amber-500/10 text-amber-500" :
-                                                                "border-red-500/20 bg-red-500/10 text-red-500"
+                                                        "px-2 py-1 rounded text-[9px] font-bold uppercase tracking-wider border",
+                                                        row.status === 'Ready' ? "border-emerald-500/10 bg-emerald-500/5 text-emerald-500" :
+                                                        row.status === 'Alert' ? "border-amber-500/20 bg-amber-500/10 text-amber-500" :
+                                                        "border-red-500/20 bg-red-500/10 text-red-500"
                                                     )}>
                                                         {row.notes}
                                                     </span>
@@ -407,12 +416,12 @@ export default function BulkImportPage() {
                                         ))}
                                         {previewData.length === 0 && (
                                             <tr>
-                                                <td colSpan={6} className="px-8 py-32 text-center">
-                                                    <div className="flex flex-col items-center gap-4 opacity-20 group">
-                                                        <TableIcon className="w-16 h-16 group-hover:scale-110 transition-transform duration-500" />
+                                                <td colSpan={10} className="px-8 py-32 text-center">
+                                                    <div className="flex flex-col items-center gap-4 opacity-20">
+                                                        <TableIcon className="w-16 h-16" />
                                                         <div className="space-y-1">
                                                             <p className="text-lg font-bold uppercase tracking-[0.3em]">No Preview Data</p>
-                                                            <p className="text-sm font-medium ">Upload a file and run validation to see results</p>
+                                                            <p className="text-sm font-medium">Upload a CSV and it will validate automatically</p>
                                                         </div>
                                                     </div>
                                                 </td>

@@ -89,7 +89,10 @@ export function usePermissions(): UsePermissionsReturn {
 
     const can = useCallback((permissionId: string): boolean => {
         if (isAdmin) return true
-        return !!permissions[permissionId]
+        const val = permissions[permissionId]
+        // Handle both boolean (legacy) and PermissionLevel string formats
+        if (typeof val === 'boolean') return val
+        return val === 'READ' || val === 'READ_WRITE'
     }, [isAdmin, permissions])
 
     const hasFeature = useCallback((featureKey: string): boolean => {

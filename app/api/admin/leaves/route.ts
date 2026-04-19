@@ -14,21 +14,30 @@ export async function GET(request: Request) {
     try {
         const { searchParams } = new URL(request.url)
         const status = searchParams.get('status')
-        const propertyId = searchParams.get('propertyId')
+        const qPropertyId = searchParams.get('propertyId')
+
+        // Resolve property scope — HOTEL_ADMIN/MANAGER always scoped to their property
+        let propertyFilter: any = {}
+        if (session.user.role === 'SUPER_ADMIN') {
+            if (qPropertyId && qPropertyId !== 'ALL') {
+                propertyFilter = { staff: { propertyId: qPropertyId } }
+            }
+            // else: global view — no filter
+        } else {
+            const propertyId = session.user.propertyId
+            if (!propertyId) return new NextResponse('No property associated', { status: 400 })
+            propertyFilter = { staff: { propertyId } }
+        }
 
         const requests = await prisma.leaveRequest.findMany({
             where: {
+                ...propertyFilter,
                 ...(status && status !== 'ALL' ? { status: status as any } : {}),
-                ...(propertyId && propertyId !== 'ALL' ? {
-                    staff: { propertyId: propertyId }
-                } : {})
             },
             include: {
                 staff: {
                     include: {
-                        user: {
-                            select: { name: true, email: true }
-                        }
+                        user: { select: { name: true, email: true } }
                     }
                 }
             },
@@ -37,7 +46,7 @@ export async function GET(request: Request) {
 
         return NextResponse.json(requests)
     } catch (error) {
-        console.error("Admin Leaves GET Error:", error)
+        console.error('Admin Leaves GET Error:', error)
         return new NextResponse('Internal Server Error', { status: 500 })
     }
 }
